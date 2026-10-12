@@ -12,8 +12,12 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/domain/*.test.ts tests/app/*.test.ts",
-    "test:domain": "node --test tests/domain/*.test.ts"
+    "test": "node --test tests/domain/*.test.ts tests/experiments/*.test.ts tests/app/*.test.ts",
+    "test:domain": "node --test tests/domain/*.test.ts",
+    "test:experiments": "node --test tests/experiments/*.test.ts",
+    "experiment": "node scripts/experiment.ts",
+    "experiment:openai:prepare": "node scripts/prepare-openai.ts",
+    "experiment:openai": "node scripts/run-openai.ts"
   },
   "dependencies": {
     "@fix-webm-duration/fix": "1.0.1",

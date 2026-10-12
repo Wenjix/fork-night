@@ -1,0 +1,88 @@
+{
+  "story": {
+    "projectId": "lantern-archive",
+    "title": "The Lantern Archive",
+    "originality": "Original fictional fixture written for Fork Night. No imported franchise, real person, or third-party reference image.",
+    "characters": [
+      { "id": "mara-v1", "description": "Mara is an adult map conservator in a coral jacket, carrying a brass lantern." },
+      { "id": "mara-v2", "description": "Later version: Mara has a blue climbing harness. Do not inherit before the rooftop moment." },
+      { "id": "oss-v1", "description": "Oss is an imaginary paper moth that lives in the archive's west wing." }
+    ],
+    "references": [
+      { "id": "archive-sketch-v1", "description": "Original text reference: an indigo archive, warm rectangular windows, brass lamp, a crescent canal.", "reportedGenerationExpenseUsd": null },
+      { "id": "rooftop-sketch-v1", "description": "Later reference: copper telescope and rooftop observatory.", "reportedGenerationExpenseUsd": null },
+      { "id": "west-wing-sketch-v1", "description": "Sibling reference: a room filled with folded paper moths.", "reportedGenerationExpenseUsd": null }
+    ],
+    "moments": [
+      {
+        "id": "archive-seed", "projectId": "lantern-archive", "parentId": null, "version": 1, "published": true,
+        "maker": "Rowan", "summary": "Mara discovers that one chart in the archive has begun to glow.",
+        "captions": ["The last lamp should have gone dark.", "One chart kept its own light."],
+        "characterVersionIds": ["mara-v1"], "referenceIds": ["archive-sketch-v1"], "reuseFeeUsd": "0.030000"
+      },
+      {
+        "id": "canal-signal", "projectId": "lantern-archive", "parentId": "archive-seed", "version": 1, "published": true,
+        "maker": "Priya", "summary": "Mara carries the chart to the canal and discovers its light points upstream.",
+        "captions": ["The canal answered in circles.", "The map was pointing home."],
+        "characterVersionIds": ["mara-v1"], "referenceIds": ["archive-sketch-v1"], "reuseFeeUsd": "0.045000"
+      },
+      {
+        "id": "rooftop-later", "projectId": "lantern-archive", "parentId": "canal-signal", "version": 1, "published": true,
+        "maker": "Sam", "summary": "Mara reaches the observatory in a blue climbing harness.",
+        "captions": ["Above the archive, another map waited.", "The sky had remembered her."],
+        "characterVersionIds": ["mara-v2"], "referenceIds": ["rooftop-sketch-v1"], "reuseFeeUsd": "0.060000"
+      },
+      {
+        "id": "west-wing-sibling", "projectId": "lantern-archive", "parentId": "archive-seed", "version": 1, "published": true,
+        "maker": "Sam", "summary": "Instead of leaving, Mara enters the west wing and meets Oss.",
+        "captions": ["Something folded itself out of the map.", "Its wings were covered in streets."],
+        "characterVersionIds": ["mara-v1", "oss-v1"], "referenceIds": ["west-wing-sketch-v1"], "reuseFeeUsd": "0.024000"
+      },
+      {
+        "id": "unpublished-draft", "projectId": "lantern-archive", "parentId": "canal-signal", "version": 1, "published": false,
+        "maker": "Priya", "summary": "A private unchosen sketch.", "captions": ["Draft only.", "Do not inherit."],
+        "characterVersionIds": ["mara-v1"], "referenceIds": [], "reuseFeeUsd": "0.000000"
+      }
+    ]
+  },
+  "experiments": [
+    {
+      "id": "seed", "title": "Create an original two-panel seed", "kind": "seed", "parentId": null,
+      "prompt": "Introduce Mara, an adult map conservator in a coral jacket. A brass lantern reveals a glowing chart inside the indigo archive.",
+      "captions": ["The last lamp should have gone dark.", "One chart kept its own light."],
+      "scenario": "success", "maximumSimulatedExpenseUsd": "0.100000"
+    },
+    {
+      "id": "continuation", "title": "Continue only the seed-to-canal path", "kind": "continuation", "parentId": "canal-signal",
+      "prompt": "Mara raises her brass lantern. The canal reflects a tiny new doorway that was not there before. Keep her coral jacket and the archive's indigo palette.",
+      "captions": ["She raised the lantern a little higher.", "The water remembered a door."],
+      "scenario": "success", "maximumSimulatedExpenseUsd": "0.100000"
+    },
+    {
+      "id": "recreation", "title": "Recreate from visible descriptions without paid ancestry", "kind": "visible-reference-recreation", "parentId": null,
+      "prompt": "Using only this visible description, recreate an acceptable starting point: an adult map conservator in a coral jacket holds a brass lantern by an indigo archive and a crescent canal. A glowing map points upstream. This is a separate comparison, not inherited continuity.",
+      "captions": ["A map, a canal, a familiar light.", "Would this be the same beginning?"],
+      "scenario": "success", "maximumSimulatedExpenseUsd": "0.100000"
+    },
+    {
+      "id": "lost-reply", "title": "Accepted request, lost reply, recover by request key", "kind": "continuation", "parentId": "canal-signal",
+      "prompt": "Mara follows the lantern light toward the canal doorway.", "captions": ["The reply was lost.", "The same saved result was found."],
+      "scenario": "lost-reply-recoverable", "maximumSimulatedExpenseUsd": "0.100000"
+    },
+    {
+      "id": "uncertain", "title": "Accepted request cannot be reconciled; keep allowance held", "kind": "continuation", "parentId": "canal-signal",
+      "prompt": "Mara waits while the canal doorway glows.", "captions": ["Some work may have happened.", "Do not buy it again blindly."],
+      "scenario": "lost-reply-uncertain", "maximumSimulatedExpenseUsd": "0.100000"
+    },
+    {
+      "id": "storage-recovery", "title": "Recover saved output after an interrupted artifact write", "kind": "continuation", "parentId": "canal-signal",
+      "prompt": "Mara opens the canal doorway and finds a room of maps.", "captions": ["The first panel had been saved.", "Both returned without another generation."],
+      "scenario": "storage-interruption", "maximumSimulatedExpenseUsd": "0.100000"
+    },
+    {
+      "id": "invalid-output", "title": "One panel is missing; record expense but no billable delivery", "kind": "continuation", "parentId": "canal-signal",
+      "prompt": "Mara enters the doorway, but this fixture deliberately omits panel two.", "captions": ["The result is incomplete.", "This missing panel does not become a delivery."],
+      "scenario": "invalid-output", "maximumSimulatedExpenseUsd": "0.100000"
+    }
+  ]
+}
