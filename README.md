@@ -1,7 +1,9 @@
 # Fork Night
 
-A shared space for making illustrated, branching stories together. Brainstorming began on **September 27, 2026**.
+Brainstorming began on **September 27, 2026**. [Explore the origin and Round 4 gallery](docs/submission/PROCESS.md).
 
-[Exploration process](docs/submission/PROCESS.md) · [Selected Round 4 gallery](docs/submission/process/round-4/README.md)
+## Run the local story workspace
 
-This public repository groups the working project for review. Commit timestamps record publication preparation.
+Use Node.js 22.18 or newer. Run `npm ci`, then `npm run dev`. Open `http://localhost:3000`. The local preview uses prepared stories, simulated collaborators and browser-local resource accounting.
+
+Run `npm test` and `npm run typecheck` to verify the implemented modules.

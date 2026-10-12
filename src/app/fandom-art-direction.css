@@ -1,0 +1,75 @@
+.fandom-art-direction {
+  min-width: 0;
+  margin: 16px 0;
+  padding: 0;
+  border: 0;
+}
+.fandom-art-direction legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.fandom-art-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.fandom-art-options button {
+  min-height: 42px;
+  min-width: 92px;
+  padding: 9px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 140ms ease-out;
+}
+.fandom-art-options button:hover {
+  background: var(--violet-soft);
+}
+.fandom-art-options button[aria-pressed="true"] {
+  color: #fff;
+  background: var(--violet);
+  border-color: var(--violet);
+}
+.fandom-art-direction > p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.social-app .fandom-art-options button {
+  border-color: var(--night-line);
+}
+.social-app .fandom-art-options button:hover {
+  background: #302850;
+}
+.social-app .fandom-art-options button[aria-pressed="true"] {
+  background: var(--social-purple);
+  border-color: var(--social-purple);
+}
+.social-app .fandom-art-direction > p {
+  color: var(--night-muted);
+}
+.workspace-art-direction {
+  margin-top: -4px;
+  padding-inline: 36px;
+}
+.moment-card .malfoy-map-art .story-art-frame {
+  transform: translateY(-35%);
+}
+@media (max-width: 760px) {
+  .workspace-art-direction {
+    padding-inline: 20px;
+  }
+  .fandom-art-options button {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fandom-art-options button {
+    transition: none;
+  }
+}
