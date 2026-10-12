@@ -9,12 +9,17 @@
   },
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
+    "dev:worker": "node scripts/start-pilot-worker.mjs",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/domain/*.test.ts tests/experiments/*.test.ts tests/app/*.test.ts",
+    "test": "node --test tests/domain/*.test.ts tests/experiments/*.test.ts tests/app/*.test.ts tests/repository/*.test.mjs",
     "test:domain": "node --test tests/domain/*.test.ts",
     "test:experiments": "node --test tests/experiments/*.test.ts",
+    "test:repository": "node --test tests/repository/*.test.mjs",
+    "test:pilot-db": "node scripts/test-pilot-db.mjs",
+    "test:pilot-live": "node scripts/test-pilot-live.ts",
+    "pilot:status": "node --env-file-if-exists=.env.local scripts/check-pilot-generation.mjs",
     "experiment": "node scripts/experiment.ts",
     "experiment:openai:prepare": "node scripts/prepare-openai.ts",
     "experiment:openai": "node scripts/run-openai.ts"

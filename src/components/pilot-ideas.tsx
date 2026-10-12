@@ -1,0 +1,391 @@
+"use client";
+
+import { useEffect, useId, useRef, useState } from "react";
+import { ArrowRight, GripVertical, Lightbulb, Plus } from "lucide-react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Tables } from "@/lib/supabase/database.types";
+import { isUuid, type PilotMoment } from "@/lib/pilot";
+
+import { IDEA_DRAG_TYPE } from "@/lib/pilot-composer";
+
+type Idea = Tables<"pilot_ideas">;
+type NoteDraft = { requestId: string; body: string; submitted?: boolean };
+const order = (a: Idea, b: Idea) =>
+  b.created_at.localeCompare(a.created_at) || b.id.localeCompare(a.id);
+const merge = (a: Idea[], b: Idea[]) =>
+  [...new Map([...a, ...b].map((note) => [note.id, note])).values()].sort(
+    order,
+  );
+
+export function PilotIdeas({
+  client,
+  moment,
+  label,
+  profile,
+  onJoin,
+  onUse,
+}: {
+  client: SupabaseClient<Database>;
+  moment: PilotMoment;
+  label: string;
+  profile?: Tables<"pilot_profiles">;
+  onJoin: (name: string) => Promise<Tables<"pilot_profiles">>;
+  onUse: (idea: Idea) => void;
+}) {
+  const fieldId = useId();
+  const [notes, setNotes] = useState<Idea[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [newAvailable, setNewAvailable] = useState(false);
+  const [readError, setReadError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [draft, setDraft] = useState<NoteDraft>();
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const lock = useRef(false);
+  const text = useRef<HTMLTextAreaElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const currentNotes = useRef(notes);
+  currentNotes.current = notes;
+  const draftKey = `fork-night-pilot-idea:${moment.room_id}:${moment.id}`;
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(draftKey) ?? "null");
+      if (
+        saved &&
+        isUuid(saved.requestId) &&
+        typeof saved.body === "string" &&
+        saved.body.length <= 1000 &&
+        (saved.submitted === undefined || typeof saved.submitted === "boolean")
+      ) {
+        setDraft(saved);
+        setEditing(true);
+      }
+    } catch {
+      setError(
+        "This browser could not restore your idea. Published ideas still appear below.",
+      );
+    }
+  }, [draftKey]);
+  useEffect(() => {
+    let active = true,
+      running = false,
+      initial = true;
+    async function load() {
+      if (running) return;
+      running = true;
+      const result = await client
+        .from("pilot_ideas")
+        .select("*")
+        .eq("room_id", moment.room_id)
+        .eq("moment_id", moment.id)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(21);
+      running = false;
+      if (!active) return;
+      setLoading(false);
+      if (result.error) {
+        setReadError(
+          "Ideas could not be refreshed. Your saved notes are still here.",
+        );
+        return;
+      }
+      setReadError("");
+      if (initial) {
+        setNotes(result.data.slice(0, 20));
+        setHasMore(result.data.length > 20);
+        initial = false;
+        setNewAvailable(false);
+      } else if (
+        currentNotes.current.length &&
+        result.data.length > 20 &&
+        !result.data.some((note) => note.id === currentNotes.current[0].id)
+      )
+        setNewAvailable(true);
+      else setNotes((old) => merge(old, result.data.slice(0, 20)));
+    }
+    void load();
+    const timer = setInterval(() => void load(), 5000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [client, moment.id, moment.room_id, retry]);
+  async function older() {
+    const last = notes.at(-1);
+    if (!last || loading) return;
+    setLoading(true);
+    const result = await client
+      .from("pilot_ideas")
+      .select("*")
+      .eq("room_id", moment.room_id)
+      .eq("moment_id", moment.id)
+      .or(
+        `created_at.lt.${last.created_at},and(created_at.eq.${last.created_at},id.lt.${last.id})`,
+      )
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(21);
+    setLoading(false);
+    if (result.error) {
+      setReadError("Older ideas could not be loaded. Try again.");
+      return;
+    }
+    setNotes((old) => merge(old, result.data.slice(0, 20)));
+    setHasMore(result.data.length > 20);
+    setReadError("");
+  }
+  function update(body: string) {
+    const next = { requestId: draft?.requestId ?? crypto.randomUUID(), body };
+    setDraft(next);
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(next));
+    } catch {
+      setError(
+        "This browser cannot save an unfinished idea. Keep this page open until you post it.",
+      );
+    }
+  }
+  async function post() {
+    if (lock.current || !draft?.body.trim()) return;
+    if ([...draft.body.trim()].length > 500) {
+      setError("Keep your idea to 500 characters.");
+      return;
+    }
+    lock.current = true;
+    setSaving(true);
+    setError("");
+    setNotice("");
+    const input = { ...draft, body: draft.body.trim(), submitted: true };
+    try {
+      if (!profile) await onJoin(name);
+      setDraft(input);
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(input));
+      } catch {
+        setNotice("Keep this page open while your idea is being saved.");
+      }
+      const result = await client.rpc("pilot_leave_idea", {
+        p_request_id: input.requestId,
+        p_room_id: moment.room_id,
+        p_moment_id: moment.id,
+        p_body: input.body,
+      });
+      if (result.error)
+        throw new Error(
+          result.error.message.includes("30-idea limit")
+            ? "You’ve reached the 30-idea limit for this pilot room."
+            : "Your idea could not be confirmed. Retry this same idea when connected.",
+        );
+      setNotes((old) => merge(old, [result.data]));
+      setDraft(undefined);
+      setEditing(false);
+      setNotice("Idea saved for the next storyteller.");
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        /* A restored request is idempotent. */
+      }
+      requestAnimationFrame(() => trigger.current?.focus());
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Could not save your idea. Try again.",
+      );
+    } finally {
+      lock.current = false;
+      setSaving(false);
+    }
+  }
+  return (
+    <aside
+      className={`pilot-ideas${notes.length ? " has-ideas" : ""}${expanded ? " is-expanded" : ""}`}
+      aria-label={`Ideas for moment ${label}`}
+    >
+      <h2>Ideas for {label}</h2>
+      <p className="pilot-ideas-intro">
+        A little spark for whoever comes next.
+      </p>
+      {readError && (
+        <div className="pilot-inline-notice" role="status">
+          <p>{readError}</p>
+          <button
+            className="text-button"
+            onClick={() => setRetry((n) => n + 1)}
+          >
+            Retry loading ideas
+          </button>
+        </div>
+      )}
+      {newAvailable && (
+        <button className="text-button" onClick={() => setRetry((n) => n + 1)}>
+          New ideas available · Refresh
+        </button>
+      )}
+      {loading && !notes.length && <p role="status">Loading ideas…</p>}
+      <div className="pilot-note-list">
+        {notes.map((note) => (
+          <article
+            className="pilot-sticky"
+            key={note.id}
+            id={`idea-${note.id}`}
+            draggable
+            onDragStart={(event) => {
+              event.dataTransfer.setData(IDEA_DRAG_TYPE, note.id);
+              event.dataTransfer.effectAllowed = "copy";
+            }}
+          >
+            <GripVertical
+              className="pilot-note-grip"
+              size={16}
+              aria-hidden="true"
+            />
+            <div className="pilot-note-author">
+              <span className="pilot-avatar" aria-hidden="true">
+                {note.maker_label.slice(0, 1).toUpperCase()}
+              </span>
+              <span>
+                An idea from <strong>{note.maker_label}</strong>
+              </span>
+            </div>
+            <p>{note.body}</p>
+            <footer>
+              <time dateTime={note.created_at}>
+                {new Date(note.created_at).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </time>
+              <button className="text-button" onClick={() => onUse(note)}>
+                <Lightbulb size={16} /> Use this idea <ArrowRight size={16} />
+              </button>
+            </footer>
+          </article>
+        ))}
+      </div>
+      {notes.length > 1 && (
+        <button
+          className="text-button pilot-more-ideas"
+          aria-expanded={expanded}
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded
+            ? "Show fewer ideas"
+            : `Show ${notes.length - 1}${hasMore ? "+" : ""} more ${notes.length === 2 && !hasMore ? "idea" : "ideas"}`}
+        </button>
+      )}
+      {hasMore && (
+        <button
+          className="text-button pilot-older-ideas"
+          disabled={loading}
+          onClick={() => void older()}
+        >
+          {loading ? "Loading…" : "Load older ideas"}
+        </button>
+      )}
+      <button
+        ref={trigger}
+        className="pilot-leave-idea"
+        aria-label="Leave an idea for this moment"
+        hidden={editing}
+        onClick={() => {
+          setEditing(true);
+          requestAnimationFrame(() => text.current?.focus());
+        }}
+      >
+        <Plus size={29} />
+        <strong>
+          Leave an idea{" "}
+          <span className="pilot-idea-location">
+            <br />
+            for this moment
+          </span>
+        </strong>
+        <span>
+          {notes.length
+            ? "A new twist, a question, or anything you’re curious about…"
+            : "Be the first to leave a twist, a question, or a possibility."}
+        </span>
+      </button>
+      {editing && (
+        <form
+          className="pilot-note-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void post();
+          }}
+        >
+          <h3>Leave an idea</h3>
+          <p>Saved on moment {label}, for anyone in this room.</p>
+          {!profile && (
+            <label>
+              Your storyteller name
+              <input
+                required
+                maxLength={60}
+                autoComplete="nickname"
+                value={name}
+                disabled={saving}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </label>
+          )}
+          <div className="pilot-field">
+            <label htmlFor={fieldId}>Your idea</label>
+            <textarea
+              id={fieldId}
+              ref={text}
+              required
+              rows={5}
+              maxLength={500}
+              value={draft?.body ?? ""}
+              disabled={saving || draft?.submitted}
+              onChange={(event) => update(event.target.value)}
+              placeholder="What if…"
+            />
+          </div>
+          <small>
+            {[...(draft?.body ?? "")].length}/500 · No generation credits needed
+          </small>
+          <button
+            className="button primary"
+            disabled={saving || !draft?.body.trim()}
+          >
+            {saving
+              ? "Saving…"
+              : draft?.submitted
+                ? "Retry saving idea"
+                : "Post idea"}
+          </button>
+          <button
+            type="button"
+            className="text-button"
+            disabled={saving}
+            onClick={() => {
+              setEditing(false);
+              trigger.current?.focus();
+            }}
+          >
+            Keep for later
+          </button>
+        </form>
+      )}
+      {error && (
+        <p className="pilot-inline-notice" role="alert">
+          {error}
+        </p>
+      )}
+      {notice && (
+        <p className="pilot-idea-success" role="status">
+          {notice}
+        </p>
+      )}
+    </aside>
+  );
+}

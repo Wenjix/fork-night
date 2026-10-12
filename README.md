@@ -9,3 +9,5 @@ Use Node.js 22.18 or newer. Run `npm ci`, then `npm run dev`. Open `http://local
 Run `npm test` and `npm run typecheck` to verify the implemented modules.
 
 The separate image experiment tools preserve attempt records and bounded expense accounting. Paid execution requires deliberately supplied provider credentials.
+
+The `/pilot` route connects named Supabase guests, shared stories and Trigger generation. Configure the ignored `.env.local` from `.env.example`, apply the Supabase migrations and seed, and run `npm run dev:worker`. Provider allowances begin disabled.
