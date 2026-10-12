@@ -33,6 +33,7 @@ import { PilotComposer } from "./pilot-composer";
 import { PilotCreditRefill } from "./pilot-credit-refill";
 import { PilotGenerationStatus, PilotRoomActivity } from "./pilot-generation-status";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
+import { TestnetRelease } from "./testnet-release";
 import {
   IDEA_DRAG_TYPE,
   parseComposerDraft,
@@ -718,6 +719,7 @@ export function SharedPilot() {
         <h1>Pick up where someone left off.</h1>
         <p>Stories and ideas stay here for the next person.</p>
       </div>
+      {loadedRoom === roomId && <TestnetRelease roomId={roomId} moments={moments} tipId={selectedId} makerId={profile?.id} />}
       {loadedRoom === roomId && credits && <PilotRoomActivity credits={{ ...credits, ...activity }} interrupted={!!syncError} />}
       {(error || syncError || pathError) && (
         <div className="pilot-notice" role="alert">

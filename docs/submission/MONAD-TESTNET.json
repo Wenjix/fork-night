@@ -1,0 +1,44 @@
+{
+  "chainId": 10143,
+  "address": "0x15247565331013132e5563Cd29E99E0baA38690f",
+  "curator": "0x744D5A0D982752DBd1414Aa2898d57Da9E30645B",
+  "transactionHash": "0xb1563a4f9d373a40c55fe9df200cf561efe6bd32e2d82f9ed55564a445931967",
+  "blockNumber": 70063427,
+  "compiler": "0.8.24",
+  "runtimeHash": "0xebb0c16e17417e31d30c5ae3466627178e7ba7476755fd3da1b729930e6816c7",
+  "gasUsed": "1241884",
+  "sourceVerification": "verified-exact-match",
+  "sourceVerificationUrl": "https://testnet.monadscan.com/address/0x15247565331013132e5563Cd29E99E0baA38690f#code",
+  "sourceVerificationEvidence": "User-provided MonadScan screenshot visually inspected on October 11, 2026.",
+  "rehearsal": {
+    "mode": "founder-operated",
+    "checkedAt": "2026-10-12T04:09:07.585Z",
+    "blockNumber": 70298300,
+    "releaseId": "0x47f2ac96d0a3b80ea6dbf9179151349a6b09966b01fcfabf33c39e223da8d14d",
+    "manifestHash": "0x9fd95aef5fd6ea09f15910de3bd951f4e586d14ec389ed48af976618478f471f",
+    "registeredScenes": 4,
+    "runtimeVerified": true,
+    "policyVerified": true,
+    "termsMatch": true,
+    "allSceneCommitmentsMatch": true,
+    "frozen": true,
+    "receivedTestMon": "1.0",
+    "paidTestMon": "1.0",
+    "beneficiaries": [
+      {
+        "address": "0x56f30554D7d11B2807b87144e5559b267608Bea2",
+        "claimedTestMon": "0.5",
+        "claimableTestMon": "0.0"
+      },
+      {
+        "address": "0x744D5A0D982752DBd1414Aa2898d57Da9E30645B",
+        "claimedTestMon": "0.5",
+        "claimableTestMon": "0.0"
+      }
+    ],
+    "contractBalanceTestMon": "0.0",
+    "contractLiabilityTestMon": "0.0",
+    "fundedAndFullyClaimed": true,
+    "evidence": "User-operated browser confirmation and read-only checker output. Both wallets and all bylines are founder test accounts."
+  }
+}

@@ -1,0 +1,38 @@
+.pilot-release { margin: 28px 16px; border-top: 1px solid var(--line, #dedde7); color: var(--ink, #202039); }
+.pilot-release-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 18px; padding: 22px 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.pilot-release-toggle > span { display: grid; gap: 7px; }
+.pilot-release-toggle strong { font-size: 18px; }
+.pilot-release-toggle span span, .pilot-release-heading p, .pilot-release-path span { color: var(--muted, #65647a); font-size: 14px; }
+.pilot-release-body { padding: 0 0 24px; }
+.pilot-release-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.pilot-release-heading h2 { font-size: 24px; margin: 0 0 7px; letter-spacing: -0.025em; }
+.pilot-release-heading p { margin: 0; }
+.pilot-release-rule { max-width: 70ch; line-height: 1.6; margin: 18px 0; }
+.pilot-release-wallet, .pilot-release-record { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.pilot-release a { color: var(--violet-dark, #4525a4); display: inline-flex; align-items: center; gap: 6px; text-underline-offset: 4px; }
+.pilot-release-consent { display: flex; gap: 12px; align-items: flex-start; max-width: 70ch; margin: 20px 0; line-height: 1.55; }
+.pilot-release input[type="checkbox"] { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--violet, #6038d4); margin-top: 2px; }
+.pilot-release-path { list-style: none; padding: 0; margin: 22px 0; }
+.pilot-release-path > li { display: flex; gap: 16px; align-items: center; justify-content: space-between; border-top: 1px solid var(--line, #dedde7); padding: 18px 0; }
+.pilot-release-path > li > div { display: grid; gap: 6px; min-width: 0; }
+.pilot-release-path strong { overflow-wrap: anywhere; }
+.pilot-release-registration { max-width: 30ch; flex-shrink: 0; }
+.pilot-release-registration span { line-height: 1.5; overflow-wrap: anywhere; }
+.pilot-release form { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.pilot-release form label { display: grid; gap: 7px; font-size: 13px; font-weight: 650; min-width: 0; }
+.pilot-release input:not([type="checkbox"]) { font: inherit; color: var(--ink, #202039); background: var(--surface, #fffefa); border: 1px solid var(--line-strong, #a6a3bd); border-radius: 10px; padding: 12px; width: min(100%, 290px); min-width: 0; caret-color: var(--violet, #6038d4); }
+.pilot-release input::placeholder { color: var(--muted, #65647a); }
+.pilot-release button:focus-visible, .pilot-release a:focus-visible, .pilot-release input:focus-visible, .pilot-release summary:focus-visible { outline: 3px solid var(--violet, #6038d4); outline-offset: 4px; }
+.pilot-release-error { color: var(--danger, #a33343); background: #fde5dc; padding: 14px; border-radius: 10px; line-height: 1.55; }
+.pilot-release-notice { display: flex; align-items: flex-start; gap: 8px; color: var(--success, #286251); line-height: 1.55; }
+.pilot-release-recovery { padding: 16px; background: var(--violet-soft, #f0ebff); border-radius: 12px; margin: 18px 0; }
+.pilot-release-support { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line, #dedde7); }
+.pilot-release-support h3 { margin: 0 0 10px; font-size: 20px; }
+.pilot-release-support ul { list-style: none; padding: 0; margin: 18px 0; font-variant-numeric: tabular-nums; }
+.pilot-release-support li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; }
+.pilot-release-support > button { margin-top: 16px; }
+.pilot-release details { margin-top: 22px; line-height: 1.65; max-width: 70ch; }
+.pilot-release summary { cursor: pointer; font-weight: 650; }
+.pilot-release-empty { line-height: 1.6; padding-bottom: 20px; }
+@media (max-width: 760px) { .pilot-release { margin-inline: 20px; } }
+@media (max-width: 680px) { .pilot-release-path > li { align-items: flex-start; flex-direction: column; } .pilot-release form { width: 100%; } .pilot-release form label { flex: 1 1 160px; } .pilot-release-support li { flex-wrap: wrap; } .pilot-release-heading h2 { font-size: 21px; } }

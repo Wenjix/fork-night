@@ -1,6 +1,7 @@
 import { SharedPilot } from "@/components/shared-pilot";
 import "./pilot.css";
 import "./composer.css";
+import "./releases.css";
 
 export const metadata = {
   title: "Fork Night — shared stories",
