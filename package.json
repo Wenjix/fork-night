@@ -1,0 +1,36 @@
+{
+  "name": "fork-night",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fix-webm-duration/fix": "1.0.1",
+    "@supabase/supabase-js": "2.117.2",
+    "@trigger.dev/sdk": "4.6.4",
+    "ethers": "6.16.0",
+    "lucide-react": "0.552.0",
+    "next": "16.3.5",
+    "qrcode": "1.5.4",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "sharp": "0.35.4",
+    "vercel": "^63.1.2"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "4.6.4",
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "hardhat": "3.2.0",
+    "trigger.dev": "4.6.4",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}
