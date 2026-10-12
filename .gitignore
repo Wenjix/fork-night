@@ -1,0 +1,47 @@
+# macOS Finder metadata
+.DS_Store
+
+# Local app/tooling output and private experiment records
+node_modules/
+.next/
+.local/
+*.tsbuildinfo
+next-env.d.ts
+.env*
+!.env.example
+test-results/
+coverage/
+*.log
+supabase/.branches/
+supabase/.temp/
+
+# Private working archive and agent/design tooling (local only)
+.internal/
+.agents/
+.claude/
+.cursor/
+.codex/
+.aws/
+.impeccable/
+/AGENTS.md
+/CLAUDE.md
+/skills-lock.json
+/PRODUCT.md
+/DESIGN.md
+/CONTEXT.md
+/output/
+
+# Only intentionally curated submission documentation belongs in Git
+/docs/*
+!/docs/submission/
+/.trigger/
+
+# Cloudflare build output and local credentials
+.wrangler/
+.cloudflare/
+.vinext/
+.dev.vars*
+/dist/
+
+# Vercel project linkage and pulled settings
+.vercel/
