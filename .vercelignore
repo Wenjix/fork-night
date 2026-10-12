@@ -1,0 +1,32 @@
+# Deploy the clean source folder produced by hosting:prepare.
+# These exclusions also protect local working files during CLI uploads.
+.git/
+.internal/
+.local/
+.agents/
+.codex/
+.claude/
+.cursor/
+.impeccable/
+.aws/
+.vercel/
+node_modules/
+.next/
+.trigger/
+.wrangler/
+.cloudflare/
+.vinext/
+dist/
+output/
+test-results/
+coverage/
+.env*
+!.env.example
+.dev.vars*
+*.tsbuildinfo
+AGENTS.md
+CLAUDE.md
+PRODUCT.md
+DESIGN.md
+CONTEXT.md
+skills-lock.json

@@ -1,0 +1,61 @@
+# Local demo
+
+Use Node 22.18 or newer:
+
+```sh
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:3000`. No credentials are required. Sam, Priya and Jules are switchable sample makers. Generation uses predetermined artwork; fictional balances and unsigned receipts stay in this browser.
+
+For the short fandom walkthrough, choose **Night City After Hours**, **Malfoy, Rewritten** or **Blade Runner: A Memory of Rain**. Each has a shared opening and two complete outcomes. **Read a complete path** selects its lead ending; **Step inside** lets you choose another branch in the upward map. In Malfoy's story, Draco has been a girl since the beginning of Hogwarts, retaining her role as Harry's Slytherin rival and foil. The lead grows rivalry into reluctant trust; the separate branch follows her defense of Hermione and personal accountability. These are unofficial, authored fan stories with fictional collaborators.
+
+In **Malfoy, Rewritten**, switch between **Anime** and **Film style** in the room preview or story workspace. All six illustrations have both interpretations. Your selected branch, captions and maker credits stay the same, and the chosen style carries into the local storyboard video and exported story. A visual interpretation is a prepared presentation choice, rather than a new contribution or generation request.
+
+1. As **Sam**, find **The moon missed the bus** in the lobby. **Peek in** previews the opening; **Step inside** enters its story. Select a moment, read its path and choose **Make a version from here**.
+2. Write a continuation, then visit **My spaces → Your desk**. Resume it from **Still on your workbench** to see the saved prompt and starting moment.
+3. Review the quote, reserve sample credits and collect the fixture draft. Refresh during review, then publish with a thank-you. Download the finished branch: its HTML contains the selected ancestry, images and contributor credits.
+4. Make another version and discard it. The fixture ledger charges delivered generation and returns upstream fees and unused reservation capacity.
+5. As **Jules**, request to join **Paper Lantern**. Switch to **Sam** and approve the request in its member hall. Jules can now enter the hall; guild approval does not grant private-project access or pool spending.
+6. As **Sam**, post an idea in the friends' board; reply as **Priya**. Pin it, switch to Timeline and return after navigation to check persistence.
+7. On **Your desk**, try the sample pieces, arrange them and keep edits. Select two original images, review **Start a new project**, and publish the opening in preview. Its internal reuse fee is zero and no credits move. Linked inherited pieces preserve their source project.
+
+In a story workspace, choose a tip in the upward map, then **Make a video**. Review the full storyboard in **Left to right** or **Top to bottom** order, then **Create video**. This creates a silent, downloadable storyboard video from the entire selected path, with saved captions and maker credits. Fandom paths contain four panels and take eight seconds. Video creation runs in the browser and makes no model request; it requires browser video-recording support. Other branches remain separate.
+
+On phones, the downloaded film uses a portrait frame with readable captions and maker credits. Desktop films use a wide frame. Exported stories include their illustrations, reading font and credits for offline viewing.
+
+## Shared development pilot
+
+Configure the server credentials and run the development worker as described in the [README](../../README.md). Open `/pilot` in two separate browser profiles or private sessions.
+
+1. Choose one of the three rooms. The shared story table gives the current moment most of the space, with maker credit and a **Story so far** recap. On a phone, page through its panels and expand the recap to read earlier moments. **Map** opens the full upward branching story.
+2. Choose **Leave an idea**, enter a storyteller name, and post a short note. Open the same moment in the second session: the note and its author are shared. **Use this idea** carries the attributed note into a private continuation; desktop users can also drag it into the idea pocket. It does not generate anything yet.
+3. Choose **Add the next part**, or borrow the saved idea. Write one loose thought, try an optional angle, or use Cartesia Ink-2 when voice is enabled. **Preview my idea** lays out your own words without a helper call. One panel is enough; **Let it continue** adds another, up to three. Edit, reorder or remove panels, and use **Undo last change** if needed. Enabled helpers can offer possible directions or suggest a layout. Reading earlier moments keeps the original parent. The explicit **Generate** action shows the panel count and credit quote before requesting images.
+4. Refresh while waiting. The saved operation returns; **Check saved result** reconnects to existing work. If a refresh happened before dispatch, **Generate saved idea** resumes the saved draft.
+5. Review the complete result at full reading size, then **Publish my moment**. The moment credits its maker. Borrowed notes keep their original authors on the idea board and do not add generation credit. Discard keeps them out of the public story, while retaining the charge for a complete delivered moment (one credit for one/two panels, two credits for three).
+6. **Share this moment** gives the other guest a direct link. They can inspect the contribution and continue it. Returning in the same browser shows new moments on the selected path and the previous reading position; first visits have no invented history. These cues are local to that browser.
+
+Generation requires an enabled, funded operator budget and the local Trigger development process. Voice and text shaping have separate operator allowances and start paused. Their protocol and UI have been tested with simulated provider responses; real transcription quality and physical-phone behavior still require rehearsal. This is a development rehearsal, not a public deployment. Verified email saving and live film generation remain pending.
+
+The room shows aggregate queued, generating and needs-checking counts; private prompts and drafts remain hidden. Your continuation distinguishes **Waiting to start**, **Generating your images**, **Ready to review** and **Generation needs checking**. Reserved credits are held for unfinished requests and become used credits only on complete delivery. A running request with no recorded progress for ten minutes needs checking. Publish a delivered preview with **Publish my moment**, then use **Share this moment** for its public scene link. The share action also reveals a selectable link. A localhost link works on the same computer; sharing with other people requires a reachable deployment. Wallet connections can use localhost in a browser with an Ethereum-compatible wallet extension.
+
+The original **Midnight Signal** room includes an optional **Make this path a shared release** section. For the hackathon demo, it uses an explicitly disclosed equal-wallet policy: each distinct registered wallet on the complete selected ancestry receives an equal share. Its contract is deployed on Monad testnet and verified as Exact Match on MonadScan. A founder-operated browser rehearsal completed four registrations, release freezing, 1.0 test MON support and two separate 0.5 claims. Configure the published contract and curator addresses, restart the app, then follow the [testnet setup and two-wallet walkthrough](ONCHAIN.md). With no configured deployment, the section displays setup pending. Test MON payouts and generation credits are separate.
+
+[Project overview](PROJECT.md) · [Architecture](ARCHITECTURE.md)
+
+For local testing, enable `PILOT_LOCAL_CONTROLS=1` in `.env.local` and restart the server. A named guest can choose **Add 5 test credits** beside the room balance. This extends room capacity and test-attempt limits, preserves usage and reservations, and leaves the existing API dollar ceiling unchanged. It is a local operator control, not a payment flow; hosted deployments keep it disabled. A lost reply exposes **Check last refill**, which retrieves the same refill without adding credits twice.
+
+## Shared world presentation
+
+The separate `/world-demo` rehearsal follows Mira’s ledger scene into Kai’s continuation and a curator-published Chapter 2. Enter as Mira, preview and publish her scene, then choose **Continue as Kai**. Publish Kai’s continuation and choose **Review the chapter → Publish chapter & open film**. A solo presenter changes roles inline; each role retains its independent guest account and private draft. Invitations still support separate browsers.
+
+The chapter’s **Create video** action renders its exact saved scene path as a downloadable storyboard video. **Prepared motion example → Play motion example** plays a fixed five-second example of the reunion ending. Its imagery and story do not change with edited captions. Neither action requests live generative motion.
+
+**Contribution history** sits beside the player on desktop and below it on phones. Expand a contribution to see its saved panels, captions, contribution ID and parent scene. **Read this scene** opens that exact contribution. The timeline comes from the published chapter’s preserved record. **Chapter record** exposes its release ID and SHA-256 digest.
+
+## Visual creator review
+
+Open `/creator-demo`, also linked as **Creator review** from the shared world. Compare two prepared endings, including the example agent’s selected/discarded status and stated reasons. **Save feedback** attaches your note to the chosen ending without changing the creator bible.
+
+Choose **Turn a lesson into a bible revision**, edit the instructions and inspect the added/removed text, then **Save bible v2 → Prepare next brief**. The original example keeps its bible v1 reference; the new brief retains the exact saved v2 instructions and feedback. **What happened** gives a compact visual history. Feedback, bible versions and briefs persist in this browser. The activity is fictional and prepared; no autonomous agent, external generation, automatic learning or social-platform publication is connected.

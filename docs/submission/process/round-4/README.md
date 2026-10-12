@@ -2,7 +2,7 @@
 
 These **14 selected static concepts** compare Fork Night's baseline, eight named variations and the combined **Made by the Room** direction. This is the Round 4 gallery from the early exploration stage, preserved here as part of [the project's development process](../../PROCESS.md).
 
-All depicted people, artwork, event photography, prices, counts and receipts are generated illustrative material. The scenes do not document the boat demo. The economic arrangements shown here were proposals at this stage.
+All depicted people, artwork, event photography, prices, counts and receipts are generated illustrative material. The scenes do not document the boat demo. The economic arrangements shown here were proposals at this stage; the implemented hackathon contract uses the explicitly disclosed [equal-wallet release policy](../../ONCHAIN.md).
 
 ## Compare the directions
 
@@ -109,4 +109,4 @@ The concept joins drawing, public continuations, personal thanks and a small mak
 
 The images are lossless WebP copies at their original dimensions. Their decoded pixels match the selected PNG revisions. [The selection record](selection.json) lists dimensions, revision numbers and source/output hashes without local machine paths.
 
-The financial examples use illustrative rounded amounts. Some generated text has minor imperfections; these screens document product exploration.
+The financial examples in the images use illustrative rounded amounts. Some generated text has minor imperfections, and the screens are not a functional specification. For current behavior, read [the project](../../PROJECT.md); for the actual payment rule and testnet evidence, read [the onchain guide](../../ONCHAIN.md). Image attribution is recorded in [Artwork](../../ARTWORK.md).

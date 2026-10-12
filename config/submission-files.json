@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "files": [
+    ".env.example",
+    ".gitignore",
+    ".vercelignore",
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "package-lock.json",
+    "next.config.ts",
+    "vercel.json",
+    "trigger.config.ts",
+    "tsconfig.json",
+    "config/submission-files.json",
+    "config/waitlist-cloudflare/packages.json",
+    "config/waitlist-cloudflare/package-lock.json",
+    "config/waitlist-cloudflare/vite.config.ts",
+    "config/waitlist-cloudflare/wrangler.jsonc",
+    "config/waitlist-cloudflare/waitlist-settings.ts",
+    "config/waitlist-cloudflare/bindings.d.ts",
+    "docs/submission/PROJECT.md",
+    "docs/submission/ARCHITECTURE.md",
+    "docs/submission/DEMO.md",
+    "docs/submission/ARTWORK.md",
+    "docs/submission/CLOUDFLARE.md",
+    "docs/submission/HOSTING.md",
+    "public/art/midnight-story.webp",
+    "public/art/social-worlds.webp",
+    "public/art/social-people.webp",
+    "public/art/night-city-anime.webp",
+    "public/art/malfoid-watercolor.webp",
+    "public/art/malfoy-anime.webp",
+    "public/art/malfoy-film.webp",
+    "public/art/blade-runner-cinema.webp",
+    "public/fonts/inter-latin.woff2",
+    "public/fonts/OFL.txt",
+    "public/world-demo/ash.webp",
+    "public/world-demo/after-hours-kling-demo.mp4",
+    "public/world-demo/after-hours-kling-poster.webp",
+    "public/world-demo/after-hours-kling-captions.vtt",
+    "public/world-demo/guild.webp",
+    "public/world-demo/hero-4db281ac3107715bcf6837b49e7bfe5d10605f96ea7c5fc4c845c446dba1577e.webp",
+    "public/world-demo/invitation-hero.webp",
+    "public/world-demo/nika.webp",
+    "public/world-demo/outcome-793decfde65591fd484505487052ac235ab1fd3819f30802ec48890ef0a9e6f0.webp",
+    "public/world-demo/sol.webp",
+    "public/world-demo/source-ledger-9ddfab2e7a76cfb0c7cf9f8659a5ccba6d68042db7502b0fece1d35becabfbe5.webp",
+    "public/world-demo/source-writing-ff200a90ef07ad57eb703217fbbb41d27e3700745488b9a53ac80b271b1a2292.webp",
+    "public/creator-demo/reunion.webp",
+    "public/creator-demo/neighborhood.webp",
+    "hardhat.config.ts",
+    "contracts/README.md",
+    "docs/submission/ONCHAIN.md",
+    "docs/submission/MONAD-TESTNET.json",
+    "docs/submission/PROCESS.md",
+    "docs/submission/BOAT-DEMO.md",
+    "docs/submission/process/round-4/README.md",
+    "docs/submission/process/round-4/selection.json",
+    "docs/submission/process/round-4/01-baseline-public-story-wall.webp",
+    "docs/submission/process/round-4/02-baseline-hold-and-generation-cap.webp",
+    "docs/submission/process/round-4/03-baseline-preview-publish-or-discard.webp",
+    "docs/submission/process/round-4/04-hand-made-forks-paper-to-panel.webp",
+    "docs/submission/process/round-4/05-hand-made-forks-maker-sets-price.webp",
+    "docs/submission/process/round-4/06-built-on-you-public-thank-you.webp",
+    "docs/submission/process/round-4/07-built-on-you-room-credits.webp",
+    "docs/submission/process/round-4/08-canon-call-door-pass-vote.webp",
+    "docs/submission/process/round-4/09-heaviest-path-most-built-on.webp",
+    "docs/submission/process/round-4/10-matched-night-sponsor-pool.webp",
+    "docs/submission/process/round-4/11-guest-artists-priced-art-shelf.webp",
+    "docs/submission/process/round-4/12-crossroads-fund-and-generate-live.webp",
+    "docs/submission/process/round-4/13-open-feeds-curator-ranking-and-fee.webp",
+    "docs/submission/process/round-4/14-made-by-the-room-combined.webp"
+  ],
+  "directories": [
+    {
+      "path": "src",
+      "extensions": [
+        ".ts",
+        ".tsx",
+        ".css"
+      ]
+    },
+    {
+      "path": "tests",
+      "extensions": [
+        ".ts",
+        ".mjs"
+      ]
+    },
+    {
+      "path": "scripts",
+      "extensions": [
+        ".ts",
+        ".mjs"
+      ]
+    },
+    {
+      "path": "fixtures",
+      "extensions": [
+        ".json"
+      ]
+    },
+    {
+      "path": "supabase",
+      "extensions": [
+        ".toml",
+        ".sql"
+      ]
+    },
+    {
+      "path": "contracts",
+      "extensions": [
+        ".sol"
+      ]
+    }
+  ]
+}

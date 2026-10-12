@@ -15,4 +15,22 @@ The first four rounds compared different ways people, creative agents and commun
 | 3 | Examined smaller social interactions: coordinating an evening, visiting a friend's site, borrowing experience and making trusted introductions. | 10 mocks |
 | 4 | Focused on Fork Night: shared story creation, handmade contributions, attribution, discovery, funding and alternative reward arrangements. | [14 selected mocks](process/round-4/README.md) |
 
-The selected Round 4 gallery compares the baseline, eight named variations and the combined Made by the Room direction. Its people, prices, receipts and event photography are generated illustrative content.
+The Round 4 gallery is the selected public exploration artifact. Its baseline, eight named variations and combined **Made by the Room** direction show the breadth of ideas considered before implementation. Prices, voting rules and sponsorship in those images describe that exploration stage. The current release policy is documented separately in [the onchain guide](ONCHAIN.md).
+
+## Product design and implementation
+
+Once Fork Night became the active direction, the work shifted toward a persistent creative space: finding a room, reading a branch, choosing where to continue, reviewing a private draft and publishing with visible authorship. Comparing tree orientations led to the upward story map. Subsequent design iterations developed the illustrated lobby, guild spaces, private idea boards and personal desk.
+
+The shared pilot then connected named guest sessions, saved ideas, reference-conditioned generation and publication through Supabase and Trigger.dev. These are implemented flows; some surrounding social spaces remain local-preview features. [Project](PROJECT.md), [architecture](ARCHITECTURE.md) and [demo instructions](DEMO.md) describe the current boundaries.
+
+## Demonstration and feedback
+
+The boat demo introduced the project to people outside the development process. Their reported interest in collaborative spaces, shared inference pools and visible generative-content history informed follow-up exploration. The [boat-demo write-up](BOAT-DEMO.md) keeps the founder's recollection separate from product interpretation.
+
+After the demo, work included storyboard review and a companion for comparing a fictional AI creator's alternatives and recording human guidance. The creator companion uses prepared examples and browser-local feedback. Autonomous influencer pipelines remain a future application to investigate.
+
+## Verifiable economic mechanism
+
+The hackathon implementation now includes a Monad testnet release contract. For the demo's collaborating group, the disclosed policy gives each distinct registered wallet an equal share of a frozen release's payments. A founder-operated rehearsal registered four scenes, froze a release, received **1.0 test MON** and completed two separate **0.5 test MON** claims with zero remaining liability.
+
+That rehearsal establishes a working registration, payment and claim mechanism. The [testnet proof](ONCHAIN.md) records its scope, contract verification and equal-wallet rule. Public-project sustainability arrangements, guild licensing and other professional or private-group agreements remain distinct future economic policies.

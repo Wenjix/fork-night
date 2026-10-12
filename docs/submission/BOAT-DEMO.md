@@ -22,6 +22,6 @@ The central product remains collaborative creation with visible contribution his
 
 Follow-up work explored storyboard review and a creator companion showing prepared alternatives, selections and human guidance. The implemented companion is a local demonstration with fictional personas. It does not operate an autonomous influencer pipeline or publish to external social platforms.
 
-The shared pilot separately supports real guest contributions, generation and publication.
+The shared pilot separately supports real guest contributions, generation and publication. A founder-operated Monad testnet rehearsal subsequently established a working payment-and-claim mechanism. Those implementation results are described in [the project guide](PROJECT.md) and [the onchain proof](ONCHAIN.md).
 
 The next feedback exercise is to have a small group use the hosted pilot and observe where they join, contribute, continue another person's work and return. That would provide stronger evidence than interest expressed during a demonstration. A photo from the actual boat event can accompany this record when supplied; the event scenes in the [Round 4 gallery](process/round-4/README.md) are generated concept imagery.

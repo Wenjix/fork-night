@@ -90,3 +90,5 @@ With a record, the command reconstructs the ordered scene commitments and releas
 The [contract](../../contracts/ForkNightReleases.sol) exposes `claimable(releaseId, beneficiary)` and `claim(releaseId, beneficiary)`. A recipient can use its verified explorer interface or another compatible client without the Fork Night application. Anyone can trigger a claim, but its destination remains the frozen beneficiary. No caller-supplied list can omit an ancestor from a release.
 
 The pilot uses one parent per moment and provisional equal wallet shares. Wallets do not prove unique humans, and the contract does not verify artistic value, lawful reuse, marketplace demand or whether a scene truly uses its declared parent. External media availability and curator byline admission remain application/community responsibilities. Generation funding, testnet payouts and future stable-asset balances are separate mechanisms. Token conversion, budget voting and mainnet payments are not implemented by this slice.
+
+[Project](PROJECT.md) · [Architecture](ARCHITECTURE.md) · [Demo](DEMO.md)
