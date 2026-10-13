@@ -83,6 +83,8 @@ export interface AncestorFee {
   amount: Amount;
 }
 
+export type DemoPricingVersion = "fixture-price-v1" | "fixture-price-v2";
+
 export interface ForkQuote {
   id: string;
   userId: string;
@@ -99,7 +101,7 @@ export interface ForkQuote {
   issuedAt: number;
   expiresAt: number;
   termsVersion: string;
-  pricingVersion: "fixture-price-v1";
+  pricingVersion: DemoPricingVersion;
 }
 
 export interface Candidate {

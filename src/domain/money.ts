@@ -46,12 +46,12 @@ export function parseCredits(value: string): Amount {
   return Number(units);
 }
 
-/** At least two decimal places, preserving any nonzero microcredit remainder. */
+/** Whole credits without trailing decimals; exact fractional receipts stay visible. */
 export function formatCredits(value: Amount): string {
   assertAmount(value);
   const whole = Math.floor(value / DEMO_UNIT);
   const fraction = String(value % DEMO_UNIT)
     .padStart(6, "0")
     .replace(/0+$/, "");
-  return `${whole.toLocaleString("en-US")}.${fraction.padEnd(2, "0")}`;
+  return `${whole.toLocaleString("en-US")}${fraction ? `.${fraction}` : ""}`;
 }

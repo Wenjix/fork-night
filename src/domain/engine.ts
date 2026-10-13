@@ -1,4 +1,5 @@
 import { addAmounts, assertAmount, subtractAmount } from "./money.ts";
+import { CURRENT_DEMO_PRICING, demoGenerationPricing, demoReuseFee } from "./pricing.ts";
 import { preparedFandomContinuation } from "../lib/fandom-stories.ts";
 import type {
   Amount,
@@ -18,8 +19,7 @@ export const DEMO_LIMITS = {
   maxAncestors: 32,
   maxPromptLength: 600,
   quoteLifetimeMs: 5 * 60_000,
-  generationMax: 180_000,
-  generationActual: 120_000,
+  ...demoGenerationPricing(CURRENT_DEMO_PRICING),
 } as const;
 
 function userExists(state: DemoState, userId: string): void {
@@ -185,12 +185,11 @@ export function getQuote(state: DemoState, input: QuoteInput): ForkQuote {
       ? []
       : path.map((moment) => {
           userExists(state, moment.beneficiaryId);
-          assertAmount(moment.reuseFee, "Published reuse fee");
           return {
             momentId: moment.id,
             version: moment.version,
             beneficiaryId: moment.beneficiaryId,
-            amount: moment.reuseFee,
+            amount: demoReuseFee(moment),
           };
         });
   const upstreamTotal = addAmounts(...ancestorFees.map((item) => item.amount));
@@ -209,7 +208,7 @@ export function getQuote(state: DemoState, input: QuoteInput): ForkQuote {
     issuedAt,
     expiresAt: issuedAt + DEMO_LIMITS.quoteLifetimeMs,
     termsVersion: project.termsVersion,
-    pricingVersion: "fixture-price-v1" as const,
+    pricingVersion: CURRENT_DEMO_PRICING,
   };
   return { id: `q-${input.userId}-${issuedAt}-${fixtureId(terms)}`, ...terms };
 }
@@ -330,8 +329,9 @@ export function deliverFork(state: DemoState, operationId: string): DemoState {
   const parent = next.moments.find(
     (moment) => moment.id === operation.quote.parentId,
   )!;
+  const { generationActual } = demoGenerationPricing(operation.quote.pricingVersion);
   updated.status = "delivered";
-  updated.generationActual = DEMO_LIMITS.generationActual;
+  updated.generationActual = generationActual;
   const prepared = preparedFandomContinuation(operation.quote.projectId, parent);
   updated.candidate = {
     title: prepared?.title ?? "The story finds another way",
@@ -351,8 +351,8 @@ export function deliverFork(state: DemoState, operationId: string): DemoState {
       : `${parent.storyContext} The collaborators imagined a new path above the water.`,
     provider: "deterministic-fixture",
     receiptId: `fixture-receipt-${operationId}`,
-    generationActual: DEMO_LIMITS.generationActual,
-    eligibleReuseBasis: DEMO_LIMITS.generationActual,
+    generationActual,
+    eligibleReuseBasis: generationActual,
   };
   return next;
 }

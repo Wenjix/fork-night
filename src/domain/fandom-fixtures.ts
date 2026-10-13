@@ -1,5 +1,6 @@
 import { ARCHIVED_FANDOM_STORIES, FANDOM_STORIES } from "../lib/fandom-stories.ts";
 import { validateDemoState } from "./validation.ts";
+import { DEMO_UNIT } from "./money.ts";
 import type { DemoState, Moment } from "./types.ts";
 
 /** Add complete examples to fresh/restored saves without rewriting a user's existing story. */
@@ -36,7 +37,7 @@ export function extendFandomDemo(state: DemoState): DemoState {
         panels,
         storyContext: panels.map(panel => panel.caption).join(" "),
         version: 1,
-        reuseFee: 30_000,
+        reuseFee: DEMO_UNIT,
         termsVersion: "open-finished-work-v1",
         publishedAt: startedAt + index * 60_000,
         source: "fixture",

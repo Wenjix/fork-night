@@ -1,5 +1,6 @@
 import { assertLedgerConservation, DEMO_LIMITS, getPath } from "./engine.ts";
 import { addAmounts } from "./money.ts";
+import { demoGenerationPricing, demoReuseFee } from "./pricing.ts";
 import type { DemoState } from "./types.ts";
 import { isApprovedArtUrl, isStoryArtUrl } from "../lib/art.ts";
 
@@ -139,7 +140,7 @@ const quote = shape({
   issuedAt: time,
   expiresAt: time,
   termsVersion: id,
-  pricingVersion: choice("fixture-price-v1"),
+  pricingVersion: choice("fixture-price-v1", "fixture-price-v2"),
 });
 const candidate = shape({
   title: text(300),
@@ -484,7 +485,7 @@ export function validateDemoState(value: unknown): asserts value is DemoState {
             fee.momentId === item.id &&
             fee.version === item.version &&
             fee.beneficiaryId === item.beneficiaryId &&
-            fee.amount === item.reuseFee
+            fee.amount === demoReuseFee(item, quote.pricingVersion)
           );
         }),
       `operation ${operation.id} complete fees`,
@@ -492,7 +493,7 @@ export function validateDemoState(value: unknown): asserts value is DemoState {
     ensure(
       quote.upstreamTotal ===
         addAmounts(...quote.ancestorFees.map((fee) => fee.amount)) &&
-        quote.generationMax === DEMO_LIMITS.generationMax &&
+        quote.generationMax === demoGenerationPricing(quote.pricingVersion).generationMax &&
         quote.totalMax === addAmounts(quote.upstreamTotal, quote.generationMax),
       `operation ${operation.id} quote amounts`,
     );
@@ -512,7 +513,7 @@ export function validateDemoState(value: unknown): asserts value is DemoState {
       ensure(
         candidate &&
           candidate.receiptId === `fixture-receipt-${operation.id}` &&
-          candidate.generationActual === DEMO_LIMITS.generationActual &&
+          candidate.generationActual === demoGenerationPricing(quote.pricingVersion).generationActual &&
           operation.generationActual === candidate.generationActual &&
           candidate.eligibleReuseBasis === candidate.generationActual &&
           candidate.panels.every((panel) => isApprovedArtUrl(panel.imageUrl)) &&

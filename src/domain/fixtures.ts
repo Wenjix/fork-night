@@ -59,7 +59,7 @@ export function createDemoState(): DemoState {
           "Mira found a note beneath the lamp: someone out there was waiting.",
         ),
       ],
-      40_000,
+      DEMO_UNIT,
       0,
     ),
     moment(
@@ -74,7 +74,7 @@ export function createDemoState(): DemoState {
         ),
         panel("sea", "Beneath the black water, a small blue light answered."),
       ],
-      60_000,
+      DEMO_UNIT,
       1,
     ),
     moment(
@@ -89,7 +89,7 @@ export function createDemoState(): DemoState {
         ),
         panel("harbor", "At its foot stood a harbor no map had ever named."),
       ],
-      50_000,
+      DEMO_UNIT,
       2,
     ),
     moment(
@@ -107,7 +107,7 @@ export function createDemoState(): DemoState {
           "It was a letter from the keeper who had disappeared last winter.",
         ),
       ],
-      70_000,
+      DEMO_UNIT,
       3,
     ),
     moment(
@@ -122,7 +122,7 @@ export function createDemoState(): DemoState {
         ),
         panel("sea", "A hundred tiny boats rose from the harbor to follow it."),
       ],
-      60_000,
+      DEMO_UNIT,
       4,
     ),
     moment(
@@ -140,7 +140,7 @@ export function createDemoState(): DemoState {
           "Together they climbed toward the lighthouse, bringing the morning with them.",
         ),
       ],
-      80_000,
+      DEMO_UNIT,
       5,
     ),
   ];
@@ -161,7 +161,7 @@ export function createDemoState(): DemoState {
           "Every window below it showed a different possible tomorrow.",
         ),
       ],
-      30_000,
+      DEMO_UNIT,
       0,
     ),
     projectId: "paper-moon",

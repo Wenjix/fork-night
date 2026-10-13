@@ -181,7 +181,7 @@ export function extendSocialDemo(demo: DemoState): DemoState {
         { imageUrl: item.artwork, caption: item.captions[1] },
       ],
       storyContext: item.captions.join(" "),
-      reuseFee: 30_000,
+      reuseFee: DEMO_UNIT,
       beneficiaryId: item.creatorId,
       termsVersion: "open-finished-work-v1",
       publishedAt: startedAt,

@@ -1,0 +1,628 @@
+{
+  "state": {
+    "version": 1,
+    "users": [
+      {
+        "id": "sam",
+        "name": "Sam",
+        "initials": "S",
+        "color": "#e5ac66"
+      },
+      {
+        "id": "priya",
+        "name": "Priya",
+        "initials": "P",
+        "color": "#bfaae8"
+      },
+      {
+        "id": "jules",
+        "name": "Jules",
+        "initials": "J",
+        "color": "#79c5b9"
+      }
+    ],
+    "projects": [
+      {
+        "id": "midnight-signal",
+        "title": "The midnight signal",
+        "description": "A lighthouse. A missing keeper. A story we make together.",
+        "visibility": "open",
+        "groupId": null,
+        "creatorId": "sam",
+        "seedId": "seed",
+        "termsVersion": "open-finished-work-v1",
+        "coverUrl": "/art/midnight-story.webp#frame=0"
+      },
+      {
+        "id": "paper-moon",
+        "title": "Paper moon",
+        "description": "Another world, the same personal balance.",
+        "visibility": "open",
+        "groupId": null,
+        "creatorId": "jules",
+        "seedId": "paper-seed",
+        "termsVersion": "open-finished-work-v1",
+        "coverUrl": "/art/midnight-story.webp#frame=3"
+      },
+      {
+        "id": "tidepool",
+        "title": "After hours",
+        "description": "An invite-only story for the Tidepool friends.",
+        "visibility": "private",
+        "groupId": "tidepool-friends",
+        "creatorId": "sam",
+        "seedId": "tidepool-seed",
+        "termsVersion": "friend-finished-work-v1",
+        "coverUrl": "/art/midnight-story.webp#frame=4"
+      }
+    ],
+    "groups": [
+      {
+        "id": "tidepool-friends",
+        "name": "Tidepool friends",
+        "adminId": "sam",
+        "termsVersion": "friend-finished-work-v1",
+        "cartridgeCapacity": 20000000
+      }
+    ],
+    "memberships": [
+      {
+        "groupId": "tidepool-friends",
+        "userId": "sam",
+        "role": "admin",
+        "status": "active",
+        "acceptedTermsVersion": "friend-finished-work-v1",
+        "canSpend": true,
+        "spendingLimit": 10000000,
+        "spent": 0
+      },
+      {
+        "groupId": "tidepool-friends",
+        "userId": "priya",
+        "role": "contributor",
+        "status": "active",
+        "acceptedTermsVersion": "friend-finished-work-v1",
+        "canSpend": true,
+        "spendingLimit": 2000000,
+        "spent": 0
+      },
+      {
+        "groupId": "tidepool-friends",
+        "userId": "jules",
+        "role": "contributor",
+        "status": "invited",
+        "acceptedTermsVersion": null,
+        "canSpend": true,
+        "spendingLimit": 2000000,
+        "spent": 0
+      }
+    ],
+    "moments": [
+      {
+        "id": "seed",
+        "projectId": "midnight-signal",
+        "parentId": null,
+        "version": 1,
+        "authorId": "sam",
+        "title": "The midnight signal",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=0",
+            "caption": "At midnight, the lighthouse blinked for the first time in years."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=1",
+            "caption": "Mira found a note beneath the lamp: someone out there was waiting."
+          }
+        ],
+        "storyContext": "At midnight, the lighthouse blinked for the first time in years. Mira found a note beneath the lamp: someone out there was waiting.",
+        "reuseFee": 40000,
+        "beneficiaryId": "sam",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1790704800000,
+        "source": "fixture"
+      },
+      {
+        "id": "signal",
+        "projectId": "midnight-signal",
+        "parentId": "seed",
+        "version": 1,
+        "authorId": "priya",
+        "title": "A light answers",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=1",
+            "caption": "Mira turned the lamp toward the sea. Three short flashes. One long."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=2",
+            "caption": "Beneath the black water, a small blue light answered."
+          }
+        ],
+        "storyContext": "Mira turned the lamp toward the sea. Three short flashes. One long. Beneath the black water, a small blue light answered.",
+        "reuseFee": 60000,
+        "beneficiaryId": "priya",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1790704860000,
+        "source": "fixture"
+      },
+      {
+        "id": "sea",
+        "projectId": "midnight-signal",
+        "parentId": "signal",
+        "version": 1,
+        "authorId": "jules",
+        "title": "Under the glass sea",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=2",
+            "caption": "The tide pulled back, revealing a staircase made of glass."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=4",
+            "caption": "At its foot stood a harbor no map had ever named."
+          }
+        ],
+        "storyContext": "The tide pulled back, revealing a staircase made of glass. At its foot stood a harbor no map had ever named.",
+        "reuseFee": 50000,
+        "beneficiaryId": "jules",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1790704920000,
+        "source": "fixture"
+      },
+      {
+        "id": "stars",
+        "projectId": "midnight-signal",
+        "parentId": "signal",
+        "version": 1,
+        "authorId": "sam",
+        "title": "The sky remembers",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=3",
+            "caption": "Mira raised the lamp. The stars rearranged into familiar handwriting."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=5",
+            "caption": "It was a letter from the keeper who had disappeared last winter."
+          }
+        ],
+        "storyContext": "Mira raised the lamp. The stars rearranged into familiar handwriting. It was a letter from the keeper who had disappeared last winter.",
+        "reuseFee": 70000,
+        "beneficiaryId": "sam",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1790704980000,
+        "source": "fixture"
+      },
+      {
+        "id": "harbor",
+        "projectId": "midnight-signal",
+        "parentId": "seed",
+        "version": 1,
+        "authorId": "priya",
+        "title": "Follow the paper boats",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=4",
+            "caption": "Instead of lighting the lamp, Mira folded the note into a paper boat."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=2",
+            "caption": "A hundred tiny boats rose from the harbor to follow it."
+          }
+        ],
+        "storyContext": "Instead of lighting the lamp, Mira folded the note into a paper boat. A hundred tiny boats rose from the harbor to follow it.",
+        "reuseFee": 60000,
+        "beneficiaryId": "priya",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1790705040000,
+        "source": "fixture"
+      },
+      {
+        "id": "reply",
+        "projectId": "midnight-signal",
+        "parentId": "sea",
+        "version": 1,
+        "authorId": "jules",
+        "title": "An answer comes home",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=5",
+            "caption": "In the hidden harbor, Mira met a child carrying the missing keeper's lantern."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=0",
+            "caption": "Together they climbed toward the lighthouse, bringing the morning with them."
+          }
+        ],
+        "storyContext": "In the hidden harbor, Mira met a child carrying the missing keeper's lantern. Together they climbed toward the lighthouse, bringing the morning with them.",
+        "reuseFee": 80000,
+        "beneficiaryId": "jules",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1790705100000,
+        "source": "fixture"
+      },
+      {
+        "id": "paper-seed",
+        "projectId": "paper-moon",
+        "parentId": null,
+        "version": 1,
+        "authorId": "jules",
+        "title": "A moon made of paper",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=3",
+            "caption": "Jules found a paper moon caught in the branches above the street."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=4",
+            "caption": "Every window below it showed a different possible tomorrow."
+          }
+        ],
+        "storyContext": "Jules found a paper moon caught in the branches above the street. Every window below it showed a different possible tomorrow.",
+        "reuseFee": 30000,
+        "beneficiaryId": "jules",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1790704800000,
+        "source": "fixture"
+      },
+      {
+        "id": "tidepool-seed",
+        "projectId": "tidepool",
+        "parentId": null,
+        "version": 1,
+        "authorId": "sam",
+        "title": "Our secret lighthouse",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=0",
+            "caption": "Three friends met by the lighthouse with one unfinished story."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=1",
+            "caption": "They agreed that every ending would leave room for another beginning."
+          }
+        ],
+        "storyContext": "Three friends met by the lighthouse with one unfinished story. They agreed that every ending would leave room for another beginning.",
+        "reuseFee": 0,
+        "beneficiaryId": "sam",
+        "termsVersion": "friend-finished-work-v1",
+        "publishedAt": 1790704800000,
+        "source": "fixture"
+      },
+      {
+        "id": "tidepool-lantern",
+        "projectId": "tidepool",
+        "parentId": "tidepool-seed",
+        "version": 1,
+        "authorId": "priya",
+        "title": "Pass the lantern",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=4",
+            "caption": "Priya passed Sam a lantern filled with all the colors they had forgotten."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=3",
+            "caption": "By its light, the path divided. The friends would meet again at sunrise."
+          }
+        ],
+        "storyContext": "Priya passed Sam a lantern filled with all the colors they had forgotten. By its light, the path divided. The friends would meet again at sunrise.",
+        "reuseFee": 0,
+        "beneficiaryId": "priya",
+        "termsVersion": "friend-finished-work-v1",
+        "publishedAt": 1790704860000,
+        "source": "fixture"
+      },
+      {
+        "id": "moment-op-q-priya-1791828000000-98f2e5bb",
+        "projectId": "midnight-signal",
+        "parentId": "sea",
+        "version": 1,
+        "authorId": "priya",
+        "title": "The story finds another way",
+        "panels": [
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=5",
+            "caption": "Mira held the lantern steady. The signal was changing."
+          },
+          {
+            "imageUrl": "/art/midnight-story.webp#frame=3",
+            "caption": "Above the water, a new path appeared—waiting for someone to take the next step."
+          }
+        ],
+        "storyContext": "The tide pulled back, revealing a staircase made of glass. At its foot stood a harbor no map had ever named. The collaborators imagined a new path above the water.",
+        "reuseFee": 120000,
+        "beneficiaryId": "priya",
+        "termsVersion": "open-finished-work-v1",
+        "publishedAt": 1791828000001,
+        "source": "demo-generation",
+        "builtOnThanks": "Thanks to the earlier makers."
+      }
+    ],
+    "accounts": [
+      {
+        "id": "personal-sam",
+        "kind": "personal",
+        "ownerId": "sam",
+        "groupId": null,
+        "available": 12500000,
+        "reserved": 0,
+        "spent": 0,
+        "deposited": 12500000,
+        "withdrawn": 0
+      },
+      {
+        "id": "personal-priya",
+        "kind": "personal",
+        "ownerId": "priya",
+        "groupId": null,
+        "available": 7070000,
+        "reserved": 660000,
+        "spent": 270000,
+        "deposited": 8000000,
+        "withdrawn": 0
+      },
+      {
+        "id": "personal-jules",
+        "kind": "personal",
+        "ownerId": "jules",
+        "groupId": null,
+        "available": 5000000,
+        "reserved": 0,
+        "spent": 0,
+        "deposited": 5000000,
+        "withdrawn": 0
+      },
+      {
+        "id": "pool-tidepool",
+        "kind": "group",
+        "ownerId": null,
+        "groupId": "tidepool-friends",
+        "available": 12000000,
+        "reserved": 0,
+        "spent": 8000000,
+        "deposited": 20000000,
+        "withdrawn": 0
+      }
+    ],
+    "operations": [
+      {
+        "id": "op-q-priya-1791828000000-98f2e5bb",
+        "quote": {
+          "id": "q-priya-1791828000000-98f2e5bb",
+          "userId": "priya",
+          "projectId": "midnight-signal",
+          "parentId": "sea",
+          "parentVersion": 1,
+          "fundingAccountId": "personal-priya",
+          "prompt": "Legacy published lantern continuation.",
+          "ancestorFees": [
+            {
+              "momentId": "seed",
+              "version": 1,
+              "beneficiaryId": "sam",
+              "amount": 40000
+            },
+            {
+              "momentId": "signal",
+              "version": 1,
+              "beneficiaryId": "priya",
+              "amount": 60000
+            },
+            {
+              "momentId": "sea",
+              "version": 1,
+              "beneficiaryId": "jules",
+              "amount": 50000
+            }
+          ],
+          "pathIds": [
+            "seed",
+            "signal",
+            "sea"
+          ],
+          "upstreamTotal": 150000,
+          "generationMax": 180000,
+          "totalMax": 330000,
+          "issuedAt": 1791828000000,
+          "expiresAt": 1791828300000,
+          "termsVersion": "open-finished-work-v1",
+          "pricingVersion": "fixture-price-v1"
+        },
+        "status": "published",
+        "generationActual": 120000,
+        "candidate": {
+          "title": "The story finds another way",
+          "panels": [
+            {
+              "imageUrl": "/art/midnight-story.webp#frame=5",
+              "caption": "Mira held the lantern steady. The signal was changing."
+            },
+            {
+              "imageUrl": "/art/midnight-story.webp#frame=3",
+              "caption": "Above the water, a new path appeared—waiting for someone to take the next step."
+            }
+          ],
+          "storyContext": "The tide pulled back, revealing a staircase made of glass. At its foot stood a harbor no map had ever named. The collaborators imagined a new path above the water.",
+          "provider": "deterministic-fixture",
+          "receiptId": "fixture-receipt-op-q-priya-1791828000000-98f2e5bb",
+          "generationActual": 120000,
+          "eligibleReuseBasis": 120000
+        },
+        "settledAmount": 270000,
+        "releasedAmount": 60000,
+        "settledAt": 1791828000001,
+        "publishedMomentId": "moment-op-q-priya-1791828000000-98f2e5bb"
+      },
+      {
+        "id": "op-q-priya-1791828001000-7d683135",
+        "quote": {
+          "id": "q-priya-1791828001000-7d683135",
+          "userId": "priya",
+          "projectId": "midnight-signal",
+          "parentId": "sea",
+          "parentVersion": 1,
+          "fundingAccountId": "personal-priya",
+          "prompt": "Legacy delivered lantern continuation.",
+          "ancestorFees": [
+            {
+              "momentId": "seed",
+              "version": 1,
+              "beneficiaryId": "sam",
+              "amount": 40000
+            },
+            {
+              "momentId": "signal",
+              "version": 1,
+              "beneficiaryId": "priya",
+              "amount": 60000
+            },
+            {
+              "momentId": "sea",
+              "version": 1,
+              "beneficiaryId": "jules",
+              "amount": 50000
+            }
+          ],
+          "pathIds": [
+            "seed",
+            "signal",
+            "sea"
+          ],
+          "upstreamTotal": 150000,
+          "generationMax": 180000,
+          "totalMax": 330000,
+          "issuedAt": 1791828001000,
+          "expiresAt": 1791828301000,
+          "termsVersion": "open-finished-work-v1",
+          "pricingVersion": "fixture-price-v1"
+        },
+        "status": "delivered",
+        "generationActual": 120000,
+        "candidate": {
+          "title": "The story finds another way",
+          "panels": [
+            {
+              "imageUrl": "/art/midnight-story.webp#frame=5",
+              "caption": "Mira held the lantern steady. The signal was changing."
+            },
+            {
+              "imageUrl": "/art/midnight-story.webp#frame=3",
+              "caption": "Above the water, a new path appeared—waiting for someone to take the next step."
+            }
+          ],
+          "storyContext": "The tide pulled back, revealing a staircase made of glass. At its foot stood a harbor no map had ever named. The collaborators imagined a new path above the water.",
+          "provider": "deterministic-fixture",
+          "receiptId": "fixture-receipt-op-q-priya-1791828001000-7d683135",
+          "generationActual": 120000,
+          "eligibleReuseBasis": 120000
+        }
+      },
+      {
+        "id": "op-q-priya-1791828002000-c3587b77",
+        "quote": {
+          "id": "q-priya-1791828002000-c3587b77",
+          "userId": "priya",
+          "projectId": "midnight-signal",
+          "parentId": "sea",
+          "parentVersion": 1,
+          "fundingAccountId": "personal-priya",
+          "prompt": "Legacy reserved lantern continuation.",
+          "ancestorFees": [
+            {
+              "momentId": "seed",
+              "version": 1,
+              "beneficiaryId": "sam",
+              "amount": 40000
+            },
+            {
+              "momentId": "signal",
+              "version": 1,
+              "beneficiaryId": "priya",
+              "amount": 60000
+            },
+            {
+              "momentId": "sea",
+              "version": 1,
+              "beneficiaryId": "jules",
+              "amount": 50000
+            }
+          ],
+          "pathIds": [
+            "seed",
+            "signal",
+            "sea"
+          ],
+          "upstreamTotal": 150000,
+          "generationMax": 180000,
+          "totalMax": 330000,
+          "issuedAt": 1791828002000,
+          "expiresAt": 1791828302000,
+          "termsVersion": "open-finished-work-v1",
+          "pricingVersion": "fixture-price-v1"
+        },
+        "status": "reserved"
+      }
+    ],
+    "ledger": [
+      {
+        "id": "opening-pool",
+        "kind": "opening",
+        "accountId": "pool-tidepool",
+        "userId": "sam",
+        "amount": 8000000,
+        "description": "Illustrative past group generation; no real provider expense."
+      },
+      {
+        "id": "reserve-q-priya-1791828000000-98f2e5bb",
+        "kind": "reservation",
+        "accountId": "personal-priya",
+        "userId": "priya",
+        "operationId": "op-q-priya-1791828000000-98f2e5bb",
+        "amount": 330000,
+        "description": "Demo hold confirmed; no provider call or blockchain transaction."
+      },
+      {
+        "id": "settle-op-q-priya-1791828000000-98f2e5bb",
+        "kind": "publication",
+        "accountId": "personal-priya",
+        "userId": "priya",
+        "operationId": "op-q-priya-1791828000000-98f2e5bb",
+        "amount": 270000,
+        "releasedAmount": 60000,
+        "description": "Simulated publication: generation and agreed ancestor credits settled once."
+      },
+      {
+        "id": "reserve-q-priya-1791828001000-7d683135",
+        "kind": "reservation",
+        "accountId": "personal-priya",
+        "userId": "priya",
+        "operationId": "op-q-priya-1791828001000-7d683135",
+        "amount": 330000,
+        "description": "Demo hold confirmed; no provider call or blockchain transaction."
+      },
+      {
+        "id": "reserve-q-priya-1791828002000-c3587b77",
+        "kind": "reservation",
+        "accountId": "personal-priya",
+        "userId": "priya",
+        "operationId": "op-q-priya-1791828002000-c3587b77",
+        "amount": 330000,
+        "description": "Demo hold confirmed; no provider call or blockchain transaction."
+      }
+    ],
+    "claims": {
+      "sam": 40000,
+      "priya": 60000,
+      "jules": 50000
+    },
+    "generationSpent": 8120000
+  },
+  "userId": "priya",
+  "projectId": "midnight-signal",
+  "selectedId": "sea",
+  "draft": "Legacy reserved lantern continuation.",
+  "operationId": "op-q-priya-1791828002000-c3587b77",
+  "drafts": {}
+}

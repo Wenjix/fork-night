@@ -45,7 +45,9 @@ test("integer credit conversion preserves all six decimal places and rejects uns
   assert.equal(parseCredits("0.000001"), 1);
   assert.equal(parseCredits("1.005"), 1_005_000);
   assert.equal(formatCredits(1_005_000), "1.005");
-  assert.equal(formatCredits(DEMO_UNIT), "1.00");
+  assert.equal(formatCredits(DEMO_UNIT), "1");
+  assert.equal(formatCredits(0), "0");
+  assert.equal(formatCredits(1), "0.000001");
   for (const invalid of ["-1", "1.0000001", "NaN", "1e8", "9007199254.740992"])
     assert.throws(() => parseCredits(invalid));
 });
@@ -58,10 +60,10 @@ test("ancestor fees include the complete selected path, excluding siblings and d
     terms.ancestorFees.map((fee) => fee.beneficiaryId),
     ["sam", "priya", "jules"],
   );
-  assert.equal(terms.upstreamTotal, 150_000);
-  assert.equal(terms.totalMax, 330_000);
-  assert.equal(quote(state, { parentId: "seed" }).totalMax, 220_000);
-  assert.equal(quote(state, { parentId: "reply" }).upstreamTotal, 230_000);
+  assert.equal(terms.upstreamTotal, 3 * DEMO_UNIT);
+  assert.equal(terms.totalMax, 4 * DEMO_UNIT);
+  assert.equal(quote(state, { parentId: "seed" }).totalMax, 2 * DEMO_UNIT);
+  assert.equal(quote(state, { parentId: "reply" }).upstreamTotal, 4 * DEMO_UNIT);
   assertLedgerConservation(state);
 });
 
@@ -125,7 +127,7 @@ test("reservation and expiry require fresh bounded authorization, not just a bal
 
 test("one personal balance funds two open projects and concurrent quotes cannot overspend", () => {
   let state = createDemoState();
-  state = withdraw(state, { userId: "priya", amount: 7_600_000 });
+  state = withdraw(state, { userId: "priya", amount: 3 * DEMO_UNIT });
   assert.equal(
     getFundingAccount(state, "priya", "midnight-signal").id,
     getFundingAccount(state, "priya", "paper-moon").id,
@@ -138,10 +140,10 @@ test("one personal balance funds two open projects and concurrent quotes cannot 
   state = reserve(state, first);
   assert.throws(() => reserve(state, second), /Add demo credits/);
   assert.throws(
-    () => withdraw(state, { userId: "priya", amount: 400_000 }),
+    () => withdraw(state, { userId: "priya", amount: 2 * DEMO_UNIT }),
     /Active holds/,
   );
-  state = withdraw(state, { userId: "priya", amount: 70_000 });
+  state = withdraw(state, { userId: "priya", amount: DEMO_UNIT });
   assert.equal(getFundingAccount(state, "priya", "paper-moon").available, 0);
   assert.equal(
     getFundingAccount(state, "sam", "paper-moon").available,
@@ -150,7 +152,7 @@ test("one personal balance funds two open projects and concurrent quotes cannot 
   assertLedgerConservation(state);
 });
 
-test("publication settles and credits once, releases unused capacity, and preserves published versions", () => {
+test("publication settles whole credits once and preserves published versions", () => {
   const before = createDemoState();
   const beforeJson = JSON.stringify(before);
   const terms = quote(before);
@@ -166,12 +168,12 @@ test("publication settles and credits once, releases unused capacity, and preser
   assert.equal(JSON.stringify(before), beforeJson);
   const operation = getOperation(state, id);
   assert.equal(operation.status, "published");
-  assert.equal(operation.settledAmount, 270_000);
-  assert.equal(operation.releasedAmount, 60_000);
-  assert.deepEqual(state.claims, { sam: 40_000, priya: 60_000, jules: 50_000 });
+  assert.equal(operation.settledAmount, 4 * DEMO_UNIT);
+  assert.equal(operation.releasedAmount, 0);
+  assert.deepEqual(state.claims, { sam: DEMO_UNIT, priya: DEMO_UNIT, jules: DEMO_UNIT });
   assert.equal(
     getFundingAccount(state, "priya", "midnight-signal").available,
-    7_730_000,
+    4 * DEMO_UNIT,
   );
   const moment = state.moments.find(
     (item) => item.id === operation.publishedMomentId,
@@ -197,11 +199,11 @@ test("discard bills valid generation only, restores ancestor holds, and cannot l
   assert.throws(() => discardFork(state, id), /delivered candidate/); // No invented pre-delivery failure/refund policy.
   state = deliverFork(state, id);
   state = discardFork(state, id, { now: now + 1_000 });
-  assert.equal(getOperation(state, id).settledAmount, 120_000);
-  assert.equal(getOperation(state, id).releasedAmount, 210_000);
+  assert.equal(getOperation(state, id).settledAmount, DEMO_UNIT);
+  assert.equal(getOperation(state, id).releasedAmount, 3 * DEMO_UNIT);
   assert.equal(
     getFundingAccount(state, "priya", "midnight-signal").available,
-    7_880_000,
+    7 * DEMO_UNIT,
   );
   assert.deepEqual(state.claims, { sam: 0, priya: 0, jules: 0 });
   assert.strictEqual(discardFork(state, id), state);
@@ -302,12 +304,12 @@ test("group top-ups buy neither permissions nor allowance, and empty pools never
   assertLedgerConservation(state);
 });
 
-test("group allowance counts active holds and releases only unused capacity after discard", () => {
+test("group allowance counts active holds and complete generation even after discard", () => {
   let state = setMemberLimit(createDemoState(), {
     actorId: "sam",
     groupId: "tidepool-friends",
     userId: "priya",
-    limit: 300_000,
+    limit: DEMO_UNIT,
   });
   const first = quote(state, {
     projectId: "tidepool",
@@ -325,19 +327,26 @@ test("group allowance counts active holds and releases only unused capacity afte
         actorId: "sam",
         groupId: "tidepool-friends",
         userId: "priya",
-        limit: 100_000,
+        limit: 0,
       }),
     /commitments/,
   );
   state = discardFork(deliverFork(state, `op-${first.id}`), `op-${first.id}`, {
     now,
   });
+  assert.throws(() => reserve(state, second), /allowance/);
+  state = setMemberLimit(state, {
+    actorId: "sam",
+    groupId: "tidepool-friends",
+    userId: "priya",
+    limit: 2 * DEMO_UNIT,
+  });
   state = reserve(state, second);
   assert.equal(
     state.memberships.find((item) => item.userId === "priya")!.spent,
-    120_000,
+    DEMO_UNIT,
   );
-  assert.equal(getFundingAccount(state, "priya", "tidepool").reserved, 180_000);
+  assert.equal(getFundingAccount(state, "priya", "tidepool").reserved, DEMO_UNIT);
   assertLedgerConservation(state);
 });
 
