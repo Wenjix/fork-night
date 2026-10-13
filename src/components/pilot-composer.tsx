@@ -431,6 +431,7 @@ export function PilotComposer({
           </div>
           <div
             className="pilot-play-angles"
+            role="group"
             aria-label="Optional writing prompts"
           >
             <span>Try another angle</span>

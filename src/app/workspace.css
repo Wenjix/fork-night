@@ -5,10 +5,11 @@
 .map-description {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 8px 20px;
   padding: 0 25px;
-  font-size: 10px;
+  font-size: 13px;
   color: var(--muted);
+  flex-wrap: wrap;
 }
 .map-description > span:first-child {
   display: inline-flex;
@@ -70,22 +71,25 @@
   padding: 8px 9px;
 }
 .moment-card strong {
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 14px;
+  font-weight: 650;
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: -0.01em;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1.25;
 }
 .moment-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 3px;
-  margin-top: 7px;
-  font-size: 9px;
+  margin-top: 3px;
+  font-size: 11px;
   color: var(--muted);
+  line-height: 1.25;
 }
 .moment-meta .author-inline {
   gap: 5px;
@@ -97,13 +101,13 @@
   font-variant-numeric: tabular-nums;
 }
 .fee-label {
-  font-size: 8px;
+  font-size: 10px;
   color: var(--muted);
   font-weight: 450;
 }
 .seed-label {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--violet);
   background: var(--violet-soft);
@@ -122,11 +126,11 @@
 }
 .map-controls > span {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 13px;
   color: var(--muted);
 }
 .map-controls .text-button {
-  font-size: 11px;
+  font-size: 14px;
 }
 .story-reader {
   max-width: 850px;
@@ -142,11 +146,11 @@
   color: var(--violet);
 }
 .reader-intro p {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
 }
 .reader-intro p span {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   font-weight: 450;
 }
@@ -161,16 +165,16 @@
   margin-bottom: 20px;
 }
 .reader-title h2 {
-  font-size: 23px;
+  font-size: 26px;
   line-height: 1.25;
 }
 .reader-title p {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   margin-top: 5px;
 }
 .sequence-number {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--violet);
   border: 1px solid #cbbbeb;
   border-radius: 6px;
@@ -185,7 +189,7 @@
 }
 .thank-you {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
   font-style: italic;
   margin-top: 15px;
 }
@@ -219,7 +223,7 @@
   }
   .mobile-children > p {
     text-align: center;
-    font-size: 11px;
+    font-size: 15px;
     margin-bottom: 14px;
   }
   .mobile-children > div {
@@ -244,7 +248,7 @@
     height: 99px;
   }
   .mobile-selected .moment-card strong {
-    font-size: 12px;
+    font-size: 14px;
   }
   .mobile-path-arrow {
     color: var(--violet);
@@ -253,7 +257,7 @@
   .selection-label {
     display: block;
     text-align: center;
-    font-size: 10px;
+    font-size: 13px;
     color: var(--violet);
     margin-top: 12px;
   }
@@ -272,13 +276,13 @@
   }
   .earlier-moment span {
     display: block;
-    font-size: 10px;
+    font-size: 13px;
     text-align: left;
     color: var(--muted);
   }
   .earlier-moment strong {
     display: block;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--ink);
   }
   .map-controls {
@@ -287,13 +291,13 @@
   }
   .map-controls > span {
     display: block;
-    font-size: 9px;
+    font-size: 12px;
   }
   .story-reader {
     padding: 25px 22px 35px;
   }
   .reader-title h2 {
-    font-size: 22px;
+    font-size: 26px;
   }
   .story-reader .panel-pair {
     grid-template-columns: 1fr;

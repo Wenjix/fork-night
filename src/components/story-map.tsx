@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowUp, CornerUpRight, LocateFixed } from "lucide-react";
 import type { DemoState, Moment, Project } from "@/domain/types";
-import { formatCredits, getPath } from "@/domain";
+import { DEMO_UNIT, demoReuseFee, formatCredits, getPath } from "@/domain";
 import { layoutMoments } from "@/lib/map-layout";
 import { StoryArt } from "./story-art";
 import { useRef } from "react";
@@ -29,7 +29,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
       project.visibility === "private"
         ? 0
         : getPath(state, project.id, moment.id).reduce(
-            (total, item) => total + item.reuseFee,
+            (total, item) => total + demoReuseFee(item),
             0,
           );
     return (
@@ -38,13 +38,14 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
         className={`moment-card ${selected.id === moment.id ? "selected" : ""} ${compact ? "compact" : ""}`}
         onClick={() => onSelect(moment.id)}
         aria-pressed={selected.id === moment.id}
-        aria-label={`Select ${moment.title}, by ${author.name}`}
       >
-        <StoryArt
-          src={moment.panels[0].imageUrl}
-          description={moment.panels[0].caption}
-          className={project.id === "malfoy-hogwarts" ? "malfoy-map-art" : undefined}
-        />
+        <span aria-hidden="true" style={{ display: "block" }}>
+          <StoryArt
+            src={moment.panels[0].imageUrl}
+            description={moment.panels[0].caption}
+            className={project.id === "malfoy-hogwarts" ? "malfoy-map-art" : undefined}
+          />
+        </span>
         <span className="moment-card-body">
           <strong>{moment.title}</strong>
           <span className="moment-meta">
@@ -58,7 +59,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
               {author.name}
             </span>
             <span>
-              {formatCredits(fee)}{" "}
+              {formatCredits(fee)} {fee === DEMO_UNIT ? "credit" : "credits"}{" "}
               <span className="fee-label">to build on</span>
             </span>
           </span>
@@ -207,7 +208,9 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
               ?.scrollIntoView({
                 block: "nearest",
                 inline: "center",
-                behavior: "smooth",
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                  ? "instant"
+                  : "smooth",
               })
           }
         >

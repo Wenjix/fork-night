@@ -7,6 +7,7 @@ import type { Database, Tables } from "@/lib/supabase/database.types";
 import { isUuid, type PilotMoment } from "@/lib/pilot";
 
 import { IDEA_DRAG_TYPE } from "@/lib/pilot-composer";
+import { SectionPlate } from "./visual-plates";
 
 type Idea = Tables<"pilot_ideas">;
 type NoteDraft = { requestId: string; body: string; submitted?: boolean };
@@ -208,10 +209,13 @@ export function PilotIdeas({
       className={`pilot-ideas${notes.length ? " has-ideas" : ""}${expanded ? " is-expanded" : ""}`}
       aria-label={`Ideas for moment ${label}`}
     >
-      <h2>Ideas for {label}</h2>
-      <p className="pilot-ideas-intro">
-        A little spark for whoever comes next.
-      </p>
+      <SectionPlate
+        title={`Ideas for ${label}`}
+        description="A little spark for whoever comes next."
+        icon={Lightbulb}
+        tone="butter"
+        className="pilot-ideas-sign"
+      />
       {readError && (
         <div className="pilot-inline-notice" role="status">
           <p>{readError}</p>
@@ -293,6 +297,7 @@ export function PilotIdeas({
         ref={trigger}
         className="pilot-leave-idea"
         aria-label="Leave an idea for this moment"
+        aria-describedby={`${fieldId}-invite-hint`}
         hidden={editing}
         onClick={() => {
           setEditing(true);
@@ -307,7 +312,7 @@ export function PilotIdeas({
             for this moment
           </span>
         </strong>
-        <span>
+        <span id={`${fieldId}-invite-hint`}>
           {notes.length
             ? "A new twist, a question, or anything you’re curious about…"
             : "Be the first to leave a twist, a question, or a possibility."}

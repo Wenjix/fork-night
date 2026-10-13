@@ -10,9 +10,10 @@
   min-height: 100svh;
   color: #f8f6ff;
   background: var(--night);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.55;
   color-scheme: dark;
+  font-family: var(--font-interface), sans-serif;
 }
 .social-app * {
   box-sizing: border-box;
@@ -32,6 +33,8 @@
 .social-app button {
   color: inherit;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
 }
 .social-app button:disabled {
   cursor: default;
@@ -60,19 +63,20 @@
 .social-app h1,
 .social-app h2,
 .social-app h3 {
-  font-family: var(--hand);
+  font-family: var(--font-display), sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.2;
-  font-weight: 700;
+  font-weight: 650;
+  font-optical-sizing: auto;
 }
 .social-app h1 {
-  font-size: clamp(32px, 3.5vw, 51px);
+  font-size: clamp(36px, 3vw, 44px);
 }
 .social-app h2 {
-  font-size: 30px;
+  font-size: 28px;
 }
 .social-app h3 {
-  font-size: 24px;
+  font-size: 25px;
 }
 .social-app p {
   max-width: 70ch;
@@ -131,7 +135,7 @@
   align-items: center;
 }
 .social-header nav a {
-  font-weight: 650;
+  font-weight: 600;
   font-size: 15px;
   color: var(--night-muted);
   text-decoration: none;
@@ -159,6 +163,8 @@
   appearance: none;
   cursor: pointer;
   min-width: 48px;
+  font-size: 14px;
+  font-weight: 600;
 }
 .social-user select option {
   background: #181d3d;
@@ -173,7 +179,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  font-size: 10px;
+  font-size: 13px;
   color: var(--night-muted);
   padding: 5px 34px;
   background: #141a36;
@@ -185,7 +191,8 @@
   background: none;
   border: 0;
   padding: 5px;
-  font-size: 10px;
+  font-size: 13px;
+  min-height: 36px;
 }
 .social-help {
   padding: 24px 34px;
@@ -196,7 +203,7 @@
   color: #e2d9ed;
 }
 .social-help h2 {
-  font-size: 25px;
+  font-size: 26px;
 }
 .social-footer {
   display: flex;
@@ -208,7 +215,7 @@
   max-width: 1600px;
   margin: auto;
   border-top: 1px solid var(--night-line);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--night-muted);
 }
 .social-footer > span:first-child {
@@ -219,18 +226,18 @@
 .social-footer svg {
   color: var(--social-yellow);
 }
-.social-button {
+.social-app .social-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 43px;
-  padding: 10px 16px;
+  min-height: 44px;
+  padding: 11px 16px;
   border: 1px solid transparent;
   border-radius: 8px;
-  font-weight: 650;
-  font-size: 13px;
-  line-height: 1.35;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
   text-decoration: none;
   transition:
     background-color 0.15s ease,
@@ -261,17 +268,18 @@
 .social-button.outline:hover {
   background: #32355e;
 }
-.social-link {
+.social-app .social-link {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   border: 0;
   background: none;
   padding: 7px 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #d9c7ff !important;
   text-decoration: underline;
+  min-height: 44px;
 }
 .social-icon-button {
   background: transparent;
@@ -285,7 +293,7 @@
 }
 .social-fine {
   color: var(--night-muted);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.6;
 }
 .social-scene {
@@ -359,7 +367,7 @@
   padding: 16px 19px;
   border-radius: 12px;
   box-shadow: 0 10px 35px #06071760;
-  font-size: 13px;
+  font-size: 15px;
 }
 .social-toast > svg {
   color: #316747;
@@ -399,11 +407,9 @@
 @keyframes social-arrival {
   from {
     transform: translateY(5px);
-    filter: brightness(0.92);
   }
   to {
     transform: translateY(0);
-    filter: brightness(1);
   }
 }
 
@@ -421,7 +427,9 @@
   margin-bottom: 20px;
 }
 .lobby-heading h1 {
-  font-size: clamp(29px, 2.7vw, 42px);
+  min-width: 0;
+  text-wrap: balance;
+  font-size: clamp(36px, 3vw, 44px);
 }
 .small-drawing {
   color: var(--social-yellow);
@@ -455,7 +463,7 @@
   padding: 9px 0;
   color: inherit;
   border-radius: 0;
-  font-size: 12px;
+  font-size: 15px;
 }
 .social-search input::placeholder {
   color: #b7bfdc;
@@ -480,21 +488,23 @@
   background: none;
   color: #e1dcf4;
   border-radius: 7px;
-  font-size: 11px;
+  font-size: 14px;
   text-decoration: none;
   white-space: nowrap;
+  font-weight: 600;
 }
-.social-segments button[aria-pressed="true"] {
+.social-segments button[aria-pressed="true"],
+.social-segments button[data-state="active"] {
   background: var(--social-purple);
   color: #fff;
 }
-.social-segments button:hover:not([aria-pressed="true"]) {
+.social-segments button:hover:not([aria-pressed="true"]):not([data-state="active"]) {
   background: #333657;
 }
 .room-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 }
 .lobby-example-note {
   margin: -3px 0 18px;
@@ -537,8 +547,8 @@
   gap: 4px;
   background: #ffe08d;
   color: #302b24;
-  font-size: 9px;
-  padding: 4px 7px;
+  font-size: 13px;
+  padding: 5px 8px;
   border-radius: 5px;
   font-weight: 700;
 }
@@ -547,15 +557,15 @@
   color: #fff;
 }
 .room-card-body {
-  padding: 11px 12px 12px;
+  padding: 18px;
 }
 .room-card h2 {
-  font-size: clamp(18px, 1.5vw, 24px);
+  font-size: 24px;
   line-height: 1.3;
   margin-bottom: 4px;
 }
 .room-host {
-  font-size: 10px;
+  font-size: 13px;
   color: #d9d9ea;
 }
 .room-host a {
@@ -568,11 +578,11 @@
 .room-style {
   margin-top: 5px;
   color: #d8d9ef;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.5;
 }
 .fandom-room .room-host {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.5;
 }
 .room-presence {
@@ -587,7 +597,7 @@
   flex-wrap: wrap;
   gap: 8px 16px;
   color: var(--night-muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
 }
@@ -622,7 +632,7 @@
 }
 .room-progress-detail > p {
   flex-basis: 100%;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--night-muted);
 }
@@ -630,7 +640,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 9px;
+  font-size: 13px;
   color: #ddd4ee;
 }
 .room-presence > span svg {
@@ -645,39 +655,38 @@
   margin-left: auto;
   padding: 7px 12px;
   min-height: 44px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .lobby-invitation {
+  margin-top: 25px;
+}
+.lobby-invitation-copy {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-top: 25px;
-  padding: 16px 0;
-  border-top: 1px solid var(--night-line);
+  flex-wrap: wrap;
+  gap: 14px 22px;
 }
-.lobby-invitation > svg {
-  color: var(--social-yellow);
+.lobby-invitation-copy > div {
+  flex: 1 1 280px;
+  min-width: 0;
 }
 .lobby-invitation strong {
   font-family: var(--hand);
   font-size: 21px;
 }
 .lobby-invitation p {
-  font-size: 11px;
-  color: var(--night-muted);
+  font-size: 15px;
+  color: var(--plate-muted, #5d4b68);
   margin-top: 3px;
 }
 .lobby-invitation .social-link {
   margin-left: auto;
-  font-size: 11px;
+  color: #5435ae !important;
+  font-size: 14px;
   white-space: nowrap;
 }
 .room-preview {
-  scroll-margin-top: 20px;
-  border: 1px solid #78749b;
-  border-radius: 14px;
-  padding: 12px;
-  background: #181d3a;
+  min-width: 0;
   scroll-margin-top: 12px;
 }
 .room-preview-art {
@@ -695,7 +704,7 @@
   right: 13px;
   bottom: 15px;
   left: 13px;
-  font-size: clamp(28px, 3vw, 46px);
+  font-size: clamp(30px, 2.7vw, 40px);
   line-height: 1.05;
   text-shadow: 0 3px 10px #080f2f;
   max-width: 95%;
@@ -704,6 +713,7 @@
   border-radius: 7px;
 }
 .room-preview-body {
+  min-width: 0;
   padding: 16px 6px 4px;
 }
 .featured-makers {
@@ -717,27 +727,53 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 13px;
 }
-.room-preview-body > h3 {
-  text-align: center;
-  font-size: clamp(25px, 2.2vw, 35px);
-  margin: 12px 0 9px;
+.room-invitation-plate {
+  margin: 16px 0 20px;
+}
+.room-invitation-plate h3 {
+  font-size: 28px;
+  margin: 0 0 16px;
+  text-wrap: balance;
+}
+.room-invitation-plate .room-entry-actions {
+  flex-direction: column;
+  margin: 0;
+}
+.room-invitation-plate .social-button.outline {
+  background: #fffdf8;
+  color: #5435ae;
+  border-color: #bdb0d2;
+}
+.room-invitation-plate .social-button.outline:hover {
+  background: #eee7fa;
+}
+.room-invitation-plate small {
+  display: block;
+  margin-top: 12px;
+  color: var(--plate-muted, #675d7c);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.room-invitation-plate .social-button:focus-visible,
+.lobby-invitation .social-link:focus-visible {
+  outline-color: #7256c6;
 }
 .room-preview-body > p {
-  font-size: 13px;
+  font-size: 16px;
   color: #d8d9ef;
   text-align: center;
   margin: 0 8px;
 }
 .room-preview-body > .room-preview-note {
   margin-top: 12px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
 }
 .project-heading .project-fandom-note {
   margin-top: 9px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
 }
 .room-story-sample {
@@ -747,7 +783,7 @@
   gap: 11px;
   border-top: 1px solid var(--night-line);
   border-bottom: 1px solid var(--night-line);
-  font-size: 13px;
+  font-size: 15px;
   color: #e8e1f1;
 }
 .room-story-sample svg {
@@ -779,20 +815,13 @@
   font-size: 22px;
 }
 .host-invitation p {
-  font-size: 10px;
+  font-size: 13px;
   color: #d1c9e4;
 }
 .host-invitation .social-button {
   margin-left: auto;
-  min-height: 35px;
-  font-size: 11px;
-}
-.room-preview-body > small {
-  display: block;
-  font-size: 10px;
-  color: #ccc5df;
-  margin: 15px 0 2px;
-  text-align: center;
+  min-height: 44px;
+  font-size: 14px;
 }
 .guild-mark {
   color: #ffe193;
@@ -824,7 +853,7 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  font-size: 12px;
+  font-size: 13px;
   margin-bottom: 19px;
   color: #d6cdea;
 }
@@ -852,7 +881,7 @@
   gap: 24px;
 }
 .guild-hero h1 {
-  font-size: clamp(38px, 4vw, 66px);
+  font-size: clamp(36px, 3vw, 44px);
 }
 .guild-hero .handwritten {
   font-family: var(--hand);
@@ -863,7 +892,7 @@
   display: flex;
   gap: 7px;
   align-items: center;
-  font-size: 12px;
+  font-size: 13px;
   color: #c8d7d3;
 }
 .guild-hero-image {
@@ -892,7 +921,7 @@
 }
 .section-title p {
   color: #d0c9e7;
-  font-size: 12px;
+  font-size: 14px;
 }
 .profile-projects {
   display: grid;
@@ -915,25 +944,29 @@
   aspect-ratio: 1.55;
 }
 .project-tile-body {
-  padding: 15px;
+  padding: 18px;
 }
 .project-tile h3 {
-  font-size: 26px;
+  font-size: 25px;
   margin-bottom: 8px;
+  font-weight: 650;
 }
 .project-tile p {
-  font-size: 12px;
+  font-size: 16px;
   color: #d4cde7;
+  line-height: 1.5;
 }
 .tile-byline {
   display: flex;
   align-items: center;
   gap: 5px;
   margin: 17px 0;
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 .tile-byline > span:last-child {
   margin-left: 5px;
-  font-size: 10px;
+  font-size: 13px;
   color: #c6c5df;
 }
 .project-tile .social-button {
@@ -960,7 +993,7 @@
 }
 .guild-invitation p,
 .membership-explainer p {
-  font-size: 12px;
+  font-size: 15px;
   color: #d3cbe6;
   margin-top: 13px;
 }
@@ -979,24 +1012,86 @@
 }
 .public-makers span:not(.social-avatar) {
   color: #ccc6de;
-  font-size: 10px;
+  font-size: 13px;
 }
 .membership-explainer h2 {
-  font-size: 24px;
+  font-size: 26px;
+}
+.social-app:has(.hall-layout) {
+  font-family: var(--font-interface), sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-style: normal;
+  font-optical-sizing: auto;
+  line-height: 1.55;
+}
+.social-app:has(.hall-layout) :is(button, input, textarea, select) {
+  font-family: var(--font-interface), sans-serif;
+}
+.social-app:has(.hall-layout) :is(.social-button, .social-link) {
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.social-app:has(.hall-layout) .social-button {
+  padding: 11px 16px;
+}
+.social-app:has(.hall-layout) .social-header nav a {
+  font-family: var(--font-interface), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+.social-app:has(.hall-layout) .social-user select {
+  font-size: 14px;
+  font-weight: 600;
+}
+.social-app:has(.hall-layout) :is(.social-demo-strip, .social-demo-strip button, .social-footer) {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.social-app:has(.hall-layout) .social-demo-strip button {
+  min-height: 36px;
+  font-weight: 600;
+}
+.social-app:has(.hall-layout) .social-help h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 26px;
+  font-weight: 650;
+}
+.social-app:has(.hall-layout) .social-help p {
+  font-size: 16px;
 }
 .hall-layout {
   display: grid;
-  grid-template-columns: 195px minmax(0, 1fr) 260px;
+  grid-template-columns: 178px minmax(0, 1fr) 254px;
   gap: 24px;
+  align-items: start;
+}
+.hall-layout :is(.hall-center, .hall-aside, .project-tile, .project-tile-body, .hall-name > div, .around-hall > div > div) {
+  min-width: 0;
+}
+.hall-layout :is(h2, h3) {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 650;
+  font-stretch: 100%;
+  font-style: normal;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .guild-rail {
-  padding-right: 17px;
+  padding-right: 16px;
   border-right: 1px solid var(--night-line);
 }
 .guild-rail h2 {
   font-family: var(--font-interface), sans-serif;
   font-size: 15px;
-  margin: 7px 0 20px;
+  margin: 7px 0 16px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 .guild-rail-link {
   display: flex;
@@ -1007,7 +1102,14 @@
   border-radius: 10px;
   padding: 12px 8px;
   margin-bottom: 10px;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  flex-wrap: nowrap;
+}
+.guild-rail-link > span {
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 .guild-rail-link.selected {
   border-color: var(--social-yellow);
@@ -1028,8 +1130,10 @@
   align-items: center;
   gap: 8px;
   color: #d4c8f0 !important;
-  font-size: 11px;
+  font-size: 14px;
   padding: 12px 4px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 .guild-rail-desk {
   display: flex;
@@ -1039,15 +1143,20 @@
   border-top: 1px solid var(--night-line);
   padding: 23px 5px;
   margin-top: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 .guild-rail-desk > svg {
   color: var(--social-yellow);
 }
 .guild-rail-desk small {
   display: block;
-  font-size: 10px;
+  font-size: 13px;
   color: #c7bfd9;
   margin-top: 4px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 .rail-art {
   overflow: hidden;
@@ -1059,182 +1168,267 @@
   aspect-ratio: 0.75;
 }
 .rail-art p {
-  padding: 15px 12px;
+  padding: 16px 12px;
   font-family: var(--hand);
-  font-size: 22px;
+  font-size: 20px;
   color: #e3d6b9;
+  line-height: 1.45;
+}
+.social-app:has(.hall-layout) .social-breadcrumb {
+  font-size: 13px;
+  margin-bottom: 16px;
 }
 .hall-welcome {
   position: relative;
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  align-items: center;
-  min-height: 223px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.9fr);
+  align-items: stretch;
+  min-height: 195px;
   overflow: hidden;
   border-radius: 12px;
   background: #1e2440;
 }
 .hall-welcome > div {
-  padding: 23px;
+  padding: 18px 20px;
+  align-self: center;
 }
 .hall-welcome h1 {
-  font-size: clamp(30px, 3vw, 43px);
+  font-size: 24px;
+  font-family: var(--hand);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 .hall-welcome > .social-scene {
   aspect-ratio: auto;
   height: 100%;
+  width: 100%;
 }
 .hall-name {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin: 20px 0 7px;
+  margin: 10px 0 3px;
 }
 .hall-name h2 {
-  font-size: 29px;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
 }
 .hall-name p {
-  font-size: 11px;
+  font-size: 14px;
   color: #d2cce1;
   margin-top: 5px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.hall-name .guild-mark {
+  width: 43px;
+  height: 48px;
 }
 .hall-tabs {
   display: flex;
-  margin: 18px 0 24px;
+  margin: 16px 0 24px;
+  width: 100%;
+}
+.hall-tabs :is(button, a) {
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 .hall-tabs button {
   flex: 1;
 }
 .hall-tabs a {
-  padding-inline: 20px;
   color: #eadfff;
 }
 .hall-project-section > h2 {
-  margin-bottom: 17px;
+  margin-bottom: 18px;
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.2;
 }
 .hall-projects {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 13px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+.hall-projects .project-tile {
+  display: flex;
+  flex-direction: column;
 }
 .hall-projects .project-tile h3 {
-  font-size: 21px;
+  font-size: 25px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
 }
 .hall-projects .project-tile-body {
-  padding: 11px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 .hall-projects .project-tile p {
-  font-size: 10px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.hall-projects .room-ribbon {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 5px 8px;
+  top: 10px;
+  right: 10px;
 }
 .hall-projects .tile-byline {
   flex-wrap: wrap;
+  column-gap: 7px;
+  row-gap: 8px;
+  margin: auto 0 18px;
 }
 .hall-projects .tile-byline > span:last-child {
   flex-basis: 100%;
   margin-left: 0;
-}
-.hall-projects .social-button {
-  padding: 9px 6px;
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 .hall-idea-invitation {
-  display: flex;
+  display: grid;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   border: 1px solid var(--night-line);
   border-radius: 12px;
-  padding: 17px;
-  margin-top: 23px;
+  padding: 18px;
+  margin-top: 26px;
+  grid-template-columns: 84px minmax(0, 1fr);
 }
 .hall-idea-invitation > .social-scene {
-  width: 98px;
+  width: 84px;
   aspect-ratio: 1;
   border-radius: 8px;
   flex-shrink: 0;
+  grid-row: 1 / 3;
+  align-self: start;
+}
+.hall-idea-invitation > div {
+  width: auto;
+  min-width: 0;
 }
 .hall-idea-invitation > div > p:first-child {
   color: var(--social-yellow);
-  font-size: 11px;
-  margin-bottom: 7px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  line-height: 1.5;
 }
 .hall-idea-invitation h3 {
   font-size: 25px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  line-height: 1.2;
 }
 .hall-idea-invitation > div > p:last-child {
-  font-size: 11px;
+  font-size: 15px;
   color: #c9c5df;
+  line-height: 1.55;
 }
 .hall-idea-invitation .social-button {
-  margin-left: auto;
   flex-shrink: 0;
-  font-size: 11px;
+  grid-column: 2;
+  justify-self: start;
+  margin: 0;
 }
 .hall-aside > section {
-  padding: 20px 17px;
+  padding: 20px 18px;
   border: 1px solid var(--night-line);
   border-radius: 12px;
   margin-bottom: 20px;
 }
 .around-hall h2 {
-  font-size: 28px;
-  margin-bottom: 13px;
+  font-size: 23px;
+  margin-bottom: 14px;
+  font-weight: 650;
+  line-height: 1.2;
 }
 .around-hall > div {
   display: flex;
-  gap: 13px;
-  align-items: center;
+  gap: 12px;
+  align-items: start;
   border-bottom: 1px solid var(--night-line);
-  padding: 17px 0;
+  padding: 16px 0;
 }
 .around-hall .social-avatar {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
 }
 .around-hall h3 {
   font-family: var(--font-interface), sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   margin-bottom: 5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
 }
 .around-hall h3 small {
   color: #dfbd67;
   margin-left: 5px;
-  font-size: 10px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 .around-hall p {
-  font-size: 11px;
+  font-size: 13px;
   color: #d4cce6;
+  font-weight: 400;
+  line-height: 1.5;
 }
 .around-hall > div span:not(.social-avatar) {
-  font-size: 10px;
+  font-size: 13px;
   color: #bfb7d5;
   display: block;
   margin-top: 4px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 .around-hall > .social-fine {
   margin-top: 14px;
 }
 .hall-cartridge h2 {
-  font-size: 24px;
-  margin-bottom: 12px;
+  font-size: 23px;
+  margin-bottom: 14px;
+  font-weight: 650;
+  line-height: 1.2;
 }
 .hall-cartridge p {
-  font-size: 12px;
+  font-size: 14px;
   color: #ded4e9;
+  line-height: 1.5;
 }
 .hall-cartridge p strong {
-  font-size: 22px;
+  font-size: 24px;
   color: #fff5d5;
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 .hall-cartridge .social-link {
-  font-size: 12px;
   margin-top: 9px;
+  text-align: left;
+  align-items: start;
 }
 .hall-cartridge .social-fine {
   margin-top: 13px;
-  font-size: 10px;
+  font-size: 13px;
   color: #beb4d0;
+  font-weight: 400;
+  line-height: 1.5;
 }
 .social-cartridge {
   position: relative;
@@ -1294,12 +1488,15 @@
   border-top: 1px solid var(--night-line);
 }
 .guild-requests h2 {
-  font-size: 24px;
-  margin-bottom: 12px;
+  font-size: 26px;
+  margin-bottom: 18px;
+  font-weight: 650;
+  line-height: 1.2;
 }
 .guild-requests p {
   color: #c6bfd9;
-  font-size: 12px;
+  font-size: 15px;
+  line-height: 1.55;
 }
 .guild-request {
   display: flex;
@@ -1309,10 +1506,12 @@
 }
 .guild-request .social-button {
   margin-left: auto;
-  font-size: 11px;
 }
 .hall-people > h2 {
-  margin-bottom: 15px;
+  margin-bottom: 18px;
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.2;
 }
 .hall-people > div {
   display: flex;
@@ -1323,13 +1522,21 @@
 }
 .hall-people > div > span {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 13px;
   color: #c6bed8;
+  line-height: 1.5;
 }
 .hall-people p {
-  font-size: 12px;
+  font-size: 15px;
   color: #cbc1e1;
   margin-top: 5px;
+  line-height: 1.55;
+}
+.hall-people h3 {
+  font-family: var(--font-interface), sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 .hall-people > p {
   margin-top: 20px;
@@ -1349,10 +1556,11 @@
   padding: 8px 0 20px;
 }
 .spaces-intro h1 {
+  text-wrap: balance;
   font-size: 36px;
 }
 .spaces-intro p {
-  font-size: 14px;
+  font-size: 15px;
   color: #d7cce6;
   margin-top: 5px;
 }
@@ -1361,7 +1569,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px;
 }
-.spaces-columns > section > h2 {
+.spaces-room-sign {
   margin: 8px 0 16px;
 }
 .space-entry > div {
@@ -1386,12 +1594,12 @@
 }
 .space-entry p {
   margin: 7px 0;
-  font-size: 12px;
+  font-size: 15px;
   color: #d4cbe5;
 }
 .space-entry small {
   color: #bfb6d3;
-  font-size: 10px;
+  font-size: 13px;
 }
 .space-entry > svg {
   margin-left: auto;
@@ -1403,7 +1611,7 @@
   gap: 10px;
   margin-top: 23px;
   color: #ddd0f5;
-  font-size: 12px;
+  font-size: 13px;
 }
 .friend-space {
   background: #352b45;
@@ -1420,12 +1628,12 @@
   color: #f3dba5;
 }
 .friend-space-title p {
-  font-size: 11px;
+  font-size: 13px;
   margin-top: 5px;
   color: #dfcddd;
 }
 .friend-space > p {
-  font-size: 13px;
+  font-size: 15px;
   color: #ecdce8;
   margin-bottom: 20px;
 }
@@ -1451,7 +1659,7 @@
   margin-left: auto;
 }
 .personal-desk-link p {
-  font-size: 12px;
+  font-size: 15px;
   color: #cfbddc;
   margin-top: 7px;
 }
@@ -1493,7 +1701,7 @@
 .desk-how-it-works li {
   padding-left: 3px;
   color: #62566e;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
 }
 .desk-how-it-works strong {
@@ -1503,7 +1711,7 @@
 }
 .draft-status {
   display: inline-block;
-  font-size: 12px;
+  font-size: 13px;
   color: #514061;
   background: #e9ddf6;
   border-radius: 5px;
@@ -1531,7 +1739,7 @@
   margin: 5px 0 10px;
 }
 .desk-drafts p {
-  font-size: 13px;
+  font-size: 15px;
   color: #5c5165;
   overflow-wrap: anywhere;
 }
@@ -1545,7 +1753,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 12px;
+  font-size: 13px;
   color: #6b5c70;
   margin-top: 35px;
 }
@@ -1627,6 +1835,13 @@
   grid-template-columns: minmax(0, 1fr) 270px;
   gap: 27px;
 }
+.ideas-center[data-slot="tabs"] {
+  display: block;
+}
+.ideas-view-panel:focus-visible {
+  outline: 3px solid #7256c6;
+  outline-offset: 6px;
+}
 .ideas-heading {
   display: flex;
   gap: 22px;
@@ -1634,10 +1849,10 @@
   flex-wrap: wrap;
 }
 .ideas-heading h1 {
-  font-family: var(--font-interface), sans-serif;
-  font-weight: 850;
-  letter-spacing: -0.035em;
-  font-size: clamp(34px, 3.7vw, 56px);
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-size: clamp(36px, 3vw, 44px);
 }
 .ideas-heading p {
   color: #74618c;
@@ -1648,7 +1863,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   margin-top: 8px;
 }
@@ -1665,7 +1880,7 @@
   align-items: center;
   flex-direction: column;
   gap: 5px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .board-makers .social-avatar {
   width: 46px;
@@ -1682,23 +1897,25 @@
 }
 .board-toolbar .social-segments {
   background: #eae3f2;
+  height: auto;
 }
 .board-toolbar .social-segments button {
   color: #604979;
-  font-size: 13px;
+  font-size: 14px;
 }
-.board-toolbar .social-segments button[aria-pressed="true"] {
+.board-toolbar .social-segments button[aria-pressed="true"],
+.board-toolbar .social-segments button[data-state="active"] {
   background: #6644c8;
   color: white;
 }
-.board-toolbar .social-segments button:hover:not([aria-pressed="true"]) {
+.board-toolbar .social-segments button:hover:not([aria-pressed="true"]):not([data-state="active"]) {
   background: #ded1ef;
 }
 .board-toolbar > span {
   display: flex;
   gap: 6px;
   align-items: center;
-  font-size: 10px;
+  font-size: 13px;
   color: #73617d;
 }
 .board-toolbar > span svg {
@@ -1706,14 +1923,14 @@
 }
 .idea-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 18px;
+  gap: 22px;
   padding: 10px 2px 20px;
 }
 .idea-note {
   position: relative;
-  padding: 22px 17px 15px;
+  padding: 24px 20px 18px;
   border-radius: 9px;
   background: #e9ddf6;
   box-shadow: 0 5px 15px #5b42631a;
@@ -1767,7 +1984,7 @@
   gap: 8px;
   align-items: center;
   margin-bottom: 16px;
-  font-size: 11px;
+  font-size: 13px;
 }
 .idea-author .social-avatar {
   width: 30px;
@@ -1775,7 +1992,7 @@
 }
 .idea-author time {
   display: block;
-  font-size: 9px;
+  font-size: 13px;
   color: #706080;
 }
 .note-pin {
@@ -1819,7 +2036,7 @@
   border-radius: 5px;
 }
 .idea-body {
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.7;
   color: #5d4b68;
   white-space: pre-wrap;
@@ -1846,12 +2063,12 @@
   flex-shrink: 0;
 }
 .note-story-link > span:not(.social-scene):not(.story-art) {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 650;
 }
 .note-story-link small {
   display: block;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 400;
   color: #6c557d;
   margin-top: 4px;
@@ -1869,13 +2086,13 @@
   height: 27px;
 }
 .note-replies p {
-  font-size: 11px;
+  font-size: 15px;
   line-height: 1.6;
   white-space: pre-wrap;
 }
 .note-replies strong {
   display: block;
-  font-size: 10px;
+  font-size: 13px;
   color: #655275;
   margin-bottom: 4px;
 }
@@ -1893,43 +2110,47 @@
   background: none;
   border: 0;
   padding: 8px 0;
-  font-size: 11px;
+  font-size: 14px;
   color: #4d3480;
+  min-height: 44px;
 }
 .note-reply-form {
   margin-top: 12px;
 }
 .note-reply-form label {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
   margin-bottom: 8px;
 }
 .note-reply-form textarea {
   min-height: 70px;
   background: #fffaf0;
-  font-size: 12px;
+  font-size: 16px;
   color: #342246;
   border: 1px solid #ad97be;
 }
 .note-reply-form .social-button {
   margin-top: 10px;
-  min-height: 35px;
-  font-size: 11px;
+  min-height: 44px;
+  font-size: 14px;
 }
 .ideas-aside {
   border-left: 1px solid #dfd8e5;
   padding-left: 22px;
 }
-.ideas-aside h2 {
-  font-family: var(--font-interface), sans-serif;
-  font-weight: 750;
-  font-size: 20px;
+.ideas-aside > section > h2 {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 650;
+  font-size: 26px;
   letter-spacing: -0.025em;
   margin: 0 0 19px;
 }
 .since-here {
   padding: 5px 0 24px;
   border-bottom: 1px solid #ded3e4;
+}
+.ideas-recent-sign {
+  margin-bottom: 14px;
 }
 .since-here > button {
   display: flex;
@@ -1943,12 +2164,12 @@
 }
 .since-here strong {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
 }
 .since-here time {
   display: block;
   color: #7c668a;
-  font-size: 10px;
+  font-size: 13px;
   margin-top: 4px;
 }
 .since-here > button:hover strong {
@@ -1964,14 +2185,14 @@
   border-radius: 10px;
 }
 .try-idea h3 {
-  font-size: 23px;
+  font-size: 25px;
   margin: 17px 0 12px;
 }
 .try-idea p {
   display: flex;
   gap: 7px;
   align-items: flex-start;
-  font-size: 11px;
+  font-size: 15px;
   color: #6d557d;
   line-height: 1.6;
 }
@@ -1983,17 +2204,31 @@
   display: block;
   text-align: center;
   color: #7c6986;
-  font-size: 10px;
+  font-size: 13px;
   margin: 11px 0;
 }
 .try-idea .social-link {
-  font-size: 11px;
+  font-size: 14px;
+}
+.idea-starting-plate {
+  margin-top: 18px;
+}
+.idea-starting-plate p {
+  display: block;
+  color: var(--plate-muted, #5d4b68);
+}
+.idea-starting-plate .social-button {
+  margin-top: 14px;
+}
+.idea-starting-plate small {
+  color: var(--plate-muted, #675d7c);
+  text-align: left;
 }
 .board-boundary {
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  font-size: 11px;
+  font-size: 13px;
   color: #796683;
   margin: 19px 0;
 }
@@ -2012,14 +2247,14 @@
   min-width: 0;
 }
 .idea-timeline p {
-  font-size: 12px;
+  font-size: 15px;
   color: #6e5779;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .idea-timeline time {
   margin-left: 13px;
-  font-size: 10px;
+  font-size: 13px;
   color: #83738b;
 }
 .idea-timeline button {
@@ -2046,12 +2281,12 @@
   justify-content: space-between;
 }
 .idea-composer > p {
-  font-size: 12px;
+  font-size: 15px;
   color: #736080;
   margin: 8px 0 19px;
 }
 .idea-composer label {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   display: block;
   margin: 13px 0 8px;
@@ -2065,7 +2300,7 @@
   padding: 11px 12px;
   border-radius: 7px;
   width: 100%;
-  font-size: 13px;
+  font-size: 16px;
 }
 .idea-composer textarea {
   min-height: 94px;
@@ -2082,7 +2317,7 @@
 .composer-context select {
   display: block;
   margin-top: 8px;
-  font-size: 12px;
+  font-size: 16px;
 }
 .composer-attachment {
   display: flex;
@@ -2107,7 +2342,7 @@
 }
 .composer-attachment > span {
   color: #796783;
-  font-size: 10px;
+  font-size: 13px;
 }
 .composer-attachment img {
   max-height: 120px;
@@ -2130,8 +2365,9 @@
   background: transparent;
   color: var(--violet);
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
   padding: 8px;
+  font-weight: 600;
 }
 .draft-switch-notice {
   position: relative;
@@ -2145,11 +2381,13 @@
   color: #382b36;
 }
 .draft-switch-notice h2 {
-  font-size: 24px;
+  font-size: 26px;
   margin-bottom: 13px;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 650;
 }
 .draft-switch-notice p {
-  font-size: 13px;
+  font-size: 15px;
   margin-bottom: 13px;
 }
 .draft-switch-notice button {
@@ -2160,7 +2398,6 @@
   background: #fbe6e6;
   color: #792c3f;
 }
-.app-shell .project-heading h1,
 .app-shell .brand {
   font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
 }
@@ -2173,6 +2410,32 @@
 @media (min-width: 1600px) {
   .social-header {
     padding-inline: max(34px, calc((100vw - 1532px) / 2));
+  }
+}
+@media (min-width: 1500px) {
+  .room-grid,
+  .idea-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hall-projects {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1280px) {
+  .hall-layout {
+    grid-template-columns: 158px minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .hall-aside {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .hall-aside > section {
+    margin: 0;
   }
 }
 @media (max-width: 1250px) {
@@ -2188,27 +2451,6 @@
   }
   .room-presence {
     flex-wrap: wrap;
-  }
-  .hall-layout {
-    grid-template-columns: 155px minmax(0, 1fr) 220px;
-    gap: 17px;
-  }
-  .guild-rail {
-    padding-right: 12px;
-  }
-  .guild-rail-link {
-    flex-wrap: wrap;
-    gap: 7px;
-    font-size: 11px;
-  }
-  .hall-idea-invitation {
-    flex-wrap: wrap;
-  }
-  .hall-idea-invitation .social-button {
-    margin-left: 116px;
-  }
-  .hall-projects {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .ideas-layout {
     grid-template-columns: minmax(0, 1fr) 225px;
@@ -2230,9 +2472,7 @@
   .idea-note {
     padding: 20px 13px 13px;
   }
-  .idea-title {
-    font-size: 23px !important;
-  }
+
   .guild-hero-copy {
     padding: 25px;
     gap: 16px;
@@ -2263,26 +2503,8 @@
   .room-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .lobby-invitation {
-    flex-wrap: wrap;
-  }
   .lobby-invitation .social-link {
-    margin-left: 37px;
-  }
-  .hall-layout {
-    grid-template-columns: 155px minmax(0, 1fr);
-  }
-  .hall-aside {
-    grid-column: 2;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 17px;
-  }
-  .hall-welcome {
-    grid-template-columns: 1.2fr 1fr;
-  }
-  .hall-welcome > div {
-    padding: 19px;
+    margin-left: 0;
   }
   .guild-hero {
     grid-template-columns: 1.4fr 1fr;
@@ -2338,6 +2560,45 @@
     flex-wrap: wrap;
   }
 }
+@media (max-width: 960px) {
+  .hall-layout {
+    display: block;
+  }
+
+  .guild-rail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 0 0 16px;
+    margin-bottom: 20px;
+    border: 0;
+    border-bottom: 1px solid var(--night-line);
+    scrollbar-color: var(--night-line) var(--night);
+    scrollbar-width: thin;
+  }
+
+  .guild-rail :is(h2, .rail-art, .guild-rail-desk) {
+    display: none;
+  }
+
+  .guild-rail-link {
+    flex: 0 0 auto;
+    min-width: 170px;
+    margin: 0;
+    padding: 9px;
+  }
+
+  .guild-rail-more {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 10px 4px;
+  }
+
+  .hall-aside {
+    margin-top: 26px;
+  }
+}
 @media (max-width: 760px) {
   .social-header {
     gap: 13px;
@@ -2354,7 +2615,7 @@
   }
   .social-header nav a {
     padding: 13px 0 10px;
-    font-size: 13px;
+
   }
   .social-user {
     gap: 6px;
@@ -2363,12 +2624,10 @@
     width: 34px;
     height: 34px;
   }
-  .social-user select {
-    font-size: 12px;
-  }
+
   .social-demo-strip {
     padding: 6px 18px;
-    font-size: 9px;
+
   }
   .social-demo-strip button span {
     display: none;
@@ -2381,7 +2640,7 @@
   }
   .social-footer {
     padding: 20px 18px;
-    font-size: 10px;
+
   }
   .lobby-layout {
     display: block;
@@ -2400,25 +2659,20 @@
   }
   .lobby-tools .social-segments button {
     flex: 1;
-    font-size: 10px;
     padding-inline: 6px;
   }
   .room-grid {
     gap: 13px;
   }
-  .room-card h2 {
-    font-size: 21px;
-  }
+
   .room-art-button .story-art,
   .room-art-button .social-scene {
     aspect-ratio: 1.3;
   }
   .room-card-body {
-    padding: 10px;
+    padding: 18px;
   }
-  .room-host {
-    font-size: 9px;
-  }
+
   .room-card .peek {
     width: 100%;
   }
@@ -2426,8 +2680,6 @@
     margin-block: 10px;
   }
   .room-ribbon {
-    font-size: 8px;
-    padding: 3px 5px;
     top: 7px;
     right: 7px;
   }
@@ -2437,35 +2689,11 @@
   .room-preview-art h2 {
     font-size: 39px;
   }
-  .room-preview-body > h3 {
-    font-size: 30px;
+  .room-invitation-plate h3 {
+    font-size: 26px;
   }
   .host-invitation .social-button {
     margin-left: 0;
-  }
-  .hall-layout {
-    display: block;
-  }
-  .guild-rail {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    overflow-x: auto;
-    padding: 0 0 15px;
-    margin-bottom: 20px;
-    border: 0;
-    border-bottom: 1px solid var(--night-line);
-  }
-  .guild-rail h2,
-  .guild-rail .rail-art,
-  .guild-rail-desk {
-    display: none;
-  }
-  .guild-rail-link {
-    min-width: 148px;
-    flex-wrap: nowrap;
-    margin: 0;
-    padding: 8px;
   }
   .guild-rail-more {
     min-width: 113px;
@@ -2473,71 +2701,6 @@
   .guild-rail-link .guild-mark {
     width: 30px;
     height: 36px;
-  }
-  .hall-welcome {
-    min-height: 230px;
-    grid-template-columns: 1.2fr 1fr;
-  }
-  .hall-welcome h1 {
-    font-size: 30px;
-  }
-  .hall-welcome > div {
-    padding: 18px 13px;
-  }
-  .hall-name {
-    gap: 9px;
-    margin-top: 15px;
-  }
-  .hall-name h2 {
-    font-size: 23px;
-  }
-  .hall-name .guild-mark {
-    width: 32px;
-    height: 42px;
-  }
-  .hall-welcome .social-link {
-    font-size: 10px;
-  }
-  .hall-tabs {
-    margin-block: 17px 23px;
-  }
-  .hall-tabs a {
-    padding-inline: 10px;
-    font-size: 10px;
-  }
-  .hall-projects {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .hall-projects .project-tile h3 {
-    font-size: 22px;
-  }
-  .hall-projects .project-tile p {
-    font-size: 11px;
-  }
-  .hall-projects .social-button {
-    font-size: 11px;
-  }
-  .hall-idea-invitation {
-    gap: 13px;
-  }
-  .hall-idea-invitation > .social-scene {
-    width: 64px;
-  }
-  .hall-idea-invitation > div {
-    width: calc(100% - 80px);
-  }
-  .hall-idea-invitation h3 {
-    font-size: 23px;
-  }
-  .hall-idea-invitation .social-button {
-    margin: 0 0 0 77px;
-  }
-  .hall-aside {
-    margin-top: 27px;
-    grid-template-columns: 1fr;
-  }
-  .hall-aside > section {
-    margin-bottom: 0;
   }
   .hall-cartridge .social-cartridge {
     float: left;
@@ -2563,7 +2726,7 @@
     aspect-ratio: 2;
   }
   .guild-hero h1 {
-    font-size: 46px;
+    font-size: 36px;
   }
   .guild-hero .handwritten {
     font-size: 24px;
@@ -2575,15 +2738,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 13px;
   }
-  .profile-projects .project-tile h3 {
-    font-size: 22px;
-  }
-  .profile-projects .project-tile p {
-    font-size: 11px;
-  }
-  .profile-projects .project-tile-body {
-    padding: 12px;
-  }
+
+
   .profile-projects .tile-byline {
     flex-wrap: wrap;
   }
@@ -2616,17 +2772,12 @@
     display: block;
   }
   .ideas-heading h1 {
-    font-size: 39px;
+    font-size: 36px;
   }
   .ideas-heading p {
     font-size: 15px;
   }
-  .ideas-heading .social-button {
-    font-size: 12px;
-  }
-  .board-toolbar > span {
-    font-size: 9px;
-  }
+
   .idea-grid {
     grid-template-columns: 1fr;
     gap: 25px;
@@ -2638,25 +2789,12 @@
   .idea-title {
     font-size: 30px !important;
   }
-  .idea-author {
-    font-size: 12px;
-  }
-  .idea-body {
-    font-size: 13px;
-  }
+
   .idea-attachment {
     max-height: 330px;
   }
-  .note-actions button {
-    font-size: 12px;
-    min-height: 40px;
-  }
-  .note-story-link > span:not(.social-scene):not(.story-art) {
-    font-size: 12px;
-  }
-  .note-replies p {
-    font-size: 12px;
-  }
+
+
   .ideas-aside {
     padding-left: 0;
     border-left: 0;
@@ -2669,9 +2807,7 @@
   .since-here > button {
     padding-block: 13px;
   }
-  .since-here strong {
-    font-size: 12px;
-  }
+
   .try-idea > .social-scene,
   .try-idea > .story-art {
     aspect-ratio: 1.65;
@@ -2729,6 +2865,87 @@
     margin: 15px;
   }
 }
+@media (max-width: 680px) {
+  .room-grid,
+  .profile-projects {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hall-projects {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .hall-welcome {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .hall-welcome > div {
+    padding: 12px 16px;
+  }
+
+  .hall-welcome > .social-scene {
+    height: 96px;
+  }
+
+  .hall-welcome > .social-scene .social-scene-paint {
+    top: 0;
+    transform: translateY(-18%);
+  }
+
+  .hall-name {
+    margin: 8px 0 1px;
+  }
+
+  .hall-name h2 {
+    font-size: 32px;
+  }
+
+  .hall-name .guild-mark {
+    width: 34px;
+    height: 42px;
+  }
+
+  .hall-name .guild-mark svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .hall-tabs :is(button, a) {
+    padding-inline: 9px;
+  }
+
+  .hall-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hall-cartridge .social-cartridge {
+    float: none;
+    margin: 5px auto 25px;
+  }
+
+  .hall-idea-invitation {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .hall-idea-invitation > .social-scene {
+    width: 64px;
+  }
+
+  .hall-idea-invitation .social-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .guild-request .social-button {
+    margin-left: 0;
+  }
+
+  .hall-people > div {
+    flex-wrap: wrap;
+  }
+}
 @media (max-width: 380px) {
   .social-header nav {
     gap: 21px;
@@ -2743,29 +2960,9 @@
   .social-main {
     padding-inline: 14px;
   }
-  .room-card h2 {
-    font-size: 19px;
-  }
-  .room-presence > span {
-    font-size: 8px;
-  }
-  .hall-projects,
+
   .profile-projects {
     grid-template-columns: 1fr;
-  }
-  .hall-welcome {
-    display: block;
-  }
-  .hall-welcome > .social-scene {
-    height: 140px;
-  }
-  .hall-idea-invitation .social-button {
-    margin-left: 0;
-    width: 100%;
-  }
-  .hall-cartridge .social-cartridge {
-    float: none;
-    margin: 5px auto 24px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

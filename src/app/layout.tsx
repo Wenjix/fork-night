@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import "./room-networks.css";
 
 const interfaceFont = localFont({
   src: "../../public/fonts/inter-latin.woff2",
   variable: "--font-interface",
   display: "swap",
   weight: "100 900",
+});
+
+const displayFont = localFont({
+  src: "../../public/fonts/bricolage-grotesque.woff2",
+  variable: "--font-display",
+  display: "swap",
+  weight: "200 800",
 });
 
 export const metadata: Metadata = {
@@ -20,7 +28,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={interfaceFont.variable}>
+    <html
+      lang="en"
+      className={`${interfaceFont.variable} ${displayFont.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

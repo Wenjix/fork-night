@@ -17,6 +17,7 @@ import {
   ImagePlus,
   LayoutGrid,
   LockKeyhole,
+  PanelsTopLeft,
   Pencil,
   Plus,
   StickyNote,
@@ -41,6 +42,8 @@ import {
 } from "@/social/desk";
 import type { SocialSpacesProps } from "./social-spaces";
 import { StoryArt } from "./story-art";
+import { Button } from "./ui/button";
+import { SectionPlate } from "./visual-plates";
 
 type Intent = "edit" | "sketch" | "fork" | "opening" | null;
 const cardId = () => `piece-${crypto.randomUUID()}`;
@@ -483,32 +486,46 @@ export function PersonalDesk(props: SocialSpacesProps) {
         <p role="status">Unrolling your canvas…</p>
       ) : (
         <>
-          <div className="desk-tools" aria-label="Creative tools">
-            <button
-              disabled={blocked || intent === "sketch"}
-              className="social-button purple"
-              onClick={() => {
-                if (!canLeave()) return;
-                setIntent("sketch");
-                setSelected([]);
-              }}
-            >
-              <Pencil size={17} /> Draw something
-            </button>
-            <button
-              disabled={blocked}
-              className="social-button outline"
-              onClick={() => upload.current?.click()}
-            >
-              <ImagePlus size={17} /> Add image
-            </button>
-            <button
-              disabled={blocked}
-              className="social-button outline"
-              onClick={() => add("note", "A little idea")}
-            >
-              <StickyNote size={17} /> Add note
-            </button>
+          <div className="desk-tools" role="group" aria-label="Creative tools">
+            <div className="desk-creation-tools">
+              <Button
+                variant="default"
+                disabled={blocked || intent === "sketch"}
+                className="social-button purple desk-tool"
+                onClick={() => {
+                  if (!canLeave()) return;
+                  setIntent("sketch");
+                  setSelected([]);
+                }}
+              >
+                <span className="desk-tool-icon">
+                  <Pencil size={23} aria-hidden="true" />
+                </span>
+                <span>Draw something</span>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={blocked}
+                className="social-button outline desk-tool"
+                onClick={() => upload.current?.click()}
+              >
+                <span className="desk-tool-icon">
+                  <ImagePlus size={23} aria-hidden="true" />
+                </span>
+                <span>Add image</span>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={blocked}
+                className="social-button outline desk-tool"
+                onClick={() => add("note", "A little idea")}
+              >
+                <span className="desk-tool-icon">
+                  <StickyNote size={23} aria-hidden="true" />
+                </span>
+                <span>Add note</span>
+              </Button>
+            </div>
             <input
               ref={upload}
               type="file"
@@ -557,28 +574,32 @@ export function PersonalDesk(props: SocialSpacesProps) {
                 }
               }}
             />
-            <button
-              className="desk-layout-toggle"
-              aria-pressed={arranged}
-              onClick={() => setArranged(!arranged)}
-            >
-              <LayoutGrid size={17} />{" "}
-              {arranged ? "Arranged view" : "Free canvas"}
-            </button>
-            <button
-              className="desk-backup"
-              aria-label="Download your personal desk"
-              onClick={() =>
-                download(
-                  JSON.stringify({
-                    version: 1,
-                    boards: { [userId]: getDeskBoard(state, demo, userId) },
-                  }),
-                )
-              }
-            >
-              <Download size={18} />
-            </button>
+            <div className="desk-utility-tools">
+              <Button
+                variant="ghost"
+                className="desk-layout-toggle"
+                aria-pressed={arranged}
+                onClick={() => setArranged(!arranged)}
+              >
+                <LayoutGrid size={17} />{" "}
+                {arranged ? "Arranged view" : "Free canvas"}
+              </Button>
+              <Button
+                variant="ghost"
+                className="desk-backup"
+                aria-label="Download your personal desk"
+                onClick={() =>
+                  download(
+                    JSON.stringify({
+                      version: 1,
+                      boards: { [userId]: getDeskBoard(state, demo, userId) },
+                    }),
+                  )
+                }
+              >
+                <Download size={18} />
+              </Button>
+            </div>
           </div>
           <div className="desk-workbench">
             <div className="desk-board-column">
@@ -931,16 +952,17 @@ export function PersonalDesk(props: SocialSpacesProps) {
                 </>
               ) : (
                 <>
-                  <h2>
-                    {chosen.length
+                  <SectionPlate
+                    className="desk-selection-sign"
+                    title={chosen.length
                       ? "What could these become?"
                       : "Room to play."}
-                  </h2>
-                  <p>
-                    {chosen.length
+                    description={chosen.length
                       ? `${chosen.length} ${chosen.length === 1 ? "piece" : "pieces"} selected. Keep experimenting, or give the idea somewhere to go.`
                       : "Collect a few pieces. Select one or more when you want to build on them."}
-                  </p>
+                    icon={Pencil}
+                    tone="lavender"
+                  />
                   {chosen.length > 0 && (
                     <ol className="desk-selection">
                       {chosen.map((card) => (
@@ -958,30 +980,52 @@ export function PersonalDesk(props: SocialSpacesProps) {
                       ))}
                     </ol>
                   )}
-                  <button
-                    className="social-button outline"
-                    disabled={!chosen.length || mixedSources || blocked}
-                    onClick={startFork}
-                  >
-                    Use in a project <ArrowRight size={17} />
-                  </button>
-                  <small>
-                    {mixedSources
-                      ? "Choose pieces from a single fork point to keep their lineage intact."
-                      : "Develop selected notes and captions into a fork brief."}
-                  </small>
-                  <button
-                    className="social-button purple"
-                    disabled={!twoOriginals || blocked}
-                    onClick={startOpening}
-                  >
-                    Start a new project <ArrowRight size={17} />
-                  </button>
-                  <small>
-                    {inherited.length
-                      ? "Work from a project stays linked to its original story. Use original pieces for a new opening."
-                      : "Select two original images or sketches, in panel order. You’ll review them before publishing."}
-                  </small>
+                  <div className="desk-task-choices">
+                    <Button
+                      variant="ghost"
+                      className="desk-task-choice brief"
+                      aria-label="Use in a project"
+                      aria-describedby="desk-project-choice-hint"
+                      type="button"
+                      disabled={!chosen.length || mixedSources || blocked}
+                      onClick={startFork}
+                    >
+                      <span className="desk-task-icon">
+                        <StickyNote size={25} aria-hidden="true" />
+                      </span>
+                      <span className="desk-task-copy">
+                        <strong>Use in a project</strong>
+                        <small id="desk-project-choice-hint">
+                          {mixedSources
+                            ? "Choose pieces from a single fork point to keep their lineage intact."
+                            : "Develop selected notes and captions into a fork brief."}
+                        </small>
+                      </span>
+                      <ArrowRight size={18} aria-hidden="true" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="desk-task-choice opening"
+                      aria-label="Start a new project"
+                      aria-describedby="desk-opening-choice-hint"
+                      type="button"
+                      disabled={!twoOriginals || blocked}
+                      onClick={startOpening}
+                    >
+                      <span className="desk-task-icon">
+                        <PanelsTopLeft size={25} aria-hidden="true" />
+                      </span>
+                      <span className="desk-task-copy">
+                        <strong>Start a new project</strong>
+                        <small id="desk-opening-choice-hint">
+                          {inherited.length
+                            ? "Work from a project stays linked to its original story. Use original pieces for a new opening."
+                            : "Select two original images or sketches, in panel order. You’ll review them before publishing."}
+                        </small>
+                      </span>
+                      <ArrowRight size={18} aria-hidden="true" />
+                    </Button>
+                  </div>
                   {chosen.length > 0 && (
                     <button
                       className="desk-back-link"
@@ -998,11 +1042,13 @@ export function PersonalDesk(props: SocialSpacesProps) {
             className="desk-project-shelf"
             aria-labelledby="desk-projects-title"
           >
-            <h2 id="desk-projects-title">Still on your workbench</h2>
-            <p>
-              Your unfinished project versions stay attached to the story they
-              came from.
-            </p>
+            <SectionPlate
+              title="Still on your workbench"
+              headingId="desk-projects-title"
+              description="Your unfinished project versions stay attached to the story they came from."
+              icon={PanelsTopLeft}
+              tone="paper"
+            />
             {drafts.length ? (
               <div className="desk-shelf-items">
                 {drafts.map((draft) => {

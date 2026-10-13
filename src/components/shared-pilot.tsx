@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import {
   ArrowUp,
   BookOpen,
@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import type { Database, Tables } from "@/lib/supabase/database.types";
 import { joinPilotAsGuest } from "@/lib/supabase/guest";
+import { pilotBrowserClient } from "@/lib/supabase/pilot-client";
+import { usePilotAccount } from "./pilot-account";
+import { isSavedAccount } from "../lib/supabase/onboarding";
 import {
   isUuid,
   pilotPanels,
@@ -25,13 +28,16 @@ import {
 } from "@/lib/pilot";
 import { layoutMoments } from "@/lib/map-layout";
 import { pilotCreditCost, validPilotCaptions } from "@/lib/pilot-format";
-import { PilotImage, PilotPanels } from "./pilot-panels";
+import { PilotImage } from "./pilot-panels";
 import { PilotRecap } from "./pilot-recap";
 import { PilotArtwork } from "./pilot-artwork";
 import { PilotIdeas } from "./pilot-ideas";
-import { PilotComposer } from "./pilot-composer";
+import { PilotContinuation } from "./pilot-continuation";
+import { PilotIdentity } from "./pilot-identity";
 import { PilotCreditRefill } from "./pilot-credit-refill";
-import { PilotGenerationStatus, PilotRoomActivity } from "./pilot-generation-status";
+import { PilotRoomActivity } from "./pilot-generation-status";
+import { SectionPlate } from "./visual-plates";
+import { RoomNetworkPlate } from "./room-network-plate";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
 import { TestnetRelease } from "./testnet-release";
 import {
@@ -51,7 +57,6 @@ import {
 } from "@/lib/pilot-social";
 
 type Client = SupabaseClient<Database>;
-let browserClient: Client | undefined;
 const finalStates = new Set(["published", "discarded", "failed"]);
 const pendingKey = (user: string, room: string) =>
   `fork-night-pilot-draft:${user}:${room}`;
@@ -61,6 +66,7 @@ const message = (error: unknown) =>
     : "Could not connect. Your saved work is still here; please try again.";
 
 export function SharedPilot() {
+  const account = usePilotAccount();
   const [client, setClient] = useState<Client>();
   const [rooms, setRooms] = useState<PilotRoom[]>([]);
   // Resolve the shared link before fetching any story. A slow room list must
@@ -81,7 +87,7 @@ export function SharedPilot() {
   const [operation, setOperation] = useState<GenerationOperation>();
   const [draft, setDraft] = useState<Draft>();
 
-  const [name, setName] = useState("");
+  const [releaseBusy, setReleaseBusy] = useState(false);
   const [view, setView] = useState<"map" | "read">("read");
   const [composing, setComposing] = useState(false);
   const [inspectingSource, setInspectingSource] = useState(false);
@@ -102,7 +108,7 @@ export function SharedPilot() {
       );
       return;
     }
-    const connected = (browserClient ??= createClient<Database>(url, key));
+    const connected = pilotBrowserClient()!;
     let active = true;
     setClient(connected);
     void (async () => {
@@ -137,28 +143,6 @@ export function SharedPilot() {
         setError(
           "That shared moment link is incomplete. Choose a moment below.",
         );
-      const session = await connected.auth.getSession();
-      if (session.error)
-        throw new Error(
-          "Could not restore your guest session. Please reconnect and refresh.",
-        );
-      if (session.data.session) {
-        const user = await connected.auth.getUser();
-        if (user.error)
-          throw new Error(
-            "Your saved guest session could not be verified. Please reconnect.",
-          );
-        const saved = await connected
-          .from("pilot_profiles")
-          .select("*")
-          .eq("id", user.data.user!.id)
-          .maybeSingle();
-        if (saved.error)
-          throw new Error(
-            "Your guest name could not be loaded. Please reconnect.",
-          );
-        if (active && saved.data) setProfile(saved.data);
-      }
     })().catch((reason) => {
       if (active) setError(message(reason));
     });
@@ -166,6 +150,34 @@ export function SharedPilot() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!client || !account) return;
+    let active = true;
+    if (account.loading || !account.user) {
+      if (!account.user) {
+        if (profile) { setDraft(undefined); setComposing(false); }
+        setProfile(undefined); setOperation(undefined); setCredits(undefined);
+      }
+      return;
+    }
+    const userId = account.user.id;
+    setProfile(previous => previous?.id === userId ? previous : undefined);
+    void client.from("pilot_profiles").select("*").eq("id", userId).maybeSingle().then(result => {
+      if (!active) return;
+      if (result.error) setError("Your saved storyteller name could not be loaded. Refresh to reconnect.");
+      else if (result.data) {
+        setProfile(result.data);
+        const url = new URL(window.location.href);
+        if (url.searchParams.has("onboarding")) {
+          setComposing(true);
+          url.searchParams.delete("onboarding");
+          window.history.replaceState(null, "", url.href);
+        }
+      }
+    });
+    return () => { active = false; };
+  }, [client, account?.user?.id, account?.loading]);
 
   useEffect(() => {
     if (!client || !roomId) return;
@@ -428,6 +440,10 @@ export function SharedPilot() {
 
   async function act(action: () => Promise<void>) {
     if (mutation.current) return;
+    if (account?.loading || account?.error && !account.user) {
+      setError(account.error || "Your storyteller account is reconnecting. Try again in a moment.");
+      return;
+    }
     mutation.current = true;
     setBusy(true);
     setError("");
@@ -523,6 +539,10 @@ export function SharedPilot() {
   }
   function start(idea?: Tables<"pilot_ideas">) {
     if (!selected) return;
+    if (releaseBusy) {
+      setNotice("Finish the current wallet action before starting a new continuation.");
+      return;
+    }
     setInspectingSource(false);
     if (
       draft &&
@@ -652,6 +672,23 @@ export function SharedPilot() {
     setComposing(false);
   }
 
+  async function publishMoment() {
+    if (!client || !operation || operation.status !== "delivered") return;
+    const result = await client.rpc("pilot_publish", { p_operation_id: operation.id });
+    if (result.error) throw new Error("Publication could not be confirmed. Try again to check the same saved moment.");
+    setOperation({ ...operation, status: "published", published_moment_id: result.data.id });
+    setMoments(items => items.some(item => item.id === result.data.id) ? items : [...items, result.data]);
+    select(result.data.id, true);
+    setDraft(undefined);
+    setComposing(false);
+  }
+  async function discardMoment() {
+    if (!client || !operation || operation.status !== "delivered") return;
+    const result = await client.rpc("pilot_discard", { p_operation_id: operation.id });
+    if (result.error) throw new Error("Discard could not be confirmed. Your saved result remains available.");
+    setOperation({ ...operation, status: "discarded" });
+  }
+
   const ideaSection =
     client && selected ? (
       <PilotIdeas
@@ -676,7 +713,7 @@ export function SharedPilot() {
           <select
             aria-label="Story room"
             value={roomId}
-            disabled={busy || hasActive || !!draft}
+            disabled={busy || releaseBusy || hasActive || !!draft}
             onChange={(event) => {
               setRoomId(event.target.value);
               setSelectedId("");
@@ -700,11 +737,7 @@ export function SharedPilot() {
           </select>
         </label>
         <div className="pilot-header-actions">
-          <span className="pilot-identity">
-            {profile
-              ? `Making as ${profile.display_name}`
-              : "Made together. Open to everyone."}
-          </span>
+          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || hasActive || !!draft || !!account?.loading} signOutBlockedReason={hasActive ? "Finish generation or publish or discard your preview before signing out." : draft ? "Finish or cancel your continuation before signing out." : ""} onJoin={() => start()} />
           <button
             className="button secondary pilot-map-toggle"
             onClick={() => setView(view === "map" ? "read" : "map")}
@@ -719,11 +752,11 @@ export function SharedPilot() {
         <h1>Pick up where someone left off.</h1>
         <p>Stories and ideas stay here for the next person.</p>
       </div>
-      {loadedRoom === roomId && <TestnetRelease roomId={roomId} moments={moments} tipId={selectedId} makerId={profile?.id} />}
+      {loadedRoom === roomId && <RoomNetworkPlate roomId={roomId} />}
       {loadedRoom === roomId && credits && <PilotRoomActivity credits={{ ...credits, ...activity }} interrupted={!!syncError} />}
-      {(error || syncError || pathError) && (
+      {(error || syncError || pathError || account?.error) && (
         <div className="pilot-notice" role="alert">
-          <p>{error || syncError || pathError}</p>
+          <p>{error || syncError || pathError || account?.error}</p>
           <button
             className="text-button"
             onClick={() => window.location.reload()}
@@ -761,17 +794,20 @@ export function SharedPilot() {
               aria-label="Story map, growing upward"
             >
               <div className="pilot-map-title">
-                <div>
-                  <h2>The whole story</h2>
-                  <p>
+                <SectionPlate
+                  title="The whole story"
+                  icon={MapIcon}
+                  tone="lavender"
+                  description={<>
                     <ArrowUp size={16} /> Every moment opens a possibility ·{" "}
                     {moments.length}{" "}
                     {moments.length === 1 ? "moment" : "moments"}
-                  </p>
-                </div>
-                <button className="text-button" onClick={() => setView("read")}>
-                  <ArrowLeft size={17} /> Back to your moment
-                </button>
+                  </>}
+                  action={<button className="text-button" onClick={() => setView("read")}>
+                    <ArrowLeft size={17} /> Back to your moment
+                  </button>}
+                  className="pilot-map-sign"
+                />
               </div>
               <PilotMap
                 client={client}
@@ -803,45 +839,47 @@ export function SharedPilot() {
                 className="pilot-reader"
                 aria-label="Read and continue the story"
               >
-                <div className="pilot-moment-context">
-                  <span className="pilot-letter">
-                    {reviewing ? <Sparkles size={20} /> : selectedLabel}
-                  </span>
-                  <div>
-                    <p>
-                      {reviewing
-                        ? "Private preview · only you can see this"
-                        : `Moment ${selectedIndex + 1} on this path`}
-                      {!reviewing && updates.newIds.has(selected.id) && (
-                        <small className="pilot-new">New</small>
-                      )}
-                    </p>
-                    <p className="pilot-byline">
-                      <strong>
+                <header className="pilot-scene-plate">
+                  <div className="pilot-moment-context">
+                    <span className="pilot-letter">
+                      {reviewing ? <Sparkles size={20} /> : selectedLabel}
+                    </span>
+                    <div>
+                      <p>
                         {reviewing
-                          ? profile?.display_name
-                          : selected.maker_label}
-                      </strong>
-                      {reviewing ? (
-                        " · ready for your review"
-                      ) : parent ? (
-                        <>
-                          {" "}
-                          built on{" "}
-                          <button
-                            className="text-button"
-                            onClick={() => select(parent.id)}
-                          >
-                            {parent.maker_label}
-                          </button>
-                        </>
-                      ) : (
-                        " started this story"
-                      )}
-                    </p>
+                          ? "Private preview · only you can see this"
+                          : `Moment ${selectedIndex + 1} on this path`}
+                        {!reviewing && updates.newIds.has(selected.id) && (
+                          <small className="pilot-new">New</small>
+                        )}
+                      </p>
+                      <p className="pilot-byline">
+                        <strong>
+                          {reviewing
+                            ? profile?.display_name
+                            : selected.maker_label}
+                        </strong>
+                        {reviewing ? (
+                          " · ready for your review"
+                        ) : parent ? (
+                          <>
+                            {" "}
+                            built on{" "}
+                            <button
+                              className="text-button"
+                              onClick={() => select(parent.id)}
+                            >
+                              {parent.maker_label}
+                            </button>
+                          </>
+                        ) : (
+                          " started this story"
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <h2>{reviewing ? operation.title : selected.title}</h2>
+                  <h2>{reviewing ? operation.title : selected.title}</h2>
+                </header>
                 <PilotArtwork
                   key={reviewing ? operation.id : selected.id}
                   client={client}
@@ -858,228 +896,29 @@ export function SharedPilot() {
               </section>
               {!reviewing && ideaSection}
               <div className="pilot-reader-actions">
-                {(composing || operation) && (
-                  <section
-                    className="pilot-task"
-                    aria-label="Your continuation"
-                  >
-                    <h2 ref={taskHeading} tabIndex={-1}>
-                      {operation?.status === "delivered"
-                        ? "Your moment, ready to share"
-                        : operation?.status === "published"
-                          ? "You’re part of the story"
-                          : "Make the next moment yours"}
-                    </h2>
-                    {!profile ? (
-                      <form
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          void act(async () => {
-                            await join(name);
-                            setComposing(true);
-                          });
-                        }}
-                      >
-                        <p>
-                          Your name appears on the moments you publish. No
-                          wallet needed.
-                        </p>
-                        <label>
-                          Your storyteller name
-                          <input
-                            required
-                            maxLength={60}
-                            autoComplete="nickname"
-                            value={name}
-                            onChange={(event) => setName(event.target.value)}
-                          />
-                        </label>
-                        <button className="button primary" disabled={busy}>
-                          Join as a guest
-                        </button>
-                        <button
-                          type="button"
-                          className="text-button"
-                          disabled={busy}
-                          onClick={() => {
-                            setDraft(undefined);
-
-                            setComposing(false);
-                          }}
-                        >
-                          Cancel continuation
-                        </button>
-                        <small>
-                          Your guest identity stays in this browser.
-                        </small>
-                      </form>
-                    ) : operation ? (
-                      <>
-                        {!finalStates.has(operation.status) && <PilotGenerationStatus operation={operation} interrupted={!!syncError} />}
-                        <p className="pilot-parent">
-                          Building on{" "}
-                          <strong>
-                            {
-                              moments.find(
-                                (item) => item.id === operation.parent_id,
-                              )?.title
-                            }
-                          </strong>
-                        </p>
-                        {operation.status === "discarded" && (
-                          <PilotPanels
-                            client={client}
-                            panels={pilotPanels(operation.panels)}
-                          />
-                        )}
-                        {operation.status === "delivered" ? (
-                          <>
-                            <p>
-                              Your moment is saved. Publishing makes it public
-                              so others can continue, with your name in the
-                              credits.
-                            </p>
-                            <div className="button-row">
-                              <button
-                                className="button primary"
-                                disabled={busy}
-                                onClick={() =>
-                                  void act(async () => {
-                                    const result = await client.rpc(
-                                      "pilot_publish",
-                                      { p_operation_id: operation.id },
-                                    );
-                                    if (result.error)
-                                      throw new Error(
-                                        "Publication could not be confirmed. Try again to check the same saved moment.",
-                                      );
-                                    setOperation({
-                                      ...operation,
-                                      status: "published",
-                                      published_moment_id: result.data.id,
-                                    });
-                                    setMoments((items) =>
-                                      items.some(
-                                        (item) => item.id === result.data.id,
-                                      )
-                                        ? items
-                                        : [...items, result.data],
-                                    );
-                                    select(result.data.id, true);
-                                    setDraft(undefined);
-                                    setComposing(false);
-                                  })
-                                }
-                              >
-                                Publish my moment
-                              </button>
-                              <button
-                                className="button secondary"
-                                disabled={busy}
-                                onClick={() =>
-                                  void act(async () => {
-                                    const result = await client.rpc(
-                                      "pilot_discard",
-                                      { p_operation_id: operation.id },
-                                    );
-                                    if (result.error)
-                                      throw new Error(
-                                        "Discard could not be confirmed. Your saved result remains available.",
-                                      );
-                                    setOperation({
-                                      ...operation,
-                                      status: "discarded",
-                                    });
-                                  })
-                                }
-                              >
-                                Discard
-                              </button>
-                            </div>
-                            <small>
-                              {operation.charged_units} room{" "}
-                              {operation.charged_units === 1
-                                ? "credit"
-                                : "credits"}{" "}
-                              used for this complete moment, even if discarded.
-                            </small>
-                          </>
-                        ) : operation.status === "published" ? (
-                          <>
-                            <p>
-                              Published with credit to {profile.display_name}.
-                              Anyone in this room can now build on it.
-                            </p>
-                            <button
-                              className="button secondary"
-                              onClick={() => start()}
-                            >
-                              Continue from here
-                            </button>
-                          </>
-                        ) : finalStates.has(operation.status) ? (
-                          <>
-                            <p>
-                              {operation.status === "discarded"
-                                ? `Kept off the public story. The completed generation used ${operation.charged_units} room ${operation.charged_units === 1 ? "credit" : "credits"}.`
-                                : (operation.generation_error ??
-                                  "This moment could not be completed. No room credit was used.")}
-                            </p>
-                            <button
-                              className="button secondary"
-                              onClick={() => start()}
-                            >
-                              Try a new idea
-                            </button>
-                          </>
-                        ) : (
-                          <div className="pilot-progress">
-                            <button
-                              className="button secondary"
-                              disabled={busy}
-                              onClick={() => void act(() => enqueue(operation))}
-                            >
-                              <RefreshCw size={16} />
-                              {operation.status === "draft"
-                                ? "Generate saved idea"
-                                : "Check saved result"}
-                            </button>
-                            <small>
-                              {operation.status === "draft"
-                                ? `${pilotCreditCost(Array.isArray(operation.requested_captions) ? operation.requested_captions.length : 2) === 1 ? "1 room credit" : "2 room credits"} only when every panel arrives.`
-                                : "Checking never buys a recorded panel again."}
-                            </small>
-                          </div>
-                        )}
-                      </>
-                    ) : draft && view === "read" ? (
-                      <PilotComposer
-                        key={`${draft.requestId}:${selectedId}`}
-                        client={client}
-                        draft={draft}
-                        parent={
-                          moments.find((item) => item.id === draft.parentId) ??
-                          selected
-                        }
-                        busy={busy}
-                        credits={credits}
-                        onChange={changeDraft}
-                        onGenerate={() => void act(generate)}
-                        onCancel={cancelDraft}
-                        onIdea={(id) => void pickUpIdea(id)}
-                        onInspect={() => {
-                          if (inspectingSource && selectedId === draft.parentId)
-                            setInspectingSource(false);
-                          else select(draft.parentId);
-                        }}
-                        inspecting={
-                          inspectingSource && selectedId === draft.parentId
-                        }
-                      />
-                    ) : null}
-                  </section>
-                )}
-                {!reviewing && (
+                <PilotContinuation
+                  key={profile?.id ?? account?.user?.id ?? "visitor"}
+                  client={client} selected={selected} moments={moments} profile={profile} authenticated={isSavedAccount(account?.user)}
+                  operation={operation} draft={draft} composing={composing} composerVisible={view === "read"} busy={busy || releaseBusy || !!account?.loading || !!account?.error && !account.user}
+                  interrupted={!!syncError} credits={credits} inspecting={inspectingSource}
+                  heading={taskHeading}
+                  actions={{
+                    join: (name) => void act(async () => { await join(name); setComposing(true); }),
+                    google: account?.enabled ? (name) => void act(async () => { await join(name); await account.signIn("link"); }) : undefined,
+                    returning: account?.enabled ? () => void act(async () => { await account.signIn("return"); }) : undefined,
+                    publish: () => void act(publishMoment),
+                    discard: () => void act(discardMoment),
+                    check: () => operation && void act(() => enqueue(operation)),
+                    continue: () => start(), share: () => void share(),
+                    change: changeDraft, generate: () => void act(generate), cancel: cancelDraft,
+                    useIdea: (id) => void pickUpIdea(id),
+                    inspect: () => {
+                      if (inspectingSource && selectedId === draft?.parentId) setInspectingSource(false);
+                      else if (draft) select(draft.parentId);
+                    },
+                  }}
+                />
+                {!reviewing && !(operation?.status === "published" && operation.published_moment_id === selected.id) && (
                   <div
                     className="pilot-story-actions"
                     onDragOver={(event) => {
@@ -1098,6 +937,7 @@ export function SharedPilot() {
                     <button
                       className="button primary"
                       hidden={composing && !!draft}
+                      disabled={busy || releaseBusy}
                       onClick={() => start()}
                     >
                       <GitBranch size={18} />
@@ -1107,6 +947,7 @@ export function SharedPilot() {
                     </button>
                     <button
                       className="button secondary"
+                      disabled={busy || releaseBusy}
                       onClick={() => void share()}
                     >
                       <Share2 size={18} /> Share this moment
@@ -1123,6 +964,18 @@ export function SharedPilot() {
                     />
                   </label>
                 )}
+                <div hidden={composing || hasActive || reviewing}>
+                  <TestnetRelease
+                    roomId={roomId} moments={moments} tipId={path.at(-1)!.id}
+                    makerId={profile?.id} makerName={profile?.display_name} client={client}
+                    onBusyChange={setReleaseBusy}
+                    onChoosePath={(id) => select(id, true)}
+                    onInspect={(id) => {
+                      select(id);
+                      requestAnimationFrame(() => document.querySelector(".pilot-reader")?.scrollIntoView({ block: "start" }));
+                    }}
+                  />
+                </div>
                 {credits && (
                   <p className="pilot-credit-line">
                     <Sparkles size={15} />
@@ -1176,7 +1029,7 @@ export function SharedPilot() {
                       className="pilot-continuations"
                       aria-label="What others made next"
                     >
-                      <h3>Where others took it</h3>
+                      <SectionPlate title="Where others took it" icon={GitBranch} tone="lavender" level={3} className="pilot-branch-sign" />
                       {moments
                         .filter((item) => item.parent_id === selected.id)
                         .map((item) => (
@@ -1283,14 +1136,15 @@ function PilotMap({
             style={{ left: `calc(50% + ${x - center - 90}px)`, top: y }}
             data-moment={moment.id}
             aria-pressed={selectedId === moment.id}
-            aria-label={`Read ${moment.title}, by ${moment.maker_label}`}
             onClick={() => onSelect(moment.id)}
           >
-            <PilotImage
-              client={client}
-              panel={pilotPanels(moment.panels)[0]}
-              allowRetry={false}
-            />
+            <span aria-hidden="true" style={{ display: "block" }}>
+              <PilotImage
+                client={client}
+                panel={pilotPanels(moment.panels)[0]}
+                allowRetry={false}
+              />
+            </span>
             <strong>{moment.title}</strong>
             <span>{moment.maker_label}</span>
           </button>

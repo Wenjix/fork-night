@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, ChevronDown, Map as MapIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, BookOpen, ChevronDown, Map as MapIcon } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { pilotPanels, type PilotMoment } from "@/lib/pilot";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/pilot-social";
 import { PilotImage } from "./pilot-panels";
 import { PilotDialog } from "./pilot-dialog";
+import { SectionPlate } from "./visual-plates";
 
 export function PilotRecap({
   client,
@@ -31,9 +32,31 @@ export function PilotRecap({
 }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const thumbnails = useRef<HTMLDivElement>(null);
   const updates = pathUpdates(path, baseline);
   const window = recapWindow(path, selectedId, expanded);
   const compact = recapWindow(path, selectedId);
+  const thumbnailIds = compact.moments.map((moment) => moment.id).join(",");
+  useEffect(() => {
+    const region = thumbnails.current;
+    if (!region) return;
+    function revealCurrent() {
+      if (!region || !region.clientWidth) return;
+      const current = region.querySelector('[aria-current="step"]');
+      if (!current) return;
+      const viewport = region.getBoundingClientRect();
+      const item = current.getBoundingClientRect();
+      const left = item.left - viewport.left - 8;
+      const right = item.right - viewport.right + 8;
+      if (left < 0 || right > 0) {
+        region.scrollBy({ left: left < 0 ? left : right, behavior: "instant" });
+      }
+    }
+    revealCurrent();
+    const resize = new ResizeObserver(revealCurrent);
+    resize.observe(region);
+    return () => resize.disconnect();
+  }, [selectedId, thumbnailIds]);
   const tip = path.at(-1)!;
   const tipLetter = momentLetter(path.length - 1);
   const newLabel = `${updates.newIds.size} new since your last visit`;
@@ -55,13 +78,12 @@ export function PilotRecap({
               <button
                 className="pilot-recap-row"
                 aria-current={moment.id === selectedId ? "step" : undefined}
-                aria-label={`Read moment ${momentLetter(index)}: ${moment.title}, by ${moment.maker_label}`}
                 onClick={() => choose(moment.id)}
               >
-                <span className="pilot-letter" aria-hidden="true">
+                <span className="pilot-letter">
                   {momentLetter(index)}
                 </span>
-                <span className="pilot-recap-art">
+                <span className="pilot-recap-art" aria-hidden="true">
                   <PilotImage
                     client={client}
                     panel={pilotPanels(moment.panels)[0]}
@@ -93,10 +115,13 @@ export function PilotRecap({
   return (
     <>
       <aside className="pilot-recap-desktop" aria-label="Story so far">
-        <h2>Story so far</h2>
-        <p>
-          This path · {path.length} {path.length === 1 ? "moment" : "moments"}
-        </p>
+        <SectionPlate
+          title="Story so far"
+          description={`This path · ${path.length} ${path.length === 1 ? "moment" : "moments"}`}
+          icon={BookOpen}
+          tone="lavender"
+          className="pilot-recap-sign"
+        />
         {updates.newIds.size > 0 && (
           <p
             className="pilot-catchup"
@@ -146,32 +171,34 @@ export function PilotRecap({
       <section className="pilot-recap-mobile" aria-label="Quick story recap">
         <div className="pilot-recap-mobile-heading">
           <button className="text-button" onClick={() => setOpen(true)}>
-            Story so far <ChevronDown size={16} />
+            <BookOpen size={20} aria-hidden="true" /> Story so far <ChevronDown size={16} />
           </button>
           <span>
             {momentLetter(0)}
             {path.length > 1 ? ` to ${tipLetter}` : " · 1 moment"}
           </span>
         </div>
-        <div className="pilot-thumbnail-path">
+        <div className="pilot-thumbnail-path" ref={thumbnails}>
           {compact.moments.map((moment) => (
             <button
               key={moment.id}
               onClick={() => onSelect(moment.id)}
               aria-current={selectedId === moment.id ? "step" : undefined}
-              aria-label={`Read moment ${momentLetter(path.indexOf(moment))}: ${moment.title}${updates.newIds.has(moment.id) ? ", new" : ""}`}
             >
-              <PilotImage
-                client={client}
-                panel={pilotPanels(moment.panels)[0]}
-                allowRetry={false}
-              />
+              <span aria-hidden="true" style={{ display: "block" }}>
+                <PilotImage
+                  client={client}
+                  panel={pilotPanels(moment.panels)[0]}
+                  allowRetry={false}
+                />
+              </span>
               <span className="pilot-thumbnail-label">
                 {momentLetter(path.indexOf(moment))}
                 {updates.newIds.has(moment.id) && (
                   <small className="pilot-new">New</small>
                 )}
               </span>
+              {" "}
               <span className="pilot-thumbnail-title" title={moment.title}>
                 {moment.title}
               </span>

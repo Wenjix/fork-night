@@ -31,7 +31,7 @@ export function PilotRoomActivity({ credits, interrupted = false }: { credits: P
         {activity.queued + activity.generating + activity.checking === 0 && <span>No image requests in progress</span>}
       </div> : <span>{credits.reserved > 0 ? "Image requests are pending; detailed activity is unavailable." : "Detailed activity is unavailable."}</span>}
     </div>
-    <p><Sparkles size={15} aria-hidden="true" />{credits.available} {credits.available === 1 ? "room credit available" : "room credits available"}
+    <p className="pilot-room-capacity"><Sparkles size={19} aria-hidden="true" /><strong>{credits.available} {credits.available === 1 ? "room credit available" : "room credits available"}</strong>
       {credits.reserved > 0 && <span>{credits.reserved} reserved for unfinished requests</span>}
       {!credits.enabled && <span>New image generation is paused</span>}
     </p>

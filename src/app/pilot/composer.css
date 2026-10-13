@@ -35,17 +35,19 @@
 }
 .pilot-composer-source p {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   flex: 1;
 }
 .pilot-composer-source strong {
   color: var(--ink);
   display: block;
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 20px;
+  line-height: 1.3;
   margin: 3px 0;
   overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 650;
 }
 .pilot-composer-source span {
   display: block;
@@ -75,7 +77,7 @@
 }
 .pilot-task .pilot-idea-pocket small {
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .pilot-idea-pocket.has-idea {
   background: transparent;
@@ -98,7 +100,8 @@
 }
 .pilot-carried-idea strong {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
 }
 .pilot-carried-idea p {
   margin: 12px 0 8px;
@@ -159,8 +162,8 @@
 }
 .pilot-helper-copy {
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.55;
   margin: 8px 0 0;
 }
 .pilot-composer .text-button {
@@ -185,7 +188,7 @@
 }
 .pilot-composer-notice {
   color: var(--violet);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.5;
   margin: 0;
 }
@@ -194,7 +197,7 @@
 }
 .pilot-task .pilot-generate-action small {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .pilot-cancel-draft {
   justify-self: start;
@@ -214,7 +217,7 @@
 }
 .pilot-inspiration {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   margin: 12px 0;
   overflow-wrap: anywhere;
@@ -248,18 +251,22 @@
     order: -2;
   }
   .pilot-composer-source {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
     gap: 10px;
-    flex-wrap: wrap;
+    align-items: start;
   }
   .pilot-source-thumb {
     width: 56px;
     height: 56px;
+    grid-row: 1 / 3;
   }
   .pilot-composer-source .text-button {
+    grid-column: 2;
+    justify-self: start;
     text-align: left;
     max-width: none;
-    margin-left: 66px;
-    margin-top: -6px;
+    margin: 0;
   }
   .pilot-task .pilot-composer {
     display: grid;
@@ -300,7 +307,7 @@
 }
 
 .pilot-voice-time {
-  font-size: 12px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--violet);
   margin: 6px 0;
@@ -311,15 +318,16 @@
 }
 .pilot-task .pilot-idea-title label {
   display: block;
-  font-size: 25px;
+  font-size: 26px;
   font-weight: 650;
   letter-spacing: -0.025em;
   line-height: 1.2;
+  font-family: var(--font-display), sans-serif;
 }
 .pilot-idea-title > span {
   display: block;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   margin-top: 8px;
 }
 .pilot-writing-surface {
@@ -355,12 +363,13 @@
 }
 .pilot-play-angles > span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 .pilot-play-angles .text-button {
-  font-size: 12px;
+  font-size: 14px;
   border-bottom: 1px solid transparent;
   border-radius: 0;
+  font-weight: 600;
 }
 .pilot-play-angles .text-button[aria-pressed="true"] {
   border-color: var(--violet);
@@ -377,14 +386,14 @@
 .pilot-play-prompt blockquote {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
   max-width: 65ch;
   overflow-wrap: anywhere;
 }
 .pilot-task .pilot-play-prompt small {
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 13px;
 }
 .pilot-possibilities {
   margin-top: 24px;
@@ -395,7 +404,9 @@
 }
 .pilot-possibilities h4 {
   margin: 0 0 10px;
-  font-size: 17px;
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 1.3;
 }
 .pilot-possibilities p {
   font-size: 16px;
@@ -409,17 +420,19 @@
   align-items: baseline;
   gap: 12px;
   margin: 20px 0 8px;
+  flex-wrap: wrap;
 }
 .pilot-sequence-heading h3 {
-  font-size: 25px;
+  font-size: 26px;
   line-height: 1.3;
   margin: 0;
   letter-spacing: -0.025em;
+  font-weight: 650;
 }
 .pilot-sequence-heading > span {
   color: var(--muted);
-  font-size: 13px;
-  white-space: nowrap;
+  font-size: 14px;
+  white-space: normal;
 }
 .pilot-panel-drafts {
   margin: 22px 0 8px;
@@ -435,7 +448,7 @@
   min-height: 44px;
 }
 .pilot-task .pilot-panel-draft-bar label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   font-weight: 500;
 }
@@ -464,7 +477,7 @@
   padding-top: 24px;
 }
 .pilot-generate-action > p {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.5;
   margin: 14px 0 4px;
@@ -474,7 +487,7 @@
   font-weight: 650;
 }
 .pilot-task .pilot-generate-action small {
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.6;
   margin-top: 4px;
   max-width: 65ch;
@@ -500,7 +513,8 @@
   }
   .pilot-task .pilot-idea-title label,
   .pilot-sequence-heading h3 {
-    font-size: 23px;
+    font-size: 25px;
+    font-weight: 650;
   }
   .pilot-play-angles {
     gap: 3px 12px;

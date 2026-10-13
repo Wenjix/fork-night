@@ -7,7 +7,7 @@
 .fandom-art-direction legend {
   padding: 0;
   margin-bottom: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 .fandom-art-options {
@@ -22,7 +22,7 @@
   border: 1px solid var(--line-strong);
   border-radius: 9px;
   background: transparent;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   transition: background-color 140ms ease-out;
 }
@@ -37,7 +37,7 @@
 .fandom-art-direction > p {
   margin-top: 8px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.5;
 }
 .social-app .fandom-art-options button {

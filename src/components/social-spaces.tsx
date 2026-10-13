@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type ComponentProps,
   type CSSProperties,
   type FormEvent,
   type ReactNode,
@@ -72,6 +73,10 @@ import { fandomImageInStyle, type ArtDirections } from "@/lib/fandom-art-directi
 import { FandomArtDirection } from "./fandom-art-direction";
 import { RoomPeek } from "./room-peek";
 import { PersonalDesk } from "./personal-desk";
+import { ContextPlate, SectionPlate } from "./visual-plates";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { projectActivity } from "@/social/activity";
 import {
   commitSocialChange,
@@ -241,7 +246,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
           <ChevronDown size={15} />
         </label>
       </header>
-      <div className="social-demo-strip">
+      <div className="social-demo-strip" role="region" aria-label="Local preview information">
         <span>
           Local preview · fictional people and credits · saved in this browser
         </span>
@@ -406,19 +411,22 @@ function RouteLink({
   children,
   className = "",
   current = false,
+  onClick,
+  ...anchorProps
 }: {
   route: SocialRoute;
   navigate: ViewProps["navigate"];
-  children: ReactNode;
-  className?: string;
   current?: boolean;
-}) {
+} & Omit<ComponentProps<"a">, "href" | "aria-current">) {
   return (
     <a
+      {...anchorProps}
       className={className}
       href={formatSocialRoute(route)}
       aria-current={current ? "page" : undefined}
       onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented) return;
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
           return;
         event.preventDefault();
@@ -533,6 +541,7 @@ function RoomProgress({
         {activity.contributors === 1 ? "contributor" : "contributors"}
       </span>
       <span
+        role="img"
         aria-label={`${activity.moments} published ${activity.moments === 1 ? "moment" : "moments"}`}
       >
         <svg
@@ -619,14 +628,15 @@ function Lobby(props: ViewProps) {
   }
   const entryActions = selected ? (
     <div className={`room-entry-actions${selectedStory ? " fandom-room-entry-actions" : ""}`}>
-      <button
+      <Button
         className="social-button yellow"
         onClick={() => onOpenProject(selected.id)}
       >
         Step inside <ArrowRight size={19} />
-      </button>
+      </Button>
       {selectedStory && (
-        <button
+        <Button
+          variant="outline"
           className="social-button outline"
           onClick={() => onOpenProject(selected.id, {
             momentId: `${selectedStory.id}-${selectedStory.leadEnding}`,
@@ -634,7 +644,7 @@ function Lobby(props: ViewProps) {
           })}
         >
           Read a complete path <BookOpen size={18} />
-        </button>
+        </Button>
       )}
     </div>
   ) : null;
@@ -660,7 +670,7 @@ function Lobby(props: ViewProps) {
               placeholder="Find a room or guild"
             />
           </label>
-          <div className="social-segments" aria-label="Filter rooms">
+          <div className="social-segments" role="group" aria-label="Filter rooms">
             {[
               ["all", "All rooms"],
               ["mine", "My guilds"],
@@ -690,16 +700,16 @@ function Lobby(props: ViewProps) {
                 >
                   <button
                     className="room-art-button"
-                    aria-label={`Show room details for ${project.title}`}
+                    aria-label={`Show room details for ${project.title}, ${story ? "Fan story" : "Open story"}`}
                     aria-controls="room-preview"
                     onClick={() => showRoomDetails(project.id)}
                     aria-pressed={selected?.id === project.id}
                   >
                     <Cover project={{ ...project, coverUrl: fandomImageInStyle(project.id, project.coverUrl, artDirections[project.id]) }} />
-                    <span className="room-ribbon">
+                    <Badge className="room-ribbon">
                       <Globe2 size={12} />
                       {story ? "Fan story" : "Open story"}
-                    </span>
+                    </Badge>
                   </button>
                   <div className="room-card-body">
                     <h2>{project.title}</h2>
@@ -751,22 +761,21 @@ function Lobby(props: ViewProps) {
             </button>
           </Empty>
         )}
-        <div className="lobby-invitation">
-          <Feather size={23} />
-          <div>
-            <strong>Bring one strange little idea.</strong>
-            <p>
-              You can read a story and find your starting point before spending.
-            </p>
+        <ContextPlate icon={Feather} tone="butter" className="lobby-invitation">
+          <div className="lobby-invitation-copy">
+            <div>
+              <strong>Bring one strange little idea.</strong>
+              <p>
+                You can read a story and find your starting point before spending.
+              </p>
+            </div>
+            <Button asChild variant="link" className="social-link">
+              <RouteLink route={{ kind: "spaces" }} navigate={navigate}>
+                Find your people <ArrowRight size={16} />
+              </RouteLink>
+            </Button>
           </div>
-          <RouteLink
-            route={{ kind: "spaces" }}
-            navigate={navigate}
-            className="social-link"
-          >
-            Find your people <ArrowRight size={16} />
-          </RouteLink>
-        </div>
+        </ContextPlate>
       </section>
       {selected && (
         <aside
@@ -791,12 +800,17 @@ function Lobby(props: ViewProps) {
                 ))}
             </div>
             <RoomProgress demo={demo} projectId={selected.id} details={!selectedStory?.visualStyles} />
-            <h3>
-              {selectedStory ? selectedStory.question : selected.id === "moon-bus"
-                ? "Help us invent the way home."
-                : "There’s room for your version."}
-            </h3>
-            {selectedStory && entryActions}
+            <ContextPlate icon={Feather} tone="paper" className="room-invitation-plate">
+              <h3>
+                {selectedStory ? selectedStory.question : selected.id === "moon-bus"
+                  ? "Help us invent the way home."
+                  : "There’s room for your version."}
+              </h3>
+              {entryActions}
+              <small>
+                Open project · anyone can fork · uses your personal balance
+              </small>
+            </ContextPlate>
             {selectedStory?.visualStyles && (
               <FandomArtDirection projectId={selected.id} value={artDirections[selected.id]} onChange={onArtDirectionChange} />
             )}
@@ -813,7 +827,6 @@ function Lobby(props: ViewProps) {
                 }
               </p>
             </div>
-            {!selectedStory && entryActions}
             {host && (
               <div className="host-invitation">
                 <GuildMark guild={host} />
@@ -821,18 +834,13 @@ function Lobby(props: ViewProps) {
                   <strong>{host.name}</strong>
                   <p>{host.tagline}</p>
                 </div>
-                <RouteLink
-                  route={{ kind: "guild", guildId: host.id }}
-                  navigate={navigate}
-                  className="social-button outline"
-                >
-                  Meet the guild <ArrowRight size={15} />
-                </RouteLink>
+                <Button asChild variant="outline" className="social-button outline">
+                  <RouteLink route={{ kind: "guild", guildId: host.id }} navigate={navigate}>
+                    Meet the guild <ArrowRight size={15} />
+                  </RouteLink>
+                </Button>
               </div>
             )}
-            <small>
-              Open project · anyone can fork · uses your personal balance
-            </small>
           </div>
         </aside>
       )}
@@ -842,11 +850,14 @@ function Lobby(props: ViewProps) {
 
 function ProjectTile({ project, ...props }: ViewProps & { project: Project }) {
   const makers = makersFor(props.demo, project.id);
+  const momentCount = props.demo.moments.filter(
+    (moment) => moment.projectId === project.id,
+  ).length;
   return (
     <article className="project-tile">
       <div className="project-tile-art">
         <Cover project={project} />
-        <span
+        <Badge
           className={`room-ribbon ${project.visibility === "private" ? "private" : ""}`}
         >
           {project.visibility === "private" ? (
@@ -857,7 +868,7 @@ function ProjectTile({ project, ...props }: ViewProps & { project: Project }) {
           {project.visibility === "private"
             ? "Private project"
             : "Open project"}
-        </span>
+        </Badge>
       </div>
       <div className="project-tile-body">
         <h3>{project.title}</h3>
@@ -867,12 +878,7 @@ function ProjectTile({ project, ...props }: ViewProps & { project: Project }) {
             <Maker key={person.id} id={person.id} name={person.name} />
           ))}
           <span>
-            {
-              props.demo.moments.filter(
-                (moment) => moment.projectId === project.id,
-              ).length
-            }{" "}
-            published moments
+            {momentCount} published {momentCount === 1 ? "moment" : "moments"}
           </span>
         </div>
         <button
@@ -1173,7 +1179,7 @@ function GuildHall(props: ViewProps & { guildId: string }) {
             label="Sam, Priya and Jules draw stories around a shared table"
           />
         </section>
-        <div className="social-segments hall-tabs" aria-label="Guild hall view">
+        <div className="social-segments hall-tabs" role="group" aria-label="Guild hall view">
           {["hall", "projects", "people"].map((value) => (
             <button
               key={value}
@@ -1428,18 +1434,16 @@ function Spaces(props: ViewProps) {
           <h1>My spaces</h1>
           <p>Your guilds, close friends and unfinished stories.</p>
         </div>
-        <RouteLink
-          route={{ kind: "desk" }}
-          navigate={navigate}
-          className="social-button outline"
-        >
-          <Feather size={17} />
-          Your desk <ArrowRight size={17} />
-        </RouteLink>
+        <Button asChild variant="outline" className="social-button outline">
+          <RouteLink route={{ kind: "desk" }} navigate={navigate}>
+            <Feather size={17} />
+            Your desk <ArrowRight size={17} />
+          </RouteLink>
+        </Button>
       </div>
       <div className="spaces-columns">
         <section>
-          <h2>Your guilds</h2>
+          <SectionPlate title="Your guilds" icon={Lamp} tone="night" className="spaces-room-sign" />
           <div className="space-list">
             {guilds.map((guild) => (
               <RouteLink
@@ -1474,7 +1478,7 @@ function Spaces(props: ViewProps) {
           </div>
         </section>
         <section>
-          <h2>Just among friends</h2>
+          <SectionPlate title="Just among friends" icon={Users} tone="lavender" className="spaces-room-sign" />
           {friends.map((space) => {
             const member = demo.memberships.find(
               (item) =>
@@ -1502,7 +1506,7 @@ function Spaces(props: ViewProps) {
                       finished stories externally with credits. Notes, private
                       drafts, prompts and membership stay private.
                     </p>
-                    <button
+                    <Button
                       className="social-button yellow"
                       onClick={() =>
                         onUpdateDemo(
@@ -1516,26 +1520,25 @@ function Spaces(props: ViewProps) {
                       }
                     >
                       Accept invitation and terms <ArrowRight size={17} />
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>
                     <p>{space.description}</p>
                     <div className="friend-space-actions">
-                      <RouteLink
-                        route={{ kind: "ideas", boardId: space.id }}
-                        navigate={navigate}
-                        className="social-button yellow"
-                      >
-                        Ideas left for us <ArrowRight size={17} />
-                      </RouteLink>
+                      <Button asChild className="social-button yellow">
+                        <RouteLink route={{ kind: "ideas", boardId: space.id }} navigate={navigate}>
+                          Ideas left for us <ArrowRight size={17} />
+                        </RouteLink>
+                      </Button>
                       {projects[0] && (
-                        <button
+                        <Button
+                          variant="link"
                           className="social-link"
                           onClick={() => onOpenProject(projects[0].id)}
                         >
                           Continue our story <ArrowRight size={15} />
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </>
@@ -1617,6 +1620,16 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
         ideaId: idea.id,
       });
   }
+  const emptyBoard = (
+    <Empty title="Leave the first little spark.">
+      <p>
+        A question, a sketch, an impossible ending. It can start small.
+      </p>
+      <Button className="social-button purple" onClick={() => setComposer(true)}>
+        Leave an idea <Plus size={17} />
+      </Button>
+    </Empty>
+  );
   return (
     <div className="ideas-page">
       <div className="social-breadcrumb">
@@ -1638,7 +1651,11 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
         <span>Ideas</span>
       </div>
       <div className="ideas-layout">
-        <div className="ideas-center">
+        <Tabs
+          className="ideas-center"
+          value={mode}
+          onValueChange={(value) => setMode(value as "board" | "timeline")}
+        >
           <div className="ideas-heading">
             <div>
               <h1>Ideas left for us.</h1>
@@ -1656,7 +1673,7 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
                 </div>
               ))}
             </div>
-            <button
+            <Button
               className="social-button purple"
               onClick={() => {
                 setComposer(true);
@@ -1666,25 +1683,19 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
             >
               <Plus size={18} />
               Leave an idea
-            </button>
+            </Button>
           </div>
           <div className="board-toolbar">
-            <div className="social-segments" aria-label="Ideas view">
-              <button
-                aria-pressed={mode === "board"}
-                onClick={() => setMode("board")}
-              >
+            <TabsList className="social-segments" aria-label="Ideas view">
+              <TabsTrigger value="board">
                 <LayoutGrid size={16} />
                 Board
-              </button>
-              <button
-                aria-pressed={mode === "timeline"}
-                onClick={() => setMode("timeline")}
-              >
+              </TabsTrigger>
+              <TabsTrigger value="timeline">
                 <List size={16} />
                 Timeline
-              </button>
-            </div>
+              </TabsTrigger>
+            </TabsList>
             <span>
               <Check size={14} />
               Saved for this group, in this browser
@@ -1701,19 +1712,8 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
               }}
             />
           )}
-          {!ideas.length ? (
-            <Empty title="Leave the first little spark.">
-              <p>
-                A question, a sketch, an impossible ending. It can start small.
-              </p>
-              <button
-                className="social-button purple"
-                onClick={() => setComposer(true)}
-              >
-                Leave an idea <Plus size={17} />
-              </button>
-            </Empty>
-          ) : mode === "board" ? (
+          <TabsContent value="board" className="ideas-view-panel">
+          {!ideas.length ? emptyBoard : (
             <div className="idea-grid">
               {ideas.map((idea, index) => (
                 <IdeaCard
@@ -1727,7 +1727,10 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
                 />
               ))}
             </div>
-          ) : (
+          )}
+          </TabsContent>
+          <TabsContent value="timeline" className="ideas-view-panel">
+          {!ideas.length ? emptyBoard : (
             <ol className="idea-timeline">
               {activities.map((activity) => {
                 const idea = ideas.find((item) => item.id === activity.ideaId);
@@ -1772,15 +1775,16 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
               })}
             </ol>
           )}
+          </TabsContent>
           <p className="board-boundary">
             <LockKeyhole size={15} />
             Notes stay private. Turning an idea into a draft does not publish it
             or spend credits.
           </p>
-        </div>
+        </Tabs>
         <aside className="ideas-aside">
           <section className="since-here">
-            <h2>Recently left here</h2>
+            <SectionPlate title="Recently left here" icon={MessageCircle} tone="lavender" className="ideas-recent-sign" />
             {activities.slice(0, 5).map((activity) => {
               const person = demo.users.find(
                 (user) => user.id === activity.actorId,
@@ -1830,19 +1834,19 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
               )}
               <h3>{selected.title}</h3>
               {contextMoment ? (
-                <>
+                <ContextPlate icon={BookOpen} tone="lavender" className="idea-starting-plate">
                   <p>
-                    <BookOpen size={15} />
                     Starts from {contextMoment.title}
                   </p>
-                  <button
+                  <Button
                     className="social-button purple"
                     onClick={() => draftIdea(selected)}
                   >
                     Make a draft <ArrowRight size={18} />
-                  </button>
+                  </Button>
                   <small>Review generation cost before creating.</small>
-                  <button
+                  <Button
+                    variant="link"
                     className="social-link"
                     onClick={() =>
                       onOpenProject(contextProject!.id, {
@@ -1852,8 +1856,8 @@ function IdeasBoard(props: ViewProps & { boardId: string }) {
                     }
                   >
                     Go to the story <ArrowRight size={15} />
-                  </button>
-                </>
+                  </Button>
+                </ContextPlate>
               ) : (
                 <p>
                   This idea has no story attached yet. Leave a new idea with a

@@ -2,6 +2,15 @@
   max-width: 1600px;
   margin: auto;
   --pilot-shadow: 0 3px 18px #1a153609;
+  font-family: var(--font-interface), sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.pilot-shell :is(h1, h2, h3, h4),
+.pilot-dialog :is(h2, h3) {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 650;
+  text-wrap: balance;
 }
 .pilot-shell button,
 .pilot-dialog button {
@@ -53,7 +62,7 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   flex: 1;
   min-width: 0;
@@ -79,11 +88,6 @@
   gap: 18px;
   align-items: center;
 }
-.pilot-identity {
-  color: var(--muted);
-  font-size: 12px;
-  max-width: 22ch;
-}
 .pilot-shell .pilot-map-toggle {
   min-height: 44px;
   padding: 10px 16px;
@@ -94,7 +98,7 @@
   text-align: center;
 }
 .pilot-intro h1 {
-  font-size: clamp(28px, 2.65vw, 40px);
+  font-size: clamp(32px, 2.65vw, 40px);
   line-height: 1.18;
   letter-spacing: -0.035em;
   margin: 0 0 7px;
@@ -174,19 +178,21 @@
   scrollbar-color: var(--line-strong) transparent;
   scrollbar-width: thin;
 }
-.pilot-recap-desktop > h2,
-.pilot-ideas > h2 {
-  font-size: 22px;
+.pilot-recap-sign h2,
+.pilot-ideas-sign h2 {
+  font-size: 26px;
   letter-spacing: -0.025em;
   line-height: 1.25;
 }
-.pilot-recap-desktop > h2,
+.pilot-recap-sign {
+  margin-bottom: 14px;
+}
 .pilot-recap-desktop > p {
   padding-inline: 8px;
 }
 .pilot-recap-desktop > p,
 .pilot-recap-sheet > p {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
   margin-top: 5px;
 }
@@ -268,12 +274,12 @@
   display: grid;
   gap: 3px;
   min-width: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 .pilot-recap-copy > strong {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 650;
   line-height: 1.3;
   color: var(--ink);
   display: -webkit-box;
@@ -281,6 +287,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
 }
 .pilot-recap-copy > span {
   overflow-wrap: anywhere;
@@ -294,7 +301,7 @@
 .pilot-new {
   width: fit-content;
   padding: 2px 7px;
-  font-size: 10px;
+  font-size: 12px;
   border-radius: 5px;
   color: var(--ink);
   background: var(--paper);
@@ -310,7 +317,7 @@
 }
 .pilot-catchup {
   color: var(--violet) !important;
-  font-size: 12px !important;
+  font-size: 14px !important;
   font-weight: 600;
   padding-block: 9px;
 }
@@ -334,13 +341,14 @@
   border-top: 1px solid var(--line);
   width: 100%;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 14px;
   padding: 17px 8px 10px;
   display: flex;
   gap: 10px;
   align-items: center;
   text-align: left;
   min-height: 48px;
+  font-weight: 600;
 }
 .pilot-map-link > svg:last-child {
   margin-left: auto;
@@ -350,6 +358,13 @@
 }
 .pilot-reader {
   padding: 21px 26px 24px;
+}
+.pilot-scene-plate {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border-radius: 14px 14px 6px 6px;
+  background: var(--paper);
+  border-bottom: 1px dashed var(--line-strong);
 }
 .pilot-moment-context {
   display: flex;
@@ -381,13 +396,14 @@
   font-size: inherit;
   text-align: left;
 }
-.pilot-reader > h2 {
+.pilot-scene-plate > h2 {
   font-size: clamp(25px, 2.2vw, 34px);
   line-height: 1.2;
   letter-spacing: -0.03em;
-  margin: 0 0 16px;
+  margin: 0;
   overflow-wrap: anywhere;
   text-wrap: balance;
+  font-weight: 650;
 }
 .pilot-artwork {
   display: grid;
@@ -416,7 +432,7 @@
   border-radius: 12px;
 }
 .pilot-artwork figcaption {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.55;
   margin-top: 10px;
   overflow-wrap: anywhere;
@@ -452,6 +468,7 @@
   font-size: 14px;
   line-height: 1.3;
   padding-inline: 12px;
+  font-weight: 600;
 }
 .pilot-credit-line {
   display: flex;
@@ -459,7 +476,7 @@
   flex-wrap: wrap;
   align-items: center;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
   margin-top: 13px;
 }
 .pilot-credit-line > span {
@@ -467,9 +484,11 @@
 }
 .pilot-room-activity {
   margin: 0 32px 20px;
-  padding: 14px 0;
-  border-block: 1px solid var(--line);
-  font-size: 13px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.65fr);
+  gap: 20px;
+  align-items: center;
+  font-size: 14px;
 }
 .pilot-room-activity-summary,
 .pilot-room-activity-counts,
@@ -487,15 +506,40 @@
   flex-shrink: 0;
   color: var(--violet);
 }
-.pilot-room-activity > p {
-  margin-top: 8px;
+.pilot-room-activity-summary {
+  padding-block: 12px;
+}
+.pilot-room-activity-summary > strong {
+  font-size: 15px;
+}
+.pilot-room-activity-counts {
+  flex-basis: 100%;
+  padding-left: 31px;
   color: var(--muted);
-  font-size: 12px;
+}
+.pilot-room-capacity {
+  margin: 0;
+  padding: 15px 18px;
+  color: #675229;
+  background: #fff0cd;
+  border-radius: 16px 16px 6px 6px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.pilot-room-capacity > strong {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+}
+.pilot-room-capacity > span {
+  flex-basis: 100%;
+  padding-left: 33px;
 }
 .pilot-generation-status {
   margin-top: 16px;
-  padding: 16px 0;
-  border-block: 1px solid var(--line);
+  padding: 16px 18px;
+  background: var(--violet-soft);
+  border-radius: 12px;
 }
 .pilot-generation-state {
   color: var(--violet);
@@ -517,7 +561,7 @@
   margin: 14px 0 0;
   list-style: none;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 .pilot-generation-steps li {
   gap: 6px;
@@ -540,6 +584,7 @@
 }
 .pilot-generation-status small {
   line-height: 1.6;
+  font-size: 13px;
 }
 .pilot-refill {
   display: flex;
@@ -550,15 +595,16 @@
 }
 .pilot-refill .button {
   min-height: 44px;
-  font-size: 13px;
+  font-size: 14px;
 }
 .pilot-refill small {
   color: var(--muted);
+  font-size: 13px;
 }
 .pilot-refill p {
   flex-basis: 100%;
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 .pilot-refill [role="alert"] {
   color: var(--danger);
@@ -569,17 +615,18 @@
   padding-top: 14px;
 }
 .pilot-credits summary {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   cursor: pointer;
   text-align: center;
+  font-weight: 600;
 }
 .pilot-credits ol {
   padding-left: 20px;
   margin-top: 12px;
 }
 .pilot-credits li {
-  font-size: 13px;
+  font-size: 14px;
   padding-block: 3px;
   overflow-wrap: anywhere;
 }
@@ -588,8 +635,11 @@
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
-.pilot-continuations h3 {
-  font-size: 15px;
+.pilot-branch-sign h3 {
+  font-size: 24px;
+  font-weight: 650;
+}
+.pilot-branch-sign {
   margin-bottom: 10px;
 }
 .pilot-continuations > button {
@@ -606,22 +656,23 @@
   color: var(--ink);
 }
 .pilot-continuations strong {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 650;
   overflow-wrap: anywhere;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1.3;
 }
 .pilot-continuations small {
   display: block;
   color: var(--muted);
   margin-top: 3px;
+  font-size: 13px;
 }
 .pilot-ideas {
   padding: 21px 16px 18px;
 }
-.pilot-ideas-intro {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 7px 0 22px;
+.pilot-ideas-sign {
+  margin-bottom: 22px;
 }
 .pilot-note-list {
   display: grid;
@@ -643,7 +694,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .pilot-note-author > span:last-child {
   overflow-wrap: anywhere;
@@ -677,17 +728,18 @@
   gap: 5px;
 }
 .pilot-sticky time {
-  font-size: 10px;
+  font-size: 13px;
   color: #574b29;
 }
 .pilot-sticky .text-button {
   color: var(--ink);
-  font-size: 12px;
+  font-size: 14px;
   display: flex;
   gap: 6px;
   align-items: center;
   padding: 8px 0;
   min-height: 40px;
+  font-weight: 600;
 }
 .pilot-leave-idea {
   width: 100%;
@@ -706,12 +758,14 @@
   margin-bottom: 8px;
 }
 .pilot-leave-idea strong {
-  font-size: 19px;
-  line-height: 1.4;
+  font-size: 24px;
+  line-height: 1.2;
   letter-spacing: -0.02em;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 650;
 }
 .pilot-leave-idea > span {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   color: #61558b;
 }
@@ -731,19 +785,20 @@
   border-radius: 12px;
 }
 .pilot-note-form h3 {
-  font-size: 18px;
+  font-size: 24px;
 }
 .pilot-note-form > p,
 .pilot-note-form small {
   color: #61558b;
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 1.55;
 }
 .pilot-note-form label,
 .pilot-task label,
 .pilot-share-link {
   display: grid;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 .pilot-note-form input,
@@ -772,14 +827,15 @@
   margin-top: 14px;
 }
 .pilot-inline-notice {
-  font-size: 13px;
+  font-size: 15px;
   background: var(--paper);
   padding: 12px;
   margin: 12px 0;
   border-radius: 8px;
+  line-height: 1.55;
 }
 .pilot-idea-success {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--violet);
   padding: 12px 0;
 }
@@ -789,7 +845,7 @@
   justify-content: center;
   gap: 20px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   margin-top: 12px;
 }
 .pilot-reading-pager {
@@ -810,6 +866,9 @@
   background: var(--violet-soft);
 }
 .pilot-dialog {
+  font-family: var(--font-interface), sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
   color: var(--ink);
   background: var(--surface);
   border: 0;
@@ -832,7 +891,7 @@
   margin-bottom: 8px;
 }
 .pilot-dialog-heading h2 {
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1.25;
   letter-spacing: -0.025em;
   overflow-wrap: anywhere;
@@ -859,6 +918,7 @@
   margin: 12px auto 0;
   max-width: 65ch;
   line-height: 1.6;
+  font-size: 16px;
 }
 .pilot-image-placeholder {
   min-height: 130px;
@@ -867,7 +927,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  font-size: 12px;
+  font-size: 14px;
   padding: 16px;
   color: var(--muted);
 }
@@ -879,21 +939,24 @@
 }
 .pilot-map-title {
   padding: 22px 28px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
+}
+.pilot-map-sign {
+  width: 100%;
 }
 .pilot-map-title h2 {
-  font-size: 24px;
+  font-size: 26px;
 }
 .pilot-map-title p {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 6px;
+  flex-wrap: wrap;
+}
+.pilot-map-title p > svg {
+  flex-shrink: 0;
 }
 .pilot-map-scroll {
   width: 100%;
@@ -945,23 +1008,25 @@
 }
 .pilot-node strong {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.35;
   margin: 7px 10px 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 650;
 }
 .pilot-node > span:last-child {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   margin: 0 10px;
   color: var(--muted);
 }
 .pilot-map-foot {
   padding: 18px 28px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 .pilot-task {
   border-top: 1px solid var(--line);
@@ -970,9 +1035,10 @@
   scroll-margin-top: 24px;
 }
 .pilot-task h2 {
-  font-size: 22px;
+  font-size: 26px;
   margin-bottom: 16px;
   letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 .pilot-task form {
   display: grid;
@@ -999,6 +1065,7 @@
   color: var(--muted);
   display: block;
   margin-top: 12px;
+  font-size: 13px;
 }
 .pilot-task .button {
   width: fit-content;
@@ -1008,7 +1075,7 @@
   margin-top: 18px;
 }
 .pilot-parent {
-  font-size: 13px;
+  font-size: 14px;
 }
 .pilot-panels {
   display: grid;
@@ -1031,7 +1098,7 @@
   overflow: hidden;
 }
 .pilot-panels figcaption {
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.6;
   margin: 10px 0 0;
   overflow-wrap: anywhere;
@@ -1041,7 +1108,8 @@
   padding: 14px 20px;
   border-radius: 12px;
   background: var(--violet-soft);
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.55;
 }
 .pilot-notice .text-button {
   margin: 5px 18px 0 0;
@@ -1056,7 +1124,7 @@
   justify-content: space-between;
   gap: 24px;
   padding: 12px 32px 26px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 .pilot-footer > span {
@@ -1095,7 +1163,6 @@
     padding-inline: 20px;
     gap: 20px;
   }
-  .pilot-identity,
   .pilot-room-choice > span {
     display: none;
   }
@@ -1103,8 +1170,11 @@
 @media (max-width: 760px) {
   .pilot-room-activity {
     margin-inline: 20px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
   }
   .pilot-header {
+    position: relative;
     padding: 13px 20px 12px;
     flex-wrap: wrap;
     gap: 6px 16px;
@@ -1117,11 +1187,8 @@
     margin-left: auto;
   }
   .pilot-header-actions .button {
-    font-size: 13px;
+    font-size: 14px;
     padding: 9px 12px;
-  }
-  .pilot-identity {
-    display: none;
   }
   .pilot-room-choice {
     order: 3;
@@ -1151,7 +1218,7 @@
     white-space: nowrap;
   }
   .pilot-intro p {
-    font-size: 13px;
+    font-size: 16px;
     margin-top: 5px;
   }
   .pilot-table {
@@ -1183,8 +1250,12 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--muted);
+    background: var(--violet-soft);
+    border-radius: 14px 14px 6px 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
   }
   .pilot-recap-mobile-heading button {
     display: flex;
@@ -1198,10 +1269,13 @@
     display: flex;
     align-items: start;
     gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 8px;
   }
   .pilot-thumbnail-path > button {
-    width: calc((100% - 40px) / 6);
-    max-width: 62px;
+    width: 72px;
+    flex: 0 0 72px;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 7px;
@@ -1231,7 +1305,7 @@
     overflow: hidden;
   }
   .pilot-thumbnail-label {
-    font-size: 10px;
+    font-size: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -1249,15 +1323,15 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
     overflow: hidden;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.25;
-    min-height: 56px;
+    min-height: 60px;
     margin-top: 4px;
     color: var(--ink);
     overflow-wrap: anywhere;
   }
   .pilot-mobile-catchup {
-    font-size: 12px;
+    font-size: 14px;
     text-align: center;
     margin-top: 8px;
     padding: 8px 10px;
@@ -1270,7 +1344,7 @@
     display: flex;
     gap: 5px;
     align-items: center;
-    font-size: 12px;
+    font-size: 14px;
   }
   .pilot-reader {
     width: 100%;
@@ -1286,18 +1360,22 @@
     gap: 11px;
     margin-bottom: 12px;
   }
+  .pilot-scene-plate {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
   .pilot-moment-context .pilot-letter {
     width: 38px;
     height: 38px;
     font-size: 17px;
   }
   .pilot-moment-context p {
-    font-size: 12px;
+    font-size: 14px;
   }
-  .pilot-reader > h2 {
+  .pilot-scene-plate > h2 {
     font-size: 25px;
     line-height: 1.25;
-    margin-bottom: 14px;
+    margin: 0;
   }
   .pilot-artwork {
     display: block;
@@ -1306,7 +1384,7 @@
     display: none;
   }
   .pilot-artwork figcaption {
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.55;
   }
   .pilot-reading-pager {
@@ -1320,7 +1398,7 @@
     padding-top: 12px;
   }
   .pilot-story-actions .button {
-    font-size: 13px;
+    font-size: 14px;
     min-height: 50px;
     gap: 7px;
   }
@@ -1329,7 +1407,7 @@
     width: 16px;
   }
   .pilot-credit-line {
-    font-size: 11px;
+    font-size: 13px;
   }
   .pilot-credit-line > span {
     margin-left: 0;
@@ -1341,19 +1419,9 @@
     border-radius: 0;
     position: relative;
   }
-  .pilot-ideas > h2 {
-    font-size: 20px;
-  }
-  .pilot-ideas-intro {
+  .pilot-ideas-sign {
     margin-bottom: 18px;
   }
-  .pilot-ideas.has-ideas > h2 {
-    padding-right: 136px;
-    padding-block: 10px;
-    font-size: 18px;
-    min-height: 44px;
-  }
-  .pilot-ideas.has-ideas .pilot-ideas-intro,
   .pilot-ideas:not(.is-expanded) .pilot-note-list > article:nth-child(n + 2),
   .pilot-ideas:not(.is-expanded) .pilot-older-ideas {
     display: none;
@@ -1364,21 +1432,20 @@
     margin-top: 8px;
   }
   .pilot-ideas.has-ideas .pilot-leave-idea {
-    position: absolute;
-    top: 12px;
-    right: 20px;
-    width: auto;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 6px;
     min-height: 44px;
-    margin: 0;
-    padding: 0;
+    margin-top: 12px;
+    padding: 8px 0;
     color: var(--violet);
     background: transparent;
   }
   .pilot-ideas.has-ideas .pilot-leave-idea strong {
-    font-size: 13px;
+    font-size: 14px;
+    font-family: var(--font-interface), sans-serif;
+    font-weight: 600;
+    line-height: 1.4;
   }
   .pilot-ideas.has-ideas .pilot-leave-idea > svg {
     width: 19px;
@@ -1408,10 +1475,10 @@
   }
   .pilot-leave-idea > span {
     grid-column: 2;
-    font-size: 13px;
+    font-size: 15px;
   }
   .pilot-leave-idea strong {
-    font-size: 17px;
+    font-size: 24px;
   }
   .pilot-leave-idea strong br {
     display: none;
@@ -1460,7 +1527,7 @@
   }
   .pilot-recap-sheet > p {
     margin-top: 0;
-    font-size: 14px;
+    font-size: 15px;
   }
   .pilot-recap-sheet > .pilot-catchup {
     background: var(--violet-soft);
@@ -1472,7 +1539,7 @@
   .pilot-recap-sheet .pilot-catchup small {
     display: inline;
     margin-left: 8px;
-    font-size: 10px;
+    font-size: 13px;
   }
   .pilot-recap-sheet-scroll {
     flex: 1;
@@ -1497,10 +1564,10 @@
     height: 54px;
   }
   .pilot-recap-sheet .pilot-recap-copy > strong {
-    font-size: 15px;
+    font-size: 16px;
   }
   .pilot-recap-sheet .pilot-recap-copy {
-    font-size: 12px;
+    font-size: 13px;
   }
   .pilot-recap-sheet footer {
     display: grid;
@@ -1528,10 +1595,10 @@
     aspect-ratio: 1;
   }
   .pilot-art-dialog .pilot-dialog-heading h2 {
-    font-size: 19px;
+    font-size: 24px;
   }
   .pilot-art-dialog figcaption {
-    font-size: 14px;
+    font-size: 16px;
   }
   .pilot-map {
     margin-inline: 0;
@@ -1542,13 +1609,13 @@
     display: block;
   }
   .pilot-map-title h2 {
-    font-size: 22px;
+    font-size: 26px;
   }
   .pilot-map-title .text-button {
     margin-top: 12px;
   }
   .pilot-map-title p {
-    font-size: 12px;
+    font-size: 14px;
   }
   .pilot-map-scroll {
     height: 560px;
@@ -1556,7 +1623,7 @@
   .pilot-notice {
     margin-inline: 20px;
     padding: 14px;
-    font-size: 13px;
+    font-size: 15px;
   }
   .pilot-footer {
     display: block;
@@ -1586,4 +1653,75 @@
       clip-path: inset(0);
     }
   }
+}
+
+.pilot-guest-identity { position: relative; color: var(--muted); font-size: 14px; }
+.pilot-guest-identity > summary { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; max-width: 22ch; font-size: 14px; }
+.pilot-guest-identity > summary::-webkit-details-marker { display: none; }
+.pilot-guest-identity > summary > svg { flex-shrink: 0; color: var(--violet); }
+.pilot-guest-identity > summary > span { overflow-wrap: anywhere; line-height: 1.4; }
+.pilot-guest-identity > summary strong { color: var(--ink); }
+.pilot-guest-context { position: absolute; z-index: 10; right: 0; top: calc(100% + 8px); width: min(300px, calc(100vw - 40px)); padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--pilot-shadow); color: var(--muted); font-size: 15px; line-height: 1.6; }
+.pilot-guest-context > strong { color: var(--ink); }
+.pilot-guest-context > p { margin-top: 10px; }
+.pilot-guest-context > .button { margin-top: 12px; }
+.pilot-guest-context small { display: block; margin-top: 8px; font-size: 13px; }
+.pilot-signout-button { min-height: 44px; margin-top: 12px; }
+.pilot-signout-dialog { width: min(480px, calc(100vw - 32px)); }
+.pilot-signout-dialog > p { margin-top: 14px; }
+.pilot-signout-dialog > p[role="alert"] { color: var(--danger); }
+.pilot-signout-dialog > footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.pilot-guest-context p > svg { vertical-align: -2px; color: var(--success); }
+.pilot-account-wallet { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.pilot-account-wallet > div { display: flex; align-items: start; gap: 8px; margin-top: 8px; }
+.pilot-account-wallet code { min-width: 0; overflow-wrap: anywhere; color: var(--ink); font-size: 13px; }
+.pilot-account-wallet button { flex-shrink: 0; }
+.pilot-returning { display: flex; align-items: center; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+.pilot-header-actions .pilot-join { min-height: 44px; white-space: nowrap; }
+.pilot-account-entry { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pilot-wallet-signin > .button { min-height: 44px; }
+.pilot-wallet-signin > p { font-size: 15px; line-height: 1.6; color: var(--danger); max-width: 40ch; margin: 8px 0 0; overflow-wrap: anywhere; }
+.pilot-header-actions .pilot-wallet-signin { position: relative; }
+.pilot-header-actions .pilot-wallet-signin > p { position: absolute; top: 100%; right: 0; z-index: 10; width: min(300px, calc(100vw - 40px)); padding: 14px; border-radius: 12px; background: var(--surface); box-shadow: var(--pilot-shadow); }
+.pilot-wallet-entry { display: grid; gap: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.pilot-wallet-entry > p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0; max-width: 65ch; }
+.pilot-account-wallet > code { display: block; margin-top: 8px; }
+
+.pilot-task .pilot-onboarding { max-width: 640px; gap: 18px; }
+.pilot-onboarding > label { display: grid; gap: 8px; font-weight: 650; }
+.pilot-onboarding > label input { min-height: 48px; }
+.pilot-auth-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 4px; }
+.pilot-google-button { display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-height: 48px; padding: 12px 16px; border: 1px solid #747775; border-radius: 10px; color: #1f1f1f; background: #fff; font-size: 14px; font-weight: 500; line-height: 20px; cursor: pointer; }
+.pilot-google-button > img { width: 20px; height: 20px; object-fit: contain; flex: 0 0 20px; }
+.pilot-google-button:hover:not(:disabled) { background: #f2f2f2; border-color: #1f1f1f; }
+.pilot-google-button:focus-visible { outline: 3px solid var(--violet); outline-offset: 4px; }
+.pilot-shell .pilot-google-button:disabled { opacity: 1; color: var(--muted); background: var(--paper); border-color: var(--line); cursor: not-allowed; }
+.pilot-google-button:disabled > img { opacity: 0.6; }
+.pilot-auth-guidance { display: grid; gap: 7px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.pilot-task .pilot-auth-guidance small { margin: 0; font-size: 13px; }
+.pilot-wallet-provider, .pilot-privy-mark { display: inline-flex; align-items: center; gap: 6px; }
+.pilot-wallet-provider { font-size: 13px; color: var(--muted); }
+.pilot-privy-mark { font-size: 13px; font-weight: 650; color: var(--ink); }
+.pilot-privy-mark img { width: 18px; height: 18px; object-fit: contain; flex: 0 0 18px; }
+.pilot-auth-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 8px; }
+.pilot-auth-footer .pilot-returning { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.pilot-google-returning { min-height: 44px; padding: 10px 12px; }
+.pilot-guest-context > .pilot-google-button { margin-top: 12px; width: 100%; }
+.pilot-guest-context > .pilot-wallet-provider { margin-top: 8px; }
+.pilot-account-wallet-heading { justify-content: space-between; align-items: center; flex-wrap: wrap; }
+@media (max-width: 680px) {
+  .pilot-auth-actions > button { flex: 1 1 180px; width: auto; }
+  .pilot-auth-footer { align-items: start; gap: 8px; }
+  .pilot-account-entry { justify-content: flex-end; gap: 8px; }
+  .pilot-wallet-entry .pilot-wallet-signin, .pilot-wallet-entry .pilot-wallet-signin > .button { width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pilot-google-button { transition: background-color 140ms ease, border-color 140ms ease, transform 140ms cubic-bezier(0.23, 1, 0.32, 1); }
+  .pilot-google-button:active:not(:disabled):not(:focus-visible) { transform: scale(0.98); }
+}
+@media (max-width: 760px) {
+  .pilot-header-actions { gap: 10px; }
+  .pilot-guest-identity { position: static; }
+  .pilot-guest-context { right: 20px; }
+  .pilot-guest-identity > summary { max-width: 16ch; font-size: 14px; }
 }
