@@ -1,6 +1,8 @@
 # Full shared pilot on Vercel and Trigger.dev
 
-The selected hosting setup uses Vercel for the complete Next.js app, Trigger.dev Production for generation, and the existing Supabase project for accounts, shared records and media. Hosting configuration is prepared; the public deployment and hosted walkthrough are still pending.
+The complete Next.js app is deployed at [fork-night.vercel.app](https://fork-night.vercel.app), with the [shared Midnight Signal pilot](https://fork-night.vercel.app/pilot?room=midnight-signal) available at `/pilot`. Trigger Production version **20261013.1** has `fork-night-generate` registered, using the existing Supabase project for accounts, shared records and media.
+
+The operator's deployment receipt on October 13, 2026 confirms HTTP 200 for the lobby, pilot, signup, QR presentation, world demo and creator demo, and HTTP 401 for an unsigned generation request. Worker registration was independently checked through Trigger. A hosted sign-in, complete preview generation and deliberate publication with the local worker stopped remain to be rehearsed. This checkpoint confirms deployment and HTTP access; it does not claim that final browser journey is verified.
 
 The web app submits an admitted operation to `fork-night-generate`; the cloud worker performs image generation and saves the result. Running only Vercel with a Development Trigger key still depends on a local worker. Production needs a deployed task version and a Production key. [Trigger deployment guide](https://trigger.dev/docs/deployment/overview).
 
@@ -40,7 +42,7 @@ The worker does not need a wallet key, Cartesia key or web Trigger key. Retain t
 Enter the prepared `source/` directory and install its pinned packages:
 
 ```sh
-npm ci
+pnpm install --frozen-lockfile
 npx --no-install trigger deploy --env prod --skip-update-check
 ```
 
@@ -63,22 +65,32 @@ Keep application/worker source, contracts, database migrations, tests, intention
 Link the prepared `source/` directory to the intended Vercel account/project:
 
 ```sh
-vercel link
+pnpm exec vercel link
 ```
 
-Choose the account explicitly if several are available. Use the repository root inside `source/`, the Next.js framework preset, `npm ci` installation and `npm run build`. [vercel.json](../../vercel.json) records those settings. The package's Node range currently resolves to Vercel's supported Node 24 runtime. [Vercel Node versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
+Choose the account explicitly if several are available. Use the repository root inside `source/`, the Next.js framework preset, `pnpm install --frozen-lockfile` installation and `pnpm run build --webpack`. [vercel.json](../../vercel.json) records those settings. This uses the build path that passed the latest local checks. Select Node 24 in the project's settings and confirm the actual runtime in the deployment logs. [Vercel Node versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
 
 In the linked project's **Settings → Environment Variables**, add the prepared `web.production.env` settings for **Production**. Store server credentials as sensitive values. Public Supabase and Monad settings are intentionally available to the browser; provider, server and Trigger keys are not. Set `FORK_NIGHT_PUBLIC_URL` to the project's chosen public HTTPS origin without a path. The optional Cartesia/OpenAI web keys preserve helper capability only within the existing database allowances; importing keys does not enable helpers.
 
 Confirm all required settings are filled, then deploy from `source/`:
 
 ```sh
-vercel --prod
+pnpm exec vercel --prod
 ```
 
 Environment changes require a new deployment. Check the build output and actual deployment settings; a local build alone does not prove Vercel compatibility. Use an account plan suitable for the project. The Hobby plan is restricted to personal, non-commercial use. [Vercel Hobby](https://vercel.com/docs/plans/hobby).
 
 CLI deployment does not publish or push a Git repository. For later Git integration, use the clean source and fresh submission history; the working repository's earlier private material remains in its history. Connect Vercel to the full application, rather than the limited Cloudflare signup branch.
+
+## Allow sign-in from the hosted origin
+
+After discovering the actual production domain, add that origin to the existing authentication settings before the browser walkthrough:
+
+1. In **Supabase → Authentication → URL Configuration**, set Site URL to the public origin and allow redirects under that same origin, including `/pilot` with its room parameters. Keep the localhost entries used for local rehearsals. Both Google return URLs and signed Web3 login URIs must be allowed. [Supabase redirect configuration](https://supabase.com/docs/guides/auth/redirect-urls).
+2. In the existing **Privy** app, add the public origin to its allowed domains. Preserve its App ID and custom JWT configuration. The current hackathon setup keeps that Privy app in Development mode; selecting Vercel Production does not itself change the Privy app's mode or purchase a plan. Confirm the dashboard permits the intended hosted domain and users.
+3. In the existing **Google Web OAuth client**, add the origin under Authorized JavaScript origins. Retain the Supabase `/auth/v1/callback` redirect URI. If the OAuth audience remains in Testing, use allowed test accounts for Google checks. Guest and browser-wallet entry provide separate ways to access the product. [Google setup](ONBOARDING.md).
+
+The server and browser continue using the same Supabase project. A returning Google or wallet account should recover its existing storyteller; a fresh guest on a different origin does not inherit a local anonymous session.
 
 ## Verify the hosted product
 

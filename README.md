@@ -10,7 +10,7 @@ Hackathon prototype · Shared creative rooms · Agent payments · Testnet releas
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-172235?logo=nextdotjs&logoColor=white)](package.json)
 &nbsp;[![Monad testnet](https://img.shields.io/badge/Monad-Testnet-836EF9)](docs/submission/ONCHAIN.md)
-&nbsp;[![Base Sepolia](https://img.shields.io/badge/Base-Sepolia-0052FF)](#agent-payments)
+&nbsp;[![Base Sepolia](https://img.shields.io/badge/Base-Sepolia-0052FF)](docs/submission/X402.md)
 &nbsp;[![Agent payments](https://img.shields.io/badge/Agent_payments-x402_%2B_MPP-172235)](#agent-payments)
 &nbsp;[![License: AGPL-3.0-only](https://img.shields.io/badge/License-AGPL--3.0--only-F1CD58)](LICENSE)
 
@@ -61,7 +61,7 @@ The [demo guide](docs/submission/DEMO.md) includes the original moon-bus story, 
 
 **This is an evolving hackathon prototype.** The app is deployed at [fork-night.vercel.app](https://fork-night.vercel.app). Hosted sign-in, generation and publication still need a complete browser walkthrough.
 
-This README records the current prototype and its testnet proofs. The public repository contains an earlier source snapshot. Newer payment, wallet and agent source updates will follow separately.
+This repository includes the app, contracts, database migrations, agent clients and selected implementation guides.
 
 | Surface | Current behavior | Access |
 | --- | --- | --- |
@@ -74,7 +74,7 @@ This README records the current prototype and its testnet proofs. The public rep
 
 ### Google sign-in and embedded wallets
 
-Google sign-in links a storyteller's Supabase identity to an embedded Privy wallet. The founder confirmed recovery of the same storyteller and wallet in another browser profile. Two Google-linked wallets completed scene registration and payout claims. A user-run checker verifies six scenes and four recipient wallets in the [follow-up release proof](#monad-release-proof).
+Google sign-in links a storyteller's Supabase identity to an embedded Privy wallet. The founder confirmed recovery of the same storyteller and wallet in another browser profile. Two Google-linked wallets completed scene registration and payout claims. The [archived checker](docs/submission/PRIVY-REHEARSAL.json) verifies six scenes and four recipient wallets. See [onboarding](docs/submission/ONBOARDING.md) for account and wallet configuration.
 
 ## How it works
 
@@ -98,7 +98,7 @@ Supabase stores accounts, published moments, private drafts, images and expense 
 
 Room credits measure generation capacity. The operator's expense allowance limits admission of provider requests. A complete delivery uses one room credit for one or two panels. Three panels use two credits. If the maker discards a complete preview, the app keeps the room credit charge. An incomplete delivery uses no room credits.
 
-In current working builds, local story demos use 1 sample credit for prepared generation. Open rooms quote separate whole-credit reuse fees. The published source snapshot retains its older fixture prices. Saved reservations and receipts retain their original prices. These credits are separate from test MON support, payouts and gas.
+Local story demos use 1 sample credit for prepared generation. Open rooms quote separate whole-credit reuse fees. Saved reservations and receipts retain their original prices. These credits are separate from test MON support, payouts and gas.
 
 An operation is a saved request to create a continuation. Each operation has a fixed request identity. Recovery checks saved provider receipts and images. It does not repeat a recorded image request. An unknown provider expense stops new image requests.
 
@@ -124,7 +124,7 @@ Wren, an AI maker, has already contributed to The Night Shift. It reads the room
 
 This implements agent participation and spending for room test credits. Rooms with several agents and autonomous creator management are the next product direction.
 
-The detailed setup guides and receipt archives are prepared for the separate source update.
+[x402 setup and receipts](docs/submission/X402.md) · [MPP setup and receipts](docs/submission/MPP.md) · [Treasury funding proofs](docs/submission/TREASURY-HOPS.md) · [Wren's contribution and allowance proof](docs/submission/AGENT-ROOM.md)
 
 ## Monad release proof
 
@@ -132,7 +132,7 @@ The original **Midnight Signal** room demonstrates release payments on **Monad t
 
 The curator approves maker wallets. Each approved maker registers scene commitments with that wallet. The curator freezes the complete selected path and its recipients. Supporters pay the release contract. Each recipient can claim its share independently.
 
-The shared wallet-request flow lets a maker sign a wallet approval request. The curator reviews it in the room queue. Approval and denial dialogs show the full address. Database checks and hosted activation passed. A fresh request-and-decision rehearsal remains pending.
+The [shared wallet-request flow](docs/submission/WALLET-REQUESTS.md) lets a maker sign a wallet approval request. The curator reviews it in the room queue. Approval and denial dialogs show the full address. Database checks and hosted activation passed. A fresh request-and-decision rehearsal remains pending.
 
 The demo uses an explicit **equal-wallet policy**. Each distinct registered wallet on the complete selected path receives an equal share. Multiple bylines that use one wallet count as one recipient. Wallets do not prove unique creators or ownership of the underlying artwork. Test MON payments are separate from generation credits.
 
@@ -145,7 +145,7 @@ The demo uses an explicit **equal-wallet policy**. Each distinct registered wall
 | Recipient claims | 0.5 test MON per wallet | 0.25 test MON per wallet |
 | Remaining contract liability | 0 at block 70298300 | 0 at block 70416466 |
 
-The founder operated all wallets and test bylines. The original rehearsal established registration, release, support and claims. The completed follow-up also verifies registration and claims with Google-linked Privy wallets. Contract balance and liability are zero. MonadScan source verification remains Exact Match.
+The founder operated all wallets and test bylines. The original rehearsal established registration, release, support and claims. The [completed follow-up](docs/submission/PRIVY-REHEARSAL.json) also verifies registration and claims with Google-linked Privy wallets. Contract balance and liability are zero. MonadScan source verification remains Exact Match.
 
 [Verified contract on MonadScan](https://testnet.monadscan.com/address/0x15247565331013132e5563Cd29E99E0baA38690f#code) · [Deployment and rehearsal record](docs/submission/MONAD-TESTNET.json) · [Release setup and limits](docs/submission/ONCHAIN.md)
 
@@ -153,20 +153,12 @@ The founder operated all wallets and test bylines. The original rehearsal establ
 
 ### Local preview
 
-Use **Node.js 22.18 or newer**. Current working builds use **pnpm 10.18.3**; the published source snapshot uses npm.
+Use **Node.js 22.18 or newer** and **pnpm 10.18.3**.
 
-For the npm-based snapshot, use `npm run` wherever these instructions use `pnpm run`.
-
-1. If the checkout contains `pnpm-lock.yaml`, install the pinned dependencies with pnpm:
+1. Install the pinned dependencies:
 
    ```sh
    pnpm install --frozen-lockfile
-   ```
-
-   If the checkout contains `package-lock.json`, use npm instead:
-
-   ```sh
-   npm ci
    ```
 
 2. Start the app:
@@ -213,7 +205,7 @@ The worker needs access to the configured Trigger project. If you use your own p
 
 Before you request images, configure an explicit operator budget. The [budget-transfer script](scripts/activate-pilot-budget.ts) imports an existing, approved local experiment ledger. It does not create a new allowance. A fresh deployment needs its own configured budget.
 
-A guest account belongs to its browser session. The same display name in another browser does not restore that account. The newer prototype supports direct wallet sign-in or [Google recovery with an in-app wallet](#google-sign-in-and-embedded-wallets). The operator reports MetaMask sign-in after same-browser logout. Corrected browser-wallet defaults pass automated checks and await a fresh live verification.
+A guest account belongs to its browser session. The same display name in another browser does not restore that account. [Onboarding](docs/submission/ONBOARDING.md) supports direct wallet sign-in or Google recovery with an in-app wallet. The operator reports MetaMask sign-in after same-browser logout. Corrected browser-wallet defaults pass automated checks and await a fresh live verification.
 
 Testnet release actions also need public contract settings and a wallet funded with test MON. Use the [release setup guide](docs/submission/ONCHAIN.md) to configure those settings.
 
@@ -383,7 +375,7 @@ On **October 8**, the founder brought a laptop to an AI content creators' event,
 
 The photographs document the prepared presentation. The conversations provide early feedback for further testing. The shared generation, agent payment and release proofs have their own implementation evidence.
 
-The guides below describe the published source snapshot. This README also records newer prototype work.
+The guides below describe the current source and its verification records.
 
 | Guide | What to review |
 | --- | --- |
@@ -391,8 +383,12 @@ The guides below describe the published source snapshot. This README also record
 | [Demo](docs/submission/DEMO.md) | Reproducible local and shared walkthroughs. |
 | [Architecture](docs/submission/ARCHITECTURE.md) | Ancestry, privacy, generation accounting and recovery. |
 | [Monad proof](docs/submission/ONCHAIN.md) | Deployed contract, release agreement, payments and claims. |
-| [Agent payments](#agent-payments) | Current x402 and MPP testnet credit purchases and treasury funding proofs. |
-| [Google sign-in](#google-sign-in-and-embedded-wallets) | Google-linked identity, embedded wallets and account recovery. |
+| [x402 payments](docs/submission/X402.md) | Room test-credit purchases on Solana devnet and Base Sepolia. |
+| [MPP payments](docs/submission/MPP.md) | Room test-credit purchases on Tempo Moderato. |
+| [Treasury funding](docs/submission/TREASURY-HOPS.md) | Squads and Safe funding of agent payer wallets. |
+| [Wren](docs/submission/AGENT-ROOM.md) | Agent contributions, review and Tempo access-key spending. |
+| [Onboarding](docs/submission/ONBOARDING.md) | Google-linked identity, embedded wallets and account recovery. |
+| [Wallet requests](docs/submission/WALLET-REQUESTS.md) | Signed maker requests and curator review. |
 | [Early feedback](#early-demos-and-creator-feedback) | October 5 boat demo photos and October 8 creator conversations. |
 | [Hosting](docs/submission/HOSTING.md) | Full app and cloud-worker deployment preparation. |
 | [Artwork](docs/submission/ARTWORK.md) | Runtime illustration and font attribution. |
@@ -410,6 +406,6 @@ Broader payout agreements, public reuse fees and production funding of provider 
 
 The project-owned software retains the [GNU Affero General Public License, version 3 only](LICENSE) (**AGPL-3.0-only**).
 
-Third-party materials retain their own license notices, including Inter's [SIL Open Font License](public/fonts/OFL.txt). Current working builds also use Bricolage Grotesque under its own SIL Open Font License. The software license does not determine permissions for participant-created stories, uploads or underlying third-party artwork.
+Third-party materials retain their own license notices, including the font licenses for [Inter](public/fonts/OFL.txt) and [Bricolage Grotesque](public/fonts/bricolage-OFL.txt). See the [UI source licenses](docs/submission/UI-LICENSES.md) and [brand asset sources](docs/submission/BRAND-ASSETS.md). The software license does not determine permissions for participant-created stories, uploads or underlying third-party artwork.
 
 AGPL section 13 requires a prominent offer of Corresponding Source to users of modified versions that support remote network interaction. A deployment should link to the source for its running version, including the required build and installation material.

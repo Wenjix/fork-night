@@ -25,7 +25,7 @@ The shared pilot then connected named guest sessions, saved ideas, reference-con
 
 ## Demonstration and feedback
 
-The boat demo introduced the project to people outside the development process. Their reported interest in collaborative spaces, shared inference pools and visible generative-content history informed follow-up exploration. The [boat-demo write-up](BOAT-DEMO.md) keeps the founder's recollection separate from product interpretation.
+On October 5, the founder presented a prepared happy-path concept at a boat demo night and gathered live audience feedback. Conversations afterward included people building AI content creators and influencers who expressed interest in the premise. On October 8, the founder showed the concept on a laptop at an AI content creators' event and gathered more feedback. The [boat-demo write-up](BOAT-DEMO.md) records the founder's recollection and links the actual October 5 photographs.
 
 After the demo, work included storyboard review and a companion for comparing a fictional AI creator's alternatives and recording human guidance. The creator companion uses prepared examples and browser-local feedback. Autonomous influencer pipelines remain a future application to investigate.
 

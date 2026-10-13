@@ -18,7 +18,7 @@ In Cloudflare **Workers & Pages**, create a **Worker** and import `Wenjix/web3-h
 | Build variable | `NODE_VERSION=22.18.0` or a newer Node 22 release |
 | Preview branches | Disabled for this initial deployment |
 
-Workers Builds installs the root package dependencies automatically. The build command creates a fresh, selected application, installs its Cloudflare toolchain with `npm ci` from the checked-in [deployment lockfile](../../config/waitlist-cloudflare/package-lock.json), runs `vinext check`, then builds the Worker. Deployment consumes only the last successful output. No `.env` file or local working archive is copied. Both lockfiles use the official npm registry; the exporter rejects deployment dependency pins that no longer match the resolved lockfile.
+The main app uses its pnpm lockfile. The Cloudflare build command creates a fresh, selected signup application, installs its independent toolchain with `npm ci` from the checked-in [deployment lockfile](../../config/waitlist-cloudflare/package-lock.json), runs `vinext check`, then builds the Worker. Deployment consumes only the last successful output. No `.env` file or local working archive is copied. The signup lockfile uses the official npm registry; the exporter rejects deployment dependency pins that no longer match it.
 
 The configuration uses the supported Wrangler integration with Cloudflare Vite plugin v1. It creates no KV, R2, Durable Object or image-optimization bindings. Supabase remains the email store. This is a Worker with an API, so do not select an assets-only Pages deployment.
 
