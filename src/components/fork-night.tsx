@@ -35,6 +35,7 @@ import {
   createDemoState,
   deliverFork,
   discardFork,
+  demoReuseFee,
   exportBranch,
   formatCredits,
   getFundingAccount,
@@ -49,6 +50,7 @@ import {
   withdraw,
   validateDemoState,
   DEMO_LIMITS,
+  DEMO_UNIT,
   type DemoState,
   type ForkOperation,
   type ForkQuote,
@@ -57,6 +59,7 @@ import {
 import { StoryArt } from "./story-art";
 import { StoryMap } from "./story-map";
 import { StoryFilm } from "./story-film";
+import { PreparedFilmInvite, PreparedStoryFilm } from "./prepared-story-film";
 import { makeFilmPlan } from "@/lib/story-film";
 import { artAssetUrl, isApprovedArtUrl } from "@/lib/art";
 import { renderFinishedHtml } from "@/lib/finished-export";
@@ -114,7 +117,7 @@ function Credits({ amount }: { amount: number }) {
   return (
     <span className="credits">
       {formatCredits(amount)}
-      <span> credits</span>
+      <span>{amount === DEMO_UNIT ? " credit" : " credits"}</span>
     </span>
   );
 }
@@ -151,7 +154,7 @@ export function ForkNight() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveFailure, setSaveFailure] = useState<"read" | "write" | null>(null);
   const [task, setTask] = useState<Task>("detail");
-  const [view, setView] = useState<"map" | "read" | "video">("map");
+  const [view, setView] = useState<"map" | "read" | "video" | "images-to-video">("map");
   const [mobileDetails, setMobileDetails] = useState(false);
   const [quote, setQuote] = useState<ForkQuote | null>(null);
   const [error, setError] = useState("");
@@ -173,6 +176,8 @@ export function ForkNight() {
   const user = state.users.find((item) => item.id === userId)!;
   const project = state.projects.find((item) => item.id === projectId)!;
   const fanStory = fandomStory(projectId);
+  const hasPreparedFilm = projectId === "blade-runner-memory";
+  const showingPreparedFilm = hasPreparedFilm && view === "images-to-video";
   const projectRouteAvailable =
     socialRoute.kind !== "project" || socialRoute.projectId === projectId;
   const accessible =
@@ -224,7 +229,7 @@ export function ForkNight() {
   );
   const upstream =
     project.visibility === "open"
-      ? path.reduce((sum, item) => sum + item.reuseFee, 0)
+      ? path.reduce((sum, item) => sum + demoReuseFee(item), 0)
       : 0;
 
   useEffect(() => {
@@ -262,7 +267,9 @@ export function ForkNight() {
     setSocialRoute(route);
     const restoredTask = resumedTask(restored);
     setTask(restoredTask);
-    setMobileDetails(restoredTask !== "detail");
+    const opensFilm = route.kind === "project" && route.view === "images-to-video";
+    setView(opensFilm ? "images-to-video" : "map");
+    setMobileDetails(!opensFilm && restoredTask !== "detail");
     setLoaded(true);
   }, []);
 
@@ -291,7 +298,9 @@ export function ForkNight() {
         setWorkspace(next);
         const nextTask = resumedTask(next);
         setTask(nextTask);
-        setMobileDetails(nextTask !== "detail");
+        const opensFilm = route.view === "images-to-video";
+        setView(opensFilm ? "images-to-video" : "map");
+        setMobileDetails(!opensFilm && nextTask !== "detail");
         setQuote(null);
       }
       setSocialRoute(route);
@@ -375,6 +384,7 @@ export function ForkNight() {
   }
 
   function openTask(next: Task) {
+    if (showingPreparedFilm) showStoryView("map");
     if (
       next === "compose" &&
       operation &&
@@ -420,6 +430,12 @@ export function ForkNight() {
     if (window.location.hash !== hash) window.history.pushState(null, "", hash);
     setSocialRoute(route);
     setMenu(false);
+  }
+  function showStoryView(next: "map" | "read" | "video" | "images-to-video") {
+    if (next === "images-to-video" && !hasPreparedFilm) return;
+    setView(next);
+    setMobileDetails(false);
+    writeRoute({ kind: "project", projectId, ...(next === "images-to-video" ? { view: next } : {}) });
   }
   function navigate(route: SocialRoute) {
     if (route.kind === "project") {
@@ -831,7 +847,7 @@ export function ForkNight() {
             </label>
           </header>
 
-          <div className="demo-strip">
+          <div className="demo-strip" role="region" aria-label="Local preview">
             <span>
               Prepared stories · simulated generation and credits · saved
               in this browser
@@ -1098,18 +1114,18 @@ export function ForkNight() {
             </section>
           ) : (
             <>
+              {hasPreparedFilm && !showingPreparedFilm && <PreparedFilmInvite onOpen={() => showStoryView("images-to-video")} />}
               {fanStory?.visualStyles && (
                 <div className="workspace-art-direction">
                   <FandomArtDirection projectId={projectId} value={visualStyle?.id} onChange={changeArtDirection} />
                 </div>
               )}
-              <div className="workspace-toolbar">
-                <div className="view-switch" aria-label="Story view">
+              <div className={`workspace-toolbar ${hasPreparedFilm ? "fn-film-toolbar" : ""}`}>
+                <div className="view-switch" role="group" aria-label="Story view">
                   <button
                     className={view === "map" && !mobileDetails ? "active" : ""}
                     onClick={() => {
-                      setView("map");
-                      setMobileDetails(false);
+                      showStoryView("map");
                     }}
                   >
                     <GitBranch size={16} /> Story map
@@ -1119,34 +1135,33 @@ export function ForkNight() {
                       view === "read" && !mobileDetails ? "active" : ""
                     }
                     onClick={() => {
-                      setView("read");
-                      setMobileDetails(false);
+                      showStoryView("read");
                     }}
                   >
                     <BookOpen size={16} /> Read this path
                   </button>
-                  <button className={view === "video" ? "active" : ""} onClick={() => { setView("video"); setMobileDetails(false); }}>
+                  <button className={view === "video" ? "active" : ""} onClick={() => showStoryView("video")}>
                     <Film size={16} /> Make a video
                   </button>
+                  {hasPreparedFilm && <button className={showingPreparedFilm ? "active" : ""} aria-pressed={showingPreparedFilm} onClick={() => showStoryView("images-to-video")}><Film size={16} aria-hidden="true" />Images → video</button>}
                 </div>
                 <span className="toolbar-hint">
-                  <Layers3 size={15} /> {path.length} moment
-                  {path.length === 1 ? "" : "s"} in your selected path
+                  {showingPreparedFilm ? "Prepared four-image example" : <><Layers3 size={15} /> {path.length} moment{path.length === 1 ? "" : "s"} in your selected path</>}
                 </span>
-                <button
+                {!showingPreparedFilm && <button
                   className="text-button export-top"
                   onClick={exportStory}
                   disabled={exporting}
                 >
                   <ArrowDownToLine size={16} />{" "}
                   {exporting ? "Preparing…" : "Export story"}
-                </button>
+                </button>}
               </div>
               <div
-                className={`workspace ${mobileDetails ? "mobile-details" : ""}`}
+                className={`workspace ${showingPreparedFilm ? "fn-film-workspace" : ""} ${mobileDetails ? "mobile-details" : ""}`}
               >
                 <div className="main-pane">
-                  {view === "map" ? (
+                  {showingPreparedFilm ? <PreparedStoryFilm /> : view === "map" ? (
                     <StoryMap
                       state={presentedState}
                       project={project}
@@ -1214,7 +1229,7 @@ export function ForkNight() {
                   )}
                 </div>
 
-                <aside
+                {!showingPreparedFilm && <aside
                   className="inspector"
                   aria-label="Selected moment and creation workspace"
                 >
@@ -1275,7 +1290,7 @@ export function ForkNight() {
                             </span>
                             <span>
                               {project.visibility === "open"
-                                ? formatCredits(item.reuseFee)
+                                ? <Credits amount={demoReuseFee(item)} />
                                 : "Shared"}
                             </span>
                           </div>
@@ -1962,7 +1977,7 @@ export function ForkNight() {
                       </p>
                     </>
                   )}
-                </aside>
+                </aside>}
               </div>
             </>
           )}

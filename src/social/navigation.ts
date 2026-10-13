@@ -6,7 +6,7 @@ export type SocialRoute =
   | { kind: "lobby" | "spaces" | "desk" }
   | { kind: "guild" | "hall"; guildId: string }
   | { kind: "ideas"; boardId: string }
-  | { kind: "project"; projectId: string };
+  | { kind: "project"; projectId: string; view?: "images-to-video" };
 
 export interface OpenProjectOptions {
   momentId?: string;
@@ -48,11 +48,14 @@ export function parseSocialRoute(hash: string): SocialRoute {
       return { kind: "lobby" };
     if (path === "/spaces") return { kind: "spaces" };
     if (path === "/desk") return { kind: "desk" };
-    const match = path.match(/^\/(guild|hall|ideas|project)\/([^/?#]+)\/?$/);
+    const match = path.match(/^\/(guild|hall|ideas|project)\/([^/?#]+)(\/images-to-video)?\/?$/);
     if (!match) return { kind: "lobby" };
     const id = decodeURIComponent(match[2]);
     if (!routeId.test(id) || ["constructor", "prototype", "__proto__"].includes(id))
       return { kind: "lobby" };
+    if (match[3]) return match[1] === "project" && id === "blade-runner-memory"
+      ? { kind: "project", projectId: id, view: "images-to-video" }
+      : { kind: "lobby" };
     if (match[1] === "guild" || match[1] === "hall")
       return { kind: match[1], guildId: id };
     if (match[1] === "ideas") return { kind: "ideas", boardId: id };
@@ -67,7 +70,7 @@ export function formatSocialRoute(route: SocialRoute): string {
     return `#/${route.kind}/${encodeURIComponent(route.guildId)}`;
   if (route.kind === "ideas") return `#/ideas/${encodeURIComponent(route.boardId)}`;
   if (route.kind === "project")
-    return `#/project/${encodeURIComponent(route.projectId)}`;
+    return `#/project/${encodeURIComponent(route.projectId)}${route.view === "images-to-video" && route.projectId === "blade-runner-memory" ? "/images-to-video" : ""}`;
   return `#/${route.kind}`;
 }
 

@@ -29,10 +29,20 @@ test("all social destinations round-trip through addressable hash routes", () =>
     { kind: "hall", guildId: "paper-lantern" },
     { kind: "ideas", boardId: "tidepool-board" },
     { kind: "project", projectId: "midnight-signal" },
+    { kind: "project", projectId: "blade-runner-memory", view: "images-to-video" },
   ];
   for (const route of routes)
     assert.deepEqual(parseSocialRoute(formatSocialRoute(route)), route);
   assert.deepEqual(parseSocialRoute("#/guild/paper-lantern/"), routes[3]);
+});
+
+test("the prepared film route belongs only to its recorded room", () => {
+  assert.deepEqual(parseSocialRoute("#/project/blade-runner-memory/images-to-video/"), {
+    kind: "project", projectId: "blade-runner-memory", view: "images-to-video",
+  });
+  for (const hash of ["#/project/paper-moon/images-to-video", "#/guild/blade-runner-memory/images-to-video", "#/project/blade-runner-memory/unknown", "#/project/blade-runner-memory/images-to-video?live=1"])
+    assert.deepEqual(parseSocialRoute(hash), { kind: "lobby" });
+  assert.equal(formatSocialRoute({ kind: "project", projectId: "paper-moon", view: "images-to-video" }), "#/project/paper-moon");
 });
 
 test("empty and malformed hash routes safely open the lobby", () => {
