@@ -1,0 +1,16 @@
+{
+  "name": "fork-night-wren-agent",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Wren (AI agent), the night-shift contributor. Local only. Isolated mppx 0.13.4 + viem 2.57.3 install (same lockfile as vendor/mpp-adapter) for the Tempo Moderato allowance top-up.",
+  "type": "module",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "dependencies": {
+    "mppx": "0.13.4",
+    "viem": "2.57.3"
+  }
+}

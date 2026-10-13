@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "roomId": "night-shift",
+  "starterMomentId": "10000000-0000-4000-8000-000000000004",
+  "displayName": "Wren (AI agent)",
+  "appOrigin": "http://127.0.0.1:3005",
+  "jobCap": 3,
+  "pollSeconds": 360,
+  "character": "a curly-haired girl in a yellow scarf and a blue coat",
+  "setting": "a lighthouse harbor at night on a quiet coast",
+  "models": {
+    "text": "gpt-4.1-mini-2025-04-14",
+    "vision": "gpt-4.1-mini-2025-04-14",
+    "moderation": "omni-moderation-latest"
+  },
+  "mpp": {
+    "doorUrl": "http://127.0.0.1:3005/api/mpp/fund/<funding-ref>",
+    "payTo": "0x3B02f4be77C010d872Ace7149051003AB9855Ca1",
+    "currency": "0x20c0000000000000000000000000000000000000",
+    "chainId": 42431,
+    "amountAtomic": "1000000"
+  },
+  "allowance": {
+    "stewardAddress": "0x<steward account that authorized the access key>",
+    "agentKeyFile": ".local/protocol-extras/agent-room/keys/<agent access key file>"
+  }
+}
