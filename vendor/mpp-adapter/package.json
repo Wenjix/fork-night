@@ -1,0 +1,19 @@
+{
+  "name": "fork-night-mpp-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Isolated mppx 0.13.4 and viem 2.57.3 for the local, testnet-only MPP room top-up on Tempo Moderato. Installed on its own with pnpm install --frozen-lockfile in this folder; the app's root dependency tree never sees it.",
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "dependencies": {
+    "mppx": "0.13.4",
+    "viem": "2.57.3"
+  }
+}
