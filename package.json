@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "AGPL-3.0-only",
+  "packageManager": "pnpm@10.18.3",
   "type": "module",
   "engines": {
     "node": ">=22.18.0"
@@ -22,6 +23,11 @@
     "test:pilot-db": "node scripts/test-pilot-db.mjs",
     "test:pilot-live": "node scripts/test-pilot-live.ts",
     "pilot:status": "node --env-file-if-exists=.env.local scripts/check-pilot-generation.mjs",
+    "x402:setup": "node --env-file-if-exists=.env.local scripts/x402-setup.ts",
+    "x402:fund": "node --env-file-if-exists=.env.local scripts/x402-fund-room.ts",
+    "x402:reconcile": "node --env-file-if-exists=.env.local scripts/x402-reconcile.ts",
+    "x402:status": "node --env-file-if-exists=.env.local scripts/x402-status.ts",
+    "onboarding:check": "node --env-file-if-exists=.env.local scripts/check-onboarding.mjs",
     "docs:check": "node scripts/check-doc-links.mjs",
     "submission:export": "node scripts/export-submission.mjs",
     "hosting:prepare": "node scripts/prepare-hosted-pilot.mjs",
@@ -35,25 +41,38 @@
   },
   "dependencies": {
     "@fix-webm-duration/fix": "1.0.1",
+    "@privy-io/react-auth": "3.48.1",
+    "@solana-program/token": "0.9.0",
+    "@solana/kit": "5.5.1",
     "@supabase/supabase-js": "2.117.2",
     "@trigger.dev/sdk": "4.6.4",
+    "@x402/core": "2.28.0",
+    "@x402/evm": "2.28.0",
+    "@x402/svm": "2.28.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "ethers": "6.16.0",
     "lucide-react": "0.552.0",
     "next": "16.3.5",
     "qrcode": "1.5.4",
+    "radix-ui": "^1.8.1",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "sharp": "0.35.4",
+    "tailwind-merge": "^3.7.0",
     "vercel": "^63.1.2"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@trigger.dev/build": "4.6.4",
     "@types/node": "24.13.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "hardhat": "3.2.0",
+    "tailwindcss": "4.3.3",
     "trigger.dev": "4.6.4",
     "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "viem": "2.56.5"
   }
 }

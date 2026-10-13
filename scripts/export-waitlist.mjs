@@ -43,7 +43,7 @@ const scripts = cloudflare
   : { build: "next build", dev: "next dev", start: "next start" };
 const pkg = { name: "fork-night-waitlist", version: base.version, private: true, type: "module", license: base.license, engines: { node: ">=22.18.0" }, scripts, dependencies, devDependencies };
 await writeFile(resolve(output, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
-const lock = JSON.parse(await readFile(resolve(root, cloudflare ? "config/waitlist-cloudflare/package-lock.json" : "package-lock.json"), "utf8"));
+const lock = JSON.parse(await readFile(resolve(root, cloudflare ? "config/waitlist-cloudflare/package-lock.json" : "config/waitlist-preview/package-lock.json"), "utf8"));
 if (cloudflare) {
   // Refuse to resolve a different toolchain silently when source pins change.
   if (lock.name !== pkg.name || lock.version !== pkg.version) throw new Error("Regenerate the Cloudflare lockfile for this app version.");

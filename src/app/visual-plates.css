@@ -1,0 +1,120 @@
+.fn-section-plate,
+.fn-context-plate {
+  --plate-surface: #faf7ef;
+  --plate-ink: #252044;
+  --plate-muted: #675d7c;
+  --plate-edge: #ddd7e4;
+  --plate-accent: #5937b9;
+  --plate-mount: #fffdf8;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 18px;
+  background: var(--plate-surface);
+  color: var(--plate-ink);
+  border: 1px solid var(--plate-edge);
+  box-shadow: none;
+}
+.fn-section-plate {
+  border-radius: 14px 14px 5px 5px;
+}
+.fn-context-plate {
+  align-items: flex-start;
+  border-radius: 5px 14px 14px 14px;
+}
+:is(.fn-section-plate, .fn-context-plate)[data-tone="night"] {
+  --plate-surface: #222746;
+  --plate-ink: #faf6ff;
+  --plate-muted: #c0c5e0;
+  --plate-edge: #6c6a9e;
+  --plate-accent: #ffdb67;
+  --plate-mount: #181d3d;
+}
+:is(.fn-section-plate, .fn-context-plate)[data-tone="lavender"] {
+  --plate-surface: #e9ddf6;
+  --plate-edge: #c2b1d0;
+}
+:is(.fn-section-plate, .fn-context-plate)[data-tone="butter"] {
+  --plate-surface: #fff0cd;
+  --plate-edge: #d8c693;
+}
+.fn-plate-mount {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px 12px 4px 4px;
+  color: var(--plate-accent);
+  background: var(--plate-mount);
+  border: 1px solid var(--plate-edge);
+}
+.fn-plate-copy {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
+.fn-section-plate .fn-plate-heading {
+  margin: 0;
+  color: var(--plate-ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.fn-section-plate .fn-plate-description {
+  margin-top: 8px;
+  max-width: 70ch;
+  color: var(--plate-muted);
+  font-family: var(--font-interface), sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+.fn-plate-description p {
+  margin: 0;
+  font: inherit;
+}
+.fn-plate-action {
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: center;
+}
+.fn-context-plate .fn-plate-copy > :first-child {
+  margin-top: 0;
+}
+.fn-context-plate .fn-plate-copy > :last-child {
+  margin-bottom: 0;
+}
+:is(.fn-section-plate, .fn-context-plate) :focus-visible {
+  outline-color: var(--plate-accent);
+}
+@media (max-width: 680px) {
+  .fn-section-plate,
+  .fn-context-plate {
+    gap: 12px;
+    padding: 16px;
+  }
+  .fn-section-plate {
+    flex-wrap: wrap;
+  }
+  .fn-section-plate .fn-plate-copy {
+    flex-basis: calc(100% - 52px);
+  }
+  .fn-plate-action {
+    flex-basis: calc(100% - 52px);
+    margin-left: 52px;
+  }
+  .fn-plate-mount {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+  .fn-section-plate .fn-plate-heading {
+    font-size: 26px;
+  }
+}
