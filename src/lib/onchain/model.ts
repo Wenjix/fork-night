@@ -6,6 +6,9 @@ export const TERMS_HASH = id(RELEASE_TERMS);
 export const POLICY_HASH = id("fork-night/equal-wallets/v1");
 export const ORIGINAL_ROOM = "midnight-signal";
 export const ORIGINAL_ART_SHA256 = "47bcf853fe971bb0e88ae6d4d22f9d929b81f8b0736fd69423fea329033b5b45";
+export const DEFAULT_SUPPORT_MON = "1";
+export const MAX_SUPPORT_MON = "10";
+export const MAX_SUPPORT_WEI = parseEther(MAX_SUPPORT_MON);
 const coder = AbiCoder.defaultAbiCoder();
 export const sourceKey = (sourceId: string) => id(`fork-night/source/${sourceId}`);
 export const makerKey = (makerId: string | null) => id(`fork-night/maker/${makerId ?? "declared-original-seed"}`);
@@ -40,7 +43,7 @@ export type PreparedRelease = ReturnType<typeof prepareRelease>;
 export function supportAmount(value: string): bigint {
   if (!/^(?:0|[1-9]\d*)(?:\.\d{1,18})?$/.test(value)) throw new Error("Enter a positive test MON amount with up to 18 decimal places.");
   const amount = parseEther(value);
-  if (amount <= 0n || amount > parseEther("10")) throw new Error("Choose more than zero and at most 10 test MON for this rehearsal.");
+  if (amount <= 0n || amount > MAX_SUPPORT_WEI) throw new Error(`Choose more than zero and at most ${MAX_SUPPORT_MON} test MON for this rehearsal.`);
   return amount;
 }
 export function sameAddress(a: string, b: string) { return a.toLowerCase() === b.toLowerCase(); }

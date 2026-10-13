@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      pilot_wallet_requests: {
+        Row: { id: string; room_id: string; project_id: string; moment_id: string; maker_id: string; maker_label: string; moment_title: string; wallet_address: string; issued_at: number; signature: string; state: string; created_at: string; decided_at: string | null; decision_signature: string | null }
+        Insert: { id: string; room_id: string; project_id: string; moment_id: string; maker_id: string; maker_label: string; moment_title: string; wallet_address: string; issued_at: number; signature: string; state?: string; created_at?: string; decided_at?: string | null; decision_signature?: string | null }
+        Update: { state?: string; decided_at?: string | null; decision_signature?: string | null }
+        Relationships: []
+      }
       waitlist_signups: {
         Row: { email: string; created_at: string; source: string; consent_version: string }
         Insert: { email: string; created_at?: string; source: string; consent_version: string }
@@ -593,6 +599,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      pilot_submit_wallet_request: {
+        Args: { p_id: string; p_room_id: string; p_project_id: string; p_moment_id: string; p_actor: string; p_wallet: string; p_issued_at: number; p_signature: string }
+        Returns: Database["public"]["Tables"]["pilot_wallet_requests"]["Row"]
+      }
       pilot_begin_panel: {
         Args: {
           p_claim_token: string

@@ -16,6 +16,7 @@ const webKeys = [
 ];
 const workerKeys = ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SECRET_KEY", "OPENAI_API_KEY"];
 const helperKeys = ["OPENAI_API_KEY", "CARTESIA_API_KEY"];
+const onboardingKeys = ["NEXT_PUBLIC_PRIVY_APP_ID", "NEXT_PUBLIC_PRIVY_CLIENT_ID"];
 
 async function readEnv(path) {
   try { return parseEnv(await readFile(path, "utf8")); }
@@ -35,6 +36,7 @@ export function selectHostedSettings(env) {
   if (developmentKeyOmitted) web.TRIGGER_SECRET_KEY = "";
   web.PILOT_LOCAL_CONTROLS = "0";
   for (const key of helperKeys) if (env[key]) web[key] = env[key];
+  for (const key of onboardingKeys) if (env[key]) web[key] = env[key];
   if (web.FORK_NIGHT_PUBLIC_URL) {
     if (!signupUrl(web))
       throw new Error("Set FORK_NIGHT_PUBLIC_URL to the public HTTPS origin without a path.");

@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { BrowserProvider, ContractFactory, ZeroHash } from "ethers";
 import { createHardhatRuntimeEnvironment } from "hardhat/hre";
 import { operationArgs, parseTransaction, ReleaseClient, transactionStorageKey, type StoragePort, type WalletProvider } from "../../src/lib/onchain/client.ts";
-import { prepareRelease } from "../../src/lib/onchain/model.ts";
+import { DEFAULT_SUPPORT_MON, prepareRelease, supportAmount } from "../../src/lib/onchain/model.ts";
 import type { PilotMoment } from "../../src/lib/pilot.ts";
 
 const artifact = JSON.parse(await readFile(".local/contracts/ForkNightReleases.json", "utf8"));
@@ -59,6 +59,38 @@ test("wallet client reads actual committed scenes and settlement on the local EV
   assert.equal((await f.client.load(f.prepared)).release.beneficiaries[0].claimable, 0n);
 });
 
+test("an empty wallet stops before saving or submitting an action and can proceed after funding", async t => {
+  const f = await fixture(t);
+  await f.wallet.request({ method: "hardhat_setBalance", params: [f.curator, "0x0"] });
+  await assert.rejects(f.execute("create"), { code: "INSUFFICIENT_FUNDS" });
+  assert.equal(f.broadcasts, 0);
+  assert.equal(f.storage.getItem(transactionStorageKey(f.config, f.curator, f.prepared.projectId)), null);
+  await f.wallet.request({ method: "hardhat_setBalance", params: [f.curator, "0x8ac7230489e80000"] });
+  await f.execute("create");
+  assert.equal(f.broadcasts, 1);
+  assert.equal((await f.client.load(f.prepared)).termsMatch, true);
+});
+
+test("retry keeps the saved payment when its balance leaves no gas and settles it once after funding", async t => {
+  const f = await fixture(t); await f.release(); f.failBefore();
+  const value = supportAmount(DEFAULT_SUPPORT_MON);
+  await assert.rejects(f.execute("support", 0, f.curator, value));
+  f.restore();
+  const key = transactionStorageKey(f.config, f.curator, f.prepared.projectId);
+  const saved = f.storage.getItem(key), before = f.broadcasts;
+  await f.wallet.request({ method: "hardhat_setBalance", params: [f.curator, `0x${value.toString(16)}`] });
+  await assert.rejects(f.client.retry(f.prepared, f.wallet, f.curator, f.storage), { code: "INSUFFICIENT_FUNDS" });
+  assert.equal(f.broadcasts, before);
+  assert.equal(f.storage.getItem(key), saved);
+  await f.wallet.request({ method: "hardhat_setBalance", params: [f.curator, "0x8ac7230489e80000"] });
+  await f.client.retry(f.prepared, f.wallet, f.curator, f.storage);
+  assert.equal((await f.client.load(f.prepared)).release.received, value);
+  assert.equal(f.storage.getItem(key), null);
+  const after = f.broadcasts;
+  assert.equal((await f.client.recover(f.prepared, f.curator, f.storage)).complete, true);
+  assert.equal(f.broadcasts, after);
+});
+
 test("lost submission response restores from confirmed payment state without sending again", async t => {
   const f = await fixture(t); await f.release(); f.failAfter();
   await assert.rejects(f.execute("support", 0, f.curator, 7n));
@@ -89,13 +121,14 @@ test("support recovery uses exact settled payment when the original receipt hash
   assert.equal((await f.client.load(f.prepared)).release.received, 7n);
 });
 
-test("a dropped submission retries its original payment ID, then a second retry sends nothing", async t => {
+test("a dropped 1 MON submission retries its original payment ID, then a second retry sends nothing", async t => {
   const f = await fixture(t); await f.release(); f.failBefore();
-  await assert.rejects(f.execute("support", 0, f.curator, 11n));
+  const value = supportAmount(DEFAULT_SUPPORT_MON);
+  await assert.rejects(f.execute("support", 0, f.curator, value));
   assert.equal((await f.client.recover(f.prepared, f.curator, f.storage)).complete, false);
   f.restore();
   await f.client.retry(f.prepared, f.wallet, f.curator, f.storage);
-  assert.equal((await f.client.load(f.prepared)).release.received, 11n);
+  assert.equal((await f.client.load(f.prepared)).release.received, value);
   const before = f.broadcasts;
   assert.equal((await f.client.recover(f.prepared, f.curator, f.storage)).complete, true);
   assert.equal(f.broadcasts, before);

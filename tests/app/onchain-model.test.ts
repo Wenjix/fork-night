@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { ORIGINAL_ART_SHA256, prepareRelease, sceneManifest, supportAmount } from "../../src/lib/onchain/model.ts";
+import { DEFAULT_SUPPORT_MON, MAX_SUPPORT_WEI, ORIGINAL_ART_SHA256, prepareRelease, sceneManifest, supportAmount } from "../../src/lib/onchain/model.ts";
 import type { PilotMoment } from "../../src/lib/pilot.ts";
 
 const curator = "0x0000000000000000000000000000000000000001";
@@ -32,5 +32,7 @@ test("fandom rooms, missing ancestry and cycles cannot become a payout manifest"
 
 test("support amount preserves exact wei and rejects malformed or unbounded requests", () => {
   assert.equal(supportAmount("0.000000000000000001"), 1n);
-  for (const amount of ["0", "-1", "1e3", "1,2", "11", "0.0000000000000000001"]) assert.throws(() => supportAmount(amount));
+  assert.equal(supportAmount(DEFAULT_SUPPORT_MON), 10n ** 18n);
+  assert.equal(supportAmount("10"), MAX_SUPPORT_WEI);
+  for (const amount of ["0", "-1", "1e3", "1,2", "11", "10.000000000000000001", "300", "0.0000000000000000001"]) assert.throws(() => supportAmount(amount));
 });

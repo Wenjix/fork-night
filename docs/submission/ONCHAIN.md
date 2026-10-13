@@ -57,13 +57,15 @@ Copy the public addresses from `.local/contracts/public-settings.env` into the c
 
 The shared pilot needs its existing Supabase setup. No new inference request is necessary for the financial proof: use already published original/permissioned scenes and two distinct participating wallets. Prepared activity and founder-operated wallets must be described accurately.
 
-1. Open the original room, choose a published path and expand **Make this path a shared release**.
+1. Open the original room, choose a published path and expand **Release and support this story** below the story actions. Inspecting an ancestor retains the chosen branch; selecting a different branch selects its release.
 2. Connect the configured curator's wallet, accept the testnet terms and start the payout project. Approve the opening's actual declared maker wallet explicitly; it need not be the curator.
-3. The curator approves each published byline's wallet. Each maker connects that approved wallet, accepts the terms and chooses **Register scene**. Registration follows the approved wallet even when its holder uses a different browser guest account; creation and publication still use guest permissions. The opening registers first; later scenes register after their parents. Disabled actions name the missing parent or other prerequisite. Admission is a curator attestation, not an independent identity check.
+3. Each published maker sends a [signed wallet request](WALLET-REQUESTS.md) from its connected wallet. The curator reviews the room queue and full address before approving that byline's wallet. Each maker connects the approved wallet, accepts the terms and chooses **Register scene**. Registration follows the approved wallet even when its holder uses a different browser guest account; creation and publication still use guest permissions. The opening registers first; later scenes register after their parents. Disabled actions name the missing parent or other prerequisite. Admission is a curator attestation, not an independent identity check.
 4. Return to the curator wallet and choose **Freeze this release** after the entire selected path matches its registered commitments.
 5. A supporter connects a wallet funded with test MON and chooses **Support this release**. The displayed claims are read from confirmed contract state.
 6. Each recipient reconnects their own wallet and chooses **Claim my … test MON**. Show the recipient's actual balance and explorer transaction alongside the app. Network gas is paid separately by the sending wallet.
 7. Refresh after support/claim. If a response is interrupted, choose **Check saved action**. An explicit retry retains the original support-payment ID; the contract cannot collect it twice. A dropped action and an already settled action are distinguished using receipts or confirmed contract state.
+
+For a new branch with the existing curator and two fresh maker sessions, follow the [three-wallet rehearsal](REHEARSAL.md). The opening contributes the curator’s third recipient wallet. This is a planned founder-operated follow-up; the completed two-wallet proof above remains the recorded result.
 
 The downloaded release record contains the exact ordered public scene manifests, caption and media-hash commitments, terms, chain, contract and release ID. It excludes private drafts, prompts and provider receipts. Generated media remains in existing durable Supabase storage; the prepared opening's artwork hash identifies the shipped original sheet. Keep the actual bytes available as well as their hashes.
 
@@ -83,7 +85,7 @@ Use **Download exact release record** in the selected path's release panel, then
 npm run contracts:check -- --wallet 0xYOUR_SECOND_MAKER_ADDRESS --record "$HOME/Downloads/fork-night-release.json"
 ```
 
-With a record, the command reconstructs the ordered scene commitments and release ID, compares registrations with contract state, checks frozen recipients against the complete ancestry, and reconciles received, claimed and claimable totals at one recorded block. `fundedAndFullyClaimed` is true only after the release has received a positive payment and all recorded funds have been claimed. Inspect the recipient addresses and amounts as well: the flag alone does not establish two distinct makers or that they used the browser. Two distinct wallets sharing a 0.01 test MON payment receive 0.005 each; sending transactions also consumes gas.
+With a record, the command reconstructs the ordered scene commitments and release ID, compares registrations with contract state, checks frozen recipients against the complete ancestry, and reconciles received, claimed and claimable totals at one recorded block. `fundedAndFullyClaimed` is true only after the release has received a positive payment and all recorded funds have been claimed. Inspect the recipient addresses and amounts as well: the flag alone does not establish two distinct makers or that they used the browser. In the current three-wallet rehearsal, each wallet sends one 1 test MON support payment. The cumulative 3 test MON produces an exact 1 test MON claim per recipient; sending transactions also consumes gas.
 
 ## Independent claims and limits
 

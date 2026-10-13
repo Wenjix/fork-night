@@ -1,6 +1,6 @@
 import { AbstractProvider, BrowserProvider, Contract, getAddress, id, JsonRpcProvider, keccak256, ZeroAddress, ZeroHash, type Eip1193Provider } from "ethers";
 import { releaseAbi, releaseRuntimeHash } from "./abi.ts";
-import { POLICY_HASH, sameAddress, sourceKey, TERMS_HASH, type PreparedRelease } from "./model.ts";
+import { MAX_SUPPORT_WEI, POLICY_HASH, sameAddress, sourceKey, TERMS_HASH, type PreparedRelease } from "./model.ts";
 import type { ReleaseConfig } from "./config.ts";
 
 export type WalletProvider = Eip1193Provider & { on?: (event: string, listener: (...args: unknown[]) => void) => void; removeListener?: (event: string, listener: (...args: unknown[]) => void) => void };
@@ -90,12 +90,17 @@ export class ReleaseClient {
     if (!Array.isArray(accounts) || !accounts.length) throw new Error("Choose a wallet account to continue.");
     return { browser, account: getAddress(accounts[0]) };
   }
+  private async requireGasBalance(account: string, value: bigint) {
+    if (await this.provider.getBalance(account) <= value)
+      throw Object.assign(new Error("The wallet balance does not cover the transaction value and gas."), { code: "INSUFFICIENT_FUNDS" });
+  }
   async execute(prepared: PreparedRelease, wallet: WalletProvider, account: string, storage: StoragePort, operation: Operation, args: string[], value = 0n) {
     await this.verify();
     const key = transactionStorageKey(this.config, account, prepared.projectId);
     if (storage.getItem(key)) throw new Error("Check the saved transaction before sending another action.");
     const { browser, account: active } = await this.connect(wallet);
     if (!sameAddress(active, account)) throw new Error("Your wallet account changed. Reconnect and review the selected account.");
+    await this.requireGasBalance(account, value);
     const signer = await browser.getSigner(account), contract = this.contract.connect(signer);
     const method = contract.getFunction(methods[operation]);
     await method.staticCall(...args, { value });
@@ -170,11 +175,12 @@ export class ReleaseClient {
       : p.operation === "register" ? prepared.scenes.some((_, i) => equal(p.args, operationArgs(prepared, "register", i)))
       : p.operation === "release" ? equal(p.args, operationArgs(prepared, "release"))
       : p.operation === "approve" ? p.args[0] === prepared.projectId && prepared.scenes.some(scene => scene.makerId === p.args[1]) && p.args[2] !== ZeroAddress
-      : p.operation === "support" ? p.args[0] === prepared.id && bytes32.test(p.args[1]) && BigInt(p.value) > 0n && BigInt(p.value) <= 10n ** 19n
+      : p.operation === "support" ? p.args[0] === prepared.id && bytes32.test(p.args[1]) && BigInt(p.value) > 0n && BigInt(p.value) <= MAX_SUPPORT_WEI
       : p.args[0] === prepared.id && sameAddress(p.args[1], account);
     if (!matches) throw new Error("Return to the saved action's original story path before retrying it.");
     const { browser, account: active } = await this.connect(wallet);
     if (!sameAddress(active, account)) throw new Error("Reconnect the wallet that sent the saved action.");
+    await this.requireGasBalance(account, BigInt(p.value));
     const signer = await browser.getSigner(account), method = this.contract.connect(signer).getFunction(methods[p.operation]);
     await method.staticCall(...p.args, { value: BigInt(p.value) });
     // A retry retains the original payment ID. Only one such payment can settle, even if both transactions arrive.

@@ -92,3 +92,12 @@ test("invalid public origins fail without including configuration values in the 
     });
   }
 });
+
+test("public Privy settings belong only to the web deployment; private Privy credentials are excluded", () => {
+  const selected = selectHostedSettings({ ...env, NEXT_PUBLIC_PRIVY_APP_ID: "public-app-id", NEXT_PUBLIC_PRIVY_CLIENT_ID: "public-client-id", PRIVY_APP_SECRET: "PRIVATE_PRIVY_SENTINEL" });
+  assert.equal(selected.web.NEXT_PUBLIC_PRIVY_APP_ID, "public-app-id");
+  assert.equal(selected.web.NEXT_PUBLIC_PRIVY_CLIENT_ID, "public-client-id");
+  assert.equal(selected.worker.NEXT_PUBLIC_PRIVY_APP_ID, undefined);
+  assert.equal(selected.web.PRIVY_APP_SECRET, undefined);
+  assert.equal(selected.worker.PRIVY_APP_SECRET, undefined);
+});

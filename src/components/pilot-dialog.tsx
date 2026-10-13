@@ -8,16 +8,22 @@ export function PilotDialog({
   children,
   onClose,
   className = "",
+  dismissible = true,
+  returnFocus,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   className?: string;
+  dismissible?: boolean;
+  returnFocus?: () => HTMLElement | null;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const close = useRef(onClose);
   close.current = onClose;
+  const fallbackFocus = useRef(returnFocus);
+  fallbackFocus.current = returnFocus;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const element = dialog.current!;
@@ -27,7 +33,8 @@ export function PilotDialog({
     return () => {
       element.close();
       document.body.style.overflow = overflow;
-      if (previous?.isConnected) previous.focus({ preventScroll: true });
+      const target = previous?.isConnected ? previous : fallbackFocus.current?.();
+      target?.focus({ preventScroll: true });
     };
   }, []);
   return (
@@ -37,10 +44,10 @@ export function PilotDialog({
       aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
-        close.current();
+        if (dismissible) close.current();
       }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) {
+        if (dismissible && event.target === event.currentTarget) {
           const box = event.currentTarget.getBoundingClientRect();
           if (
             event.clientX < box.left ||
@@ -58,6 +65,7 @@ export function PilotDialog({
           className="pilot-icon-button"
           aria-label={`Close ${title}`}
           onClick={onClose}
+          disabled={!dismissible}
           autoFocus
         >
           <X size={23} />

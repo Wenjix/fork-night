@@ -1,0 +1,44 @@
+import { Check, Clock3 } from "lucide-react";
+import { ZeroAddress } from "ethers";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../lib/supabase/database.types.ts";
+import type { Snapshot, Operation } from "../lib/onchain/client.ts";
+import { registrationReason, shortAddress } from "../lib/onchain/journey.ts";
+import { sameAddress, type PreparedRelease } from "../lib/onchain/model.ts";
+import { pilotPanels } from "../lib/pilot.ts";
+import { PilotImage } from "./pilot-panels.tsx";
+
+export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pending, onAction, onInspect, client }: {
+  prepared: PreparedRelease; snapshot: Snapshot; account: string;
+  accepted: boolean; busy: boolean; pending: boolean;
+  onAction: (operation: Operation, index: number, address?: string) => void;
+  onInspect?: (id: string) => void; client?: SupabaseClient<Database>;
+}) {
+  return <ol className="pilot-release-path">{prepared.scenes.map((scene, index) => {
+    const record = snapshot.scenes[index], approved = record.maker !== ZeroAddress;
+    const own = approved && !!account && sameAddress(record.maker, account);
+    const reason = registrationReason({ prepared, snapshot, index, account, accepted, busy, pending });
+    const helpId = `${scene.id}-registration-help`;
+    return <li key={scene.id} data-registered={record.matches}>
+      {client && <button className="pilot-release-scene-art" type="button" aria-label={`Read scene ${index + 1}: ${scene.moment.title}`} onClick={() => onInspect?.(scene.moment.id)}>
+        <PilotImage client={client} panel={pilotPanels(scene.moment.panels)[0]} allowRetry={false} />
+      </button>}
+      <div className="pilot-release-scene-copy">
+        <strong>{scene.moment.title}</strong>
+        <span>{scene.moment.maker_label}{scene.moment.parent_id === null ? " · original opening" : ""}</span>
+        <span className="pilot-release-scene-state">{record.registered ? <Check size={15} aria-hidden="true" /> : <Clock3 size={15} aria-hidden="true" />}
+          {record.registered ? "Scene registered" : approved ? "Wallet approved · scene not registered" : "Awaiting wallet approval"}
+          {approved && <span title={record.maker}>{shortAddress(record.maker)}</span>}
+        </span>
+      </div>
+      <div className="pilot-release-scene-action">
+        {own && !record.registered && <>
+          <button className="button secondary" type="button" disabled={!!reason} aria-describedby={reason ? helpId : undefined} onClick={() => onAction("register", index)}>Register scene</button>
+          {reason && <span id={helpId} role="status">{reason}</span>}
+        </>}
+        {!approved && <span>The maker sends a signed wallet request for curator review.</span>}
+        {approved && !record.registered && account && !own && <span>Waiting for the approved wallet to register.</span>}
+      </div>
+    </li>;
+  })}</ol>;
+}
