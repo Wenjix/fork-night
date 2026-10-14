@@ -1,6 +1,7 @@
 "use client";
 
 import type { MouseEvent, ReactNode } from "react";
+import { FirstNightGuide } from "./first-night-guide";
 
 type LocalDestination = { kind: "lobby" | "spaces" | "desk" };
 export type AppDestination = LocalDestination["kind"] | "rooms" | "agents";
@@ -14,10 +15,11 @@ const destinations: { id: AppDestination; label: string; href: string; local?: L
 ];
 
 /** Native cross-page links preserve each workspace's existing leave protection. */
-export function AppHeader({ current, onLocalNavigate, children }: {
+export function AppHeader({ current, onLocalNavigate, children, guide }: {
   current: AppDestination;
   onLocalNavigate?: (route: LocalDestination) => void;
   children?: ReactNode;
+  guide?: ReactNode;
 }) {
   function followLocal(event: MouseEvent<HTMLAnchorElement>, route?: LocalDestination) {
     if (!route || !onLocalNavigate || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -25,7 +27,7 @@ export function AppHeader({ current, onLocalNavigate, children }: {
     onLocalNavigate(route);
   }
 
-  return <header className="fn-header">
+  return <><header className="fn-header">
     <a className="fn-brand" href="/" aria-label="Fork Night, return to the lobby" onClick={event => followLocal(event, { kind: "lobby" })}>
       Fork Night
       <svg aria-hidden="true" width="28" height="32" viewBox="0 0 28 32" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
@@ -36,5 +38,7 @@ export function AppHeader({ current, onLocalNavigate, children }: {
       {destinations.map(item => <a key={item.id} href={item.href} aria-current={current === item.id ? "page" : undefined} onClick={event => followLocal(event, item.local)}>{item.label}</a>)}
     </nav>
     {children && <div className="fn-header-actions">{children}</div>}
-  </header>;
+  </header>
+    {guide !== false && <div className="fn-first-header-guide">{guide === undefined ? <FirstNightGuide compact /> : guide}</div>}
+  </>;
 }

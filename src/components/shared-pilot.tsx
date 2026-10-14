@@ -18,6 +18,9 @@ import { joinPilotAsGuest } from "@/lib/supabase/guest";
 import { pilotBrowserClient } from "@/lib/supabase/pilot-client";
 import { usePilotAccount } from "./pilot-account";
 import { AppHeader } from "./app-header";
+import { FirstNightGuide } from "./first-night-guide";
+import { useFirstNightJourney } from "./use-first-night";
+import { parseFirstNightStarter, stripFirstNightParams, recordFirstNightEntry, recordFirstNightResult } from "../lib/first-night";
 import { isSavedAccount } from "../lib/supabase/onboarding";
 import {
   isUuid,
@@ -96,6 +99,7 @@ export function SharedPilot() {
   const [notice, setNotice] = useState("");
   const [shareUrl, setShareUrl] = useState("");
   const [profile, setProfile] = useState<Tables<"pilot_profiles">>();
+  const [profileLoadedFor, setProfileLoadedFor] = useState<string | null>();
   const [credits, setCredits] = useState<Credits>();
   const [activity, setActivity] = useState<Pick<Credits, "queued_requests" | "generating_requests" | "checking_requests">>();
   const [operation, setOperation] = useState<GenerationOperation>();
@@ -110,8 +114,19 @@ export function SharedPilot() {
   const [syncError, setSyncError] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [loadedRoom, setLoadedRoom] = useState("");
+  const [recoveryScope, setRecoveryScope] = useState<{ roomId: string; actorId: string | null }>();
+  const [firstNightStarter, setFirstNightStarter] = useState<ReturnType<typeof parseFirstNightStarter>>(null);
   const mutation = useRef(false);
   const taskHeading = useRef<HTMLHeadingElement>(null);
+  const actorId = account?.loading ? null : account?.user?.id ?? null;
+  const firstNightJourney = useFirstNightJourney({ roomId: roomId || undefined, actorId });
+
+  useEffect(() => {
+    const sync = () => setFirstNightStarter(parseFirstNightStarter(window.location.search));
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -159,11 +174,13 @@ export function SharedPilot() {
   useEffect(() => {
     if (!client || !account) return;
     let active = true;
+    setProfileLoadedFor(undefined);
     if (account.loading || !account.user) {
       if (!account.user) {
         if (profile) { setDraft(undefined); setComposing(false); }
         setProfile(undefined); setOperation(undefined); setCredits(undefined);
       }
+      if (!account.loading) setProfileLoadedFor(null);
       return;
     }
     const userId = account.user.id;
@@ -171,13 +188,16 @@ export function SharedPilot() {
     void client.from("pilot_profiles").select("*").eq("id", userId).maybeSingle().then(result => {
       if (!active) return;
       if (result.error) setError("Your saved storyteller name could not be loaded. Refresh to reconnect.");
-      else if (result.data) {
-        setProfile(result.data);
-        const url = new URL(window.location.href);
-        if (url.searchParams.has("onboarding")) {
-          setComposing(true);
-          url.searchParams.delete("onboarding");
-          window.history.replaceState(null, "", url.href);
+      else {
+        setProfileLoadedFor(userId);
+        if (result.data) {
+          setProfile(result.data);
+          const url = new URL(window.location.href);
+          if (url.searchParams.has("onboarding")) {
+            setComposing(true);
+            url.searchParams.delete("onboarding");
+            window.history.replaceState(null, "", url.href);
+          }
         }
       }
     });
@@ -205,6 +225,7 @@ export function SharedPilot() {
       first = true;
     setOperation(undefined);
     setDraft(undefined);
+    setRecoveryScope(undefined);
     setSnapshot(undefined); setPublications([]); setInvitation(""); setOtherWork(undefined);
     seenMoments.current = null;
     let revision: number | undefined;
@@ -315,6 +336,7 @@ export function SharedPilot() {
                 ?? own.data?.find((item) => item.status === "draft")
               : undefined,
         );
+        setRecoveryScope({ roomId, actorId: profile?.id ?? null });
       } catch (reason) {
         if (active) setSyncError(message(reason));
         throw reason;
@@ -392,6 +414,15 @@ export function SharedPilot() {
   const selectedLabel = momentLetter(Math.max(0, selectedIndex));
   const updates = pathUpdates(path, baseline);
   const reviewing = operation?.status === "delivered";
+
+  useEffect(() => {
+    if (!roomId || loadedRoom !== roomId || account?.loading || profileLoadedFor !== actorId || profile && profile.id !== actorId) return;
+    recordFirstNightEntry(roomId, actorId);
+  }, [roomId, loadedRoom, actorId, account?.loading, profileLoadedFor, profile?.id]);
+
+  useEffect(() => {
+    applyFirstNightStarter();
+  }, [firstNightStarter, roomId, loadedRoom, moments, recoveryScope, profileLoadedFor, actorId, account?.loading, draft, operation, busy, releaseBusy]);
 
   useEffect(() => {
     if (!selected || loadedRoom !== roomId || visit.current?.roomId !== roomId)
@@ -600,7 +631,7 @@ export function SharedPilot() {
     }
     if (!hasActive && !draft) setComposing(false);
   }
-  function start(idea?: Tables<"pilot_ideas">) {
+  function start(idea?: Tables<"pilot_ideas">, invitation?: { parentId: string; prompt: string }) {
     if (!selected) return;
     if (releaseBusy) {
       setNotice("Finish the current wallet action before starting a new continuation.");
@@ -640,7 +671,7 @@ export function SharedPilot() {
       requestAnimationFrame(() => taskHeading.current?.focus());
       return;
     }
-    const parentId = idea?.moment_id ?? selected.id;
+    const parentId = idea?.moment_id ?? invitation?.parentId ?? selected.id;
     if (pilotPath(moments, roomId, parentId).length >= 13) {
       setNotice(
         "This path has reached the pilot’s length limit. You can build from an earlier moment or leave an idea.",
@@ -653,7 +684,7 @@ export function SharedPilot() {
       roomId,
       captions: [],
       stage: "idea",
-      thought: "",
+      thought: invitation?.prompt ?? "",
       idea: idea
         ? {
             id: idea.id,
@@ -686,6 +717,72 @@ export function SharedPilot() {
         );
       }
     requestAnimationFrame(() => taskHeading.current?.focus());
+  }
+  function applyFirstNightStarter() {
+    if (!firstNightStarter || account?.loading || busy || releaseBusy || loadedRoom !== roomId ||
+      firstNightStarter.roomId !== roomId || profileLoadedFor !== actorId || profile && profile.id !== actorId ||
+      recoveryScope?.roomId !== roomId || recoveryScope.actorId !== (profile?.id ?? null)) return;
+    const current = parseFirstNightStarter(window.location.search);
+    if (!current || current.roomId !== firstNightStarter.roomId || current.momentId !== firstNightStarter.momentId ||
+      current.starterId !== firstNightStarter.starterId) return;
+    const source = moments.find(moment => moment.room_id === roomId && moment.id === current.momentId);
+    if (!source) {
+      setNotice("The opening for this invitation is unavailable. Choose a saved moment before adding your idea.");
+    } else if (draft || hasActive || mutation.current) {
+      setNotice("Your earlier continuation is still here. Finish or cancel it before trying this invitation.");
+    } else {
+      // The handoff opens the ordinary editor; generation and publication stay deliberate.
+      select(source.id, true);
+      start(undefined, { parentId: source.id, prompt: current.prompt });
+    }
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${stripFirstNightParams(window.location.search)}${window.location.hash}`);
+    setFirstNightStarter(null);
+  }
+  function followFirstNightResult() {
+    const result = firstNightJourney.result;
+    if (!result || !actorId || account?.loading || loadedRoom !== roomId || profileLoadedFor !== actorId || profile && profile.id !== actorId ||
+      recoveryScope?.roomId !== roomId || recoveryScope.actorId !== (profile?.id ?? null)) return;
+    if (draft || hasActive || busy || releaseBusy) {
+      setNotice("Your current continuation is still here. Finish or cancel it before following another contribution.");
+      return;
+    }
+    const source = moments.find(moment => moment.room_id === roomId && moment.id === (result.kind === "moment" ? result.id : result.parentId));
+    if (!source || result.kind === "moment" && source.maker_id !== actorId) {
+      setNotice("Your saved contribution is not in this view yet. Reload the saved story to find it.");
+      return;
+    }
+    select(source.id, true);
+    requestAnimationFrame(() => {
+      const target = document.getElementById(result.kind === "idea" ? `idea-${result.id}` : "pilot-contribution-credits") ??
+        document.getElementById(result.kind === "idea" ? "pilot-ideas" : "pilot-contribution-credits");
+      if (target instanceof HTMLDetailsElement) target.open = true;
+      target?.scrollIntoView({ block: "start" });
+      target?.focus({ preventScroll: true });
+    });
+  }
+  function readFirstNightOpening() {
+    if (busy || releaseBusy || account?.loading || loadedRoom !== roomId || profileLoadedFor !== actorId || profile && profile.id !== actorId ||
+      recoveryScope?.roomId !== roomId || recoveryScope.actorId !== (profile?.id ?? null)) return;
+    if (draft || hasActive || mutation.current) {
+      setNotice("Your current continuation is still here. Finish or cancel it before returning to the opening.");
+      return;
+    }
+    const opening = moments.find(moment => moment.room_id === roomId && moment.parent_id === null);
+    if (!opening) {
+      setNotice("This story’s opening is unavailable. Reload the saved story to check again.");
+      return;
+    }
+    select(opening.id, true);
+    requestAnimationFrame(() => {
+      const reader = document.getElementById("pilot-story-reader");
+      reader?.scrollIntoView({ block: "start" });
+      reader?.focus({ preventScroll: true });
+    });
+  }
+  function makeFirstNightContinuation() {
+    if (busy || releaseBusy || account?.loading || loadedRoom !== roomId || profileLoadedFor !== actorId || profile && profile.id !== actorId ||
+      recoveryScope?.roomId !== roomId || recoveryScope.actorId !== (profile?.id ?? null)) return;
+    start();
   }
   function changeDraft(next: Draft) {
     setDraft(next);
@@ -736,9 +833,11 @@ export function SharedPilot() {
   }
 
   async function publishMoment() {
-    if (!client || !operation || operation.status !== "delivered") return;
+    if (!client || !profile || !operation || operation.status !== "delivered") return;
     const result = await client.rpc("pilot_publish", { p_operation_id: operation.id });
-    if (result.error) throw new Error("Publication could not be confirmed. Try again to check the same saved moment.");
+    if (result.error || !result.data || result.data.room_id !== roomId || result.data.maker_id !== profile.id)
+      throw new Error("Publication could not be confirmed. Try again to check the same saved moment.");
+    recordFirstNightResult({ roomId, actorId: profile.id, kind: "moment", id: result.data.id, parentId: result.data.parent_id ?? undefined });
     setOperation({ ...operation, status: "published", published_moment_id: result.data.id });
     setMoments(items => items.some(item => item.id === result.data.id) ? items : [...items, result.data]);
     select(result.data.id, true);
@@ -762,15 +861,16 @@ export function SharedPilot() {
         profile={profile}
         onJoin={join}
         onUse={(idea) => start(idea)}
+        onSaved={(idea) => recordFirstNightResult({ roomId: idea.room_id, actorId: idea.maker_id, kind: "idea", id: idea.id, parentId: idea.moment_id })}
       />
     ) : null;
 
-  if (unavailable) return <><AppHeader current="rooms" /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
+  if (unavailable) return <><AppHeader current="rooms" guide={false} /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
 
   return (
     <>
       <a className="skip-link" href="#shared-story">Skip to story</a>
-      <AppHeader current="rooms" />
+      <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} />
       <main className="pilot-shell" id="shared-story" tabIndex={-1}>
       <div className="pilot-room-toolbar">
         <a className="fn-context-link" href="/pilot"><ArrowLeft size={17} aria-hidden="true" />All shared rooms</a>
@@ -928,6 +1028,8 @@ export function SharedPilot() {
             >
               <section
                 className="pilot-reader"
+                id="pilot-story-reader"
+                tabIndex={-1}
                 aria-label="Read and continue the story"
               >
                 <header className="pilot-scene-plate">
@@ -1086,7 +1188,7 @@ export function SharedPilot() {
                     onRefill={() => setRefresh((current) => current + 1)}
                   />
                 )}
-                <details className="pilot-credits">
+                <details className="pilot-credits" id="pilot-contribution-credits" tabIndex={-1}>
                   <summary>
                     Made together by{" "}
                     {

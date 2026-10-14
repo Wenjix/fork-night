@@ -63,3 +63,29 @@ test("agent spaces keep the product exits and identify the current tool within t
     assert.ok(html.includes('href="/#/desk"'));
   }
 });
+
+
+
+test("both entry components expose the shared first-night invitation while data loads", async () => {
+  const { PilotEntrance } = await tsImport("../../src/components/pilot-entrance.tsx", import.meta.url);
+  const html = renderToStaticMarkup(createElement(PilotEntrance, { creating: false, navigate: () => undefined }));
+  assert.match(html, /aria-label="Main navigation"/);
+  assert.match(html, /id="shared-directory"[^>]*aria-busy="true"/);
+  assert.match(html, /Opening the shared stories/);
+  assert.doesNotMatch(html, /No stories in the directory yet/);
+  assert.match(html, /public stories, private previews/);
+  assert.match(html, /Every story starts somewhere/);
+  assert.match(html, /Finding the opening/);
+  assert.match(html, /Join a story/);
+  assert.match(html, /Make your mark/);
+  assert.match(html, /href="\/pilot\?create=1"/);
+});
+
+test("shared-room routing resolves the query before showing an invitation or draft", async () => {
+  const { PilotExperience } = await tsImport("../../src/components/pilot-experience.tsx", import.meta.url);
+  const html = renderToStaticMarkup(createElement(PilotExperience));
+  assert.match(html, /Opening the rooms/);
+  assert.match(html, /aria-label="Main navigation"/);
+  assert.match(html, /data-compact="true"/);
+  assert.doesNotMatch(html, /fn-first-invitation|Continue this story|Create a room/);
+});

@@ -1,7 +1,5 @@
 "use client";
 
-import { AppHeader } from "./app-header";
-
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Plus, Users } from "lucide-react";
 import { pilotBrowserClient } from "../lib/supabase/pilot-client";
@@ -10,6 +8,9 @@ import { joinPilotAsGuest } from "../lib/supabase/guest";
 import { parseRoomIntent, roomIntentKey, type CreationStatus, type RoomIntent } from "../lib/pilot-rooms";
 import { usePilotAccount } from "./pilot-account";
 import { PilotIdentity } from "./pilot-identity";
+import { AppHeader } from "./app-header";
+import { FirstNightGuide } from "./first-night-guide";
+import { FirstNightInvitation } from "./first-night-invitation";
 import { PilotImage } from "./pilot-panels";
 import { pilotPanels } from "../lib/pilot";
 
@@ -125,7 +126,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
   const cards = (items: Room[]) => <div className="pilot-room-cards">{items.map(room => <a className="pilot-room-card" key={room.id} href={`/pilot?room=${encodeURIComponent(room.id)}`}><Users size={22} aria-hidden="true" /><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={17} aria-hidden="true" /></span></a>)}</div>;
   return <div className="pilot-page">
     <a className="skip-link" href="#shared-stories">Skip to shared stories</a>
-    <AppHeader current="rooms" />
+    <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} />} />
     <main className="pilot-shell pilot-entrance" id="shared-stories" tabIndex={-1}>
     <div className="pilot-entrance-account"><span>Shared rooms · public stories, private previews</span><div className="pilot-header-actions"><PilotIdentity profile={profile} disabled={busy || !!pending || !!account?.loading} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" /></div></div>
     {creating ? <>
@@ -143,10 +144,14 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
         <button className="button primary" disabled={busy || !profile || !client || !!account?.loading || (!pending && !available)}>{busy ? "Checking your room…" : pending ? "Check room" : "Create room"}<ArrowRight size={18} aria-hidden="true" /></button>
         {pending && !busy && <p>Your room request is saved. Check it to confirm the same room.</p>}
       </form>
-    </> : <><div className="pilot-intro"><h1>Make a story together.</h1><p>One beginning. A few storytellers. Follow a thread or take it somewhere new.</p></div><a className="pilot-create-invitation" href="/pilot?create=1"><Plus size={26} aria-hidden="true" /><span><strong>Create a room</strong><small>Start with a prepared opening and invite your storytellers.</small></span><ArrowRight size={22} aria-hidden="true" /></a></>}
+    </> : <>
+      <h1 className="sr-only">Make a story together.</h1>
+      <FirstNightInvitation variant="rooms" />
+      <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={18} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={17} aria-hidden="true" /></a></div>
+    </>}
     {(error || account?.error) && <div className="pilot-notice" role="alert"><p>{error || account?.error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
     {account?.notice && <div className="pilot-notice" role="alert"><p>{account.notice}</p><button type="button" className="text-button" onClick={account.dismissNotice}>Dismiss</button></div>}
     {!!joined.length && <section aria-label="Your joined rooms"><h2>Your joined stories</h2>{cards(joined)}</section>}
-    <section aria-label="Open shared stories"><h2>Stories to pick up</h2>{cards(rooms)}</section>
+    <section id="shared-directory" aria-label="Open shared stories" aria-busy={!policy && !error}><h2>Stories to pick up</h2>{rooms.length ? cards(rooms) : <div role="status">{!policy && !error ? <p>Opening the shared stories…</p> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <p>No stories in the directory yet. If someone invited you, open their room link.</p>}</div>}</section>
   </main></div>;
 }

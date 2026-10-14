@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "./room-networks.css";
 import "./guild-funding.css";
+import "./first-night.css";
 
 const interfaceFont = localFont({
   src: "../../public/fonts/inter-latin.woff2",

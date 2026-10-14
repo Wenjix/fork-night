@@ -69,6 +69,8 @@ import {
 } from "@/social/navigation";
 import { StoryArt } from "./story-art";
 import { AppHeader } from "./app-header";
+import { FirstNightGuide } from "./first-night-guide";
+import { FirstNightInvitation } from "./first-night-invitation";
 import { fandomStory, showcaseProjects, storyStyleLabel } from "@/lib/fandom-stories";
 import { fandomImageInStyle, type ArtDirections } from "@/lib/fandom-art-direction";
 import { FandomArtDirection } from "./fandom-art-direction";
@@ -178,6 +180,26 @@ export function SocialSpaces(props: SocialSpacesProps) {
   const view: ViewProps = { ...props, social, mutate };
   const paper = route.kind === "ideas" || route.kind === "desk";
   const user = demo.users.find((item) => item.id === userId)!;
+  const previewIdentity = <label className="social-user">
+    <Maker id={userId} name={user.name} />
+    <span className="sr-only">Preview as collaborator</span>
+    <select aria-label="Preview as collaborator" value={userId} onChange={event => onUserChange(event.target.value)}>
+      {demo.users.filter(person => !person.agent || person.id === userId).map(person => <option key={person.id} value={person.id}>{person.name}</option>)}
+    </select>
+    <ChevronDown size={15} />
+  </label>;
+  const previewInfo = <>
+    <div className="social-demo-strip" role="region" aria-label="Local preview information">
+      <span>Explore the local examples</span>
+      {route.kind === "lobby" && previewIdentity}
+      <button onClick={() => setHelp(!help)} aria-expanded={help} aria-label="About this preview"><CircleHelp size={14} /><span>About this preview</span></button>
+    </div>
+    {help && <section className="social-help">
+      <h2>A little world to try together.</h2>
+      <p>Switch between Sam, Priya and Jules to rehearse joining a guild, leaving an idea and building on a story. These examples are saved in this browser. Shared rooms use your own storyteller name.</p>
+      <button className="social-link" onClick={() => downloadSocial(JSON.stringify(social), "fork-night-spaces.json")}><Download size={15} />Back up spaces and ideas</button>
+    </section>}
+  </>;
   return (
     <div className={`social-app ${paper ? "social-paper" : "social-night"}`}>
       <a
@@ -190,57 +212,10 @@ export function SocialSpaces(props: SocialSpacesProps) {
       >
         Skip to content
       </a>
-      <AppHeader current={route.kind === "desk" ? "desk" : ["spaces", "hall", "ideas"].includes(route.kind) ? "spaces" : "lobby"} onLocalNavigate={navigate}>
-        <label className="social-user">
-          <Maker id={userId} name={user.name} />
-          <span className="sr-only">Preview as collaborator</span>
-          <select
-            aria-label="Preview as collaborator"
-            value={userId}
-            onChange={(event) => onUserChange(event.target.value)}
-          >
-            {demo.users.filter((person) => !person.agent || person.id === userId).map((person) => (
-              <option key={person.id} value={person.id}>
-                {person.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown size={15} />
-        </label>
+      <AppHeader current={route.kind === "desk" ? "desk" : ["spaces", "hall", "ideas"].includes(route.kind) ? "spaces" : "lobby"} onLocalNavigate={navigate} guide={<FirstNightGuide compact={route.kind !== "lobby"} />}>
+        {route.kind !== "lobby" && previewIdentity}
       </AppHeader>
-      <div className="social-demo-strip" role="region" aria-label="Local preview information">
-        <span>
-          Local preview · fictional people and credits · saved in this browser
-        </span>
-        <button
-          onClick={() => setHelp(!help)}
-          aria-expanded={help}
-          aria-label="About this preview"
-        >
-          <CircleHelp size={14} />
-          <span>About this preview</span>
-        </button>
-      </div>
-      {help && (
-        <section className="social-help">
-          <h2>A little world to try together.</h2>
-          <p>
-            Switch between Sam, Priya and Jules to rehearse joining a guild,
-            leaving an idea and building on a story. This browser holds all the
-            sample data; it is not a secure private space or a live multi-user
-            service yet. Use fictional content.
-          </p>
-          <button
-            className="social-link"
-            onClick={() =>
-              downloadSocial(JSON.stringify(social), "fork-night-spaces.json")
-            }
-          >
-            <Download size={15} />
-            Back up spaces and ideas
-          </button>
-        </section>
-      )}
+      {route.kind !== "lobby" && previewInfo}
       {storageError && (
         <div className="social-save-warning" role="alert">
           <p>{storageError}</p>
@@ -307,6 +282,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
             </button>
           </div>
         )}
+        {route.kind === "lobby" && <FirstNightInvitation variant="lobby" />}
         {!restored ? (
           <div className="social-loading" role="status">
             <Lamp size={32} />
@@ -315,7 +291,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
           </div>
         ) : (
           <>
-            {route.kind === "lobby" && <Lobby {...view} />}
+            {route.kind === "lobby" && <>{previewInfo}<Lobby {...view} /></>}
             {route.kind === "spaces" && <Spaces {...view} />}
             {route.kind === "guild" && (
               <GuildProfile {...view} guildId={route.guildId} />

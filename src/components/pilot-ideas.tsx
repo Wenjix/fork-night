@@ -28,6 +28,7 @@ export function PilotIdeas({
   profile,
   onJoin,
   onUse,
+  onSaved,
 }: {
   client: SupabaseClient<Database>;
   moment: PilotMoment;
@@ -35,6 +36,7 @@ export function PilotIdeas({
   profile?: Tables<"pilot_profiles">;
   onJoin: (name: string) => Promise<Tables<"pilot_profiles">>;
   onUse: (idea: Idea) => void;
+  onSaved?: (idea: Idea) => void;
 }) {
   const fieldId = useId();
   const account = usePilotAccount();
@@ -227,10 +229,13 @@ export function PilotIdeas({
               : "Your idea could not be confirmed. Retry this same idea when connected.",
         );
       }
+      if (!result.data || result.data.room_id !== moment.room_id || result.data.moment_id !== moment.id || result.data.maker_id !== maker.id)
+        throw new Error("Your idea could not be confirmed. Retry this same idea when connected.");
       setNotes((old) => merge(old, [result.data]));
       setDraft(undefined);
       setEditing(false);
       setNotice("Idea saved for the next storyteller.");
+      onSaved?.(result.data);
       try {
         localStorage.removeItem(key);
       } catch {
@@ -263,6 +268,8 @@ export function PilotIdeas({
   }
   return (
     <aside
+      id="pilot-ideas"
+      tabIndex={-1}
       className={`pilot-ideas${notes.length ? " has-ideas" : ""}${expanded ? " is-expanded" : ""}`}
       aria-label={`Ideas for moment ${label}`}
     >
@@ -296,6 +303,7 @@ export function PilotIdeas({
             className="pilot-sticky"
             key={note.id}
             id={`idea-${note.id}`}
+            tabIndex={-1}
             draggable
             onDragStart={(event) => {
               event.dataTransfer.setData(IDEA_DRAG_TYPE, note.id);
