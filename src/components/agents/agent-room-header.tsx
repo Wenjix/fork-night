@@ -5,7 +5,7 @@ export function AgentRoomHeader({
   current,
   children,
 }: {
-  current: "agents" | "night-watch" | "privy";
+  current: "agents" | "night-watch" | "privy" | "tempo";
   children?: ReactNode;
 }) {
   return (
@@ -21,6 +21,7 @@ export function AgentRoomHeader({
         <a href="/agents" aria-current={current === "agents" ? "page" : undefined}>Agents</a>
         <a href="/night-watch" aria-current={current === "night-watch" ? "page" : undefined}>Night Watch</a>
         {current === "privy" && <a href="/night-watch-privy" aria-current="page">Privy demo</a>}
+        {current === "tempo" && <a href="/tempo" aria-current="page">Tempo demo</a>}
       </nav>
       {children && <div className="agent-room-header-actions">{children}</div>}
     </header>
