@@ -30,6 +30,8 @@ export type KimiVideo =
 
 /** Wenjie's walkthrough of the Night Watch with Kimi K3 (Oct 13, 2026). */
 export const KIMI_VIDEO: KimiVideo = { kind: "youtube", id: "KOdXT0_DNQI", href: "https://youtu.be/KOdXT0_DNQI" };
+/** YouTube's privacy-enhanced player: the embed's host, and the only origin the toggle's pause command goes to. */
+export const YOUTUBE_ORIGIN = "https://www.youtube-nocookie.com";
 
 /** Facts both locales share. Seconds and dollars are strings so they render exactly as measured. */
 export const KIMI_FACTS = {
@@ -529,6 +531,9 @@ const zh: ArticleCopy = {
 };
 
 export const ARTICLE: Record<Locale, ArticleCopy> = { en, zh };
+
+/** The tab title in each language. The English one is also the route's metadata title. */
+export const PAGE_TITLE: Record<Locale, string> = { en: `${en.hero.title} · Fork Night`, zh: `${zh.hero.title} · Fork Night` };
 
 /** Fills `{date}` with the locale's date. */
 export const fill = (text: string, copy: ArticleCopy) => text.replaceAll("{date}", copy.date);

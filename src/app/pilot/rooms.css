@@ -27,7 +27,8 @@
 .pilot-create-form > p { line-height: 1.6; max-width: 70ch; }
 .pilot-create-name { margin-bottom: 20px; }
 .pilot-room-grant { padding: 16px; border-radius: 8px; background: #fff0a6; }
-.pilot-room-sign { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; border-block: 1px solid #cfc6ce; padding: 16px 0; margin-bottom: 24px; }
+.pilot-room-sign { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; border-block: 1px solid #cfc6ce; padding: 16px 0; margin: 0 32px 24px; }
+.pilot-shell > .fn-network-plate, .pilot-shell > .guild-funding-summary { margin: 0 32px 20px; }
 .pilot-roster { flex: 1; min-width: 180px; }
 .pilot-roster summary { cursor: pointer; font-weight: 700; padding: 10px 0; }
 .pilot-roster-preview { display: block; font-size: 14px; font-weight: 400; margin-top: 6px; }
@@ -39,6 +40,9 @@
 .pilot-publication-notice ul { padding: 0; list-style: none; }
 .pilot-publication-notice li { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .pilot-publication-notice button, .pilot-roster summary { min-height: 44px; }
+@media (max-width: 760px) {
+  .pilot-room-sign, .pilot-shell > .fn-network-plate, .pilot-shell > .guild-funding-summary { margin-inline: 20px; }
+}
 @media (max-width: 640px) {
   .pilot-roster-preview { display: none; }
   .pilot-room-cards, .pilot-template-cards { grid-template-columns: 1fr; }
@@ -47,7 +51,7 @@
   .pilot-entrance .pilot-header { align-items: flex-start; }
   .pilot-entrance .pilot-header-actions { margin-left: auto; }
   .pilot-room-sign { gap: 12px; }
-  .pilot-room-sign > .button { flex: 1; }
+  .pilot-room-sign > .button { flex: 1; white-space: nowrap; }
   .pilot-publication-notice li { flex-wrap: wrap; }
 }
 

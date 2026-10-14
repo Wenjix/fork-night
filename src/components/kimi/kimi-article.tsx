@@ -15,6 +15,8 @@ import {
   LANG_STATUS_ID,
   LANG_STORAGE_KEY,
   LOCALE_TAG,
+  PAGE_TITLE,
+  YOUTUBE_ORIGIN,
   fill,
   type ArticleCopy,
   type KimiVideo,
@@ -26,10 +28,14 @@ import { LanguageToggle } from "./language-toggle.tsx";
  * /kimi: the sponsor article about Kimi K3 in the Night Watch, in English and Simplified Chinese. Both
  * languages render on the server; CSS shows the one the root's data-lang names. The first child is a tiny
  * script that applies ?lang= (or the remembered choice) before anything paints, so a link with ?lang=zh
- * opens straight in Chinese. Without JavaScript the article reads in English.
+ * opens straight in Chinese. It also sets the document's language and tab title, and remembers a ?lang=
+ * choice so the page's own links keep it. Without JavaScript the article reads in English.
  */
 
-const LANG_BOOT = `(function(){try{var r=document.currentScript&&document.currentScript.parentElement;if(!r)return;var l="en";try{var s=window.localStorage.getItem(${JSON.stringify(LANG_STORAGE_KEY)});if(s==="zh"||s==="en")l=s}catch(e){}var q=new URLSearchParams(window.location.search).get("lang");if(q==="zh"||q==="en")l=q;r.setAttribute("data-lang",l);r.setAttribute("lang",l==="zh"?"zh-Hans":"en")}catch(e){}})();`;
+const LANG_BOOT = `(function(){try{var r=document.currentScript&&document.currentScript.parentElement;if(!r)return;var l="en";try{var s=window.localStorage.getItem(${JSON.stringify(LANG_STORAGE_KEY)});if(s==="zh"||s==="en")l=s}catch(e){}var q=new URLSearchParams(window.location.search).get("lang");if(q==="zh"||q==="en"){l=q;try{window.localStorage.setItem(${JSON.stringify(LANG_STORAGE_KEY)},q)}catch(e){}}var g=l==="zh"?"zh-Hans":"en";r.setAttribute("data-lang",l);r.setAttribute("lang",g);document.documentElement.lang=g;document.title=${JSON.stringify(PAGE_TITLE)}[l]}catch(e){}})();`;
+
+/** Runs right after the toggle is parsed, so its pressed state names the boot script's language before hydration. */
+const PRESSED_BOOT = `(function(){try{var r=document.currentScript&&document.currentScript.closest(".kimi-page");if(!r)return;var l=r.getAttribute("data-lang")==="zh"?"zh-Hans":"en";r.querySelectorAll(".km-toggle button").forEach(function(b){b.setAttribute("aria-pressed",String(b.getAttribute("lang")===l))})}catch(e){}})();`;
 
 const ANNOUNCE = { en: ARTICLE.en.toggle.announce, zh: ARTICLE.zh.toggle.announce };
 const TOGGLE_LABEL = `${ARTICLE.en.toggle.label} · ${ARTICLE.zh.toggle.label}`;
@@ -54,9 +60,10 @@ export function VideoSlot({ video, copy }: { video: KimiVideo; copy: ArticleCopy
     </figure>;
   }
   if (video?.kind === "youtube") {
-    // The page sends no referrer; YouTube's player needs one, so the frame sets its own policy.
+    // The page sends no referrer; YouTube's player needs one, so the frame sets its own policy. enablejsapi lets
+    // the language toggle pause this player when its language is hidden.
     return <figure className="km-video">
-      <iframe className="km-video-media" src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.id)}?rel=0`}
+      <iframe className="km-video-media" src={`${YOUTUBE_ORIGIN}/embed/${encodeURIComponent(video.id)}?rel=0&enablejsapi=1`}
         title={copy.hero.videoLabel} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" />
       <figcaption className="km-video-caption">
@@ -316,6 +323,7 @@ export function KimiArticle() {
         <a href={KIMI_HREFS.kimi} aria-current="page"><MoonStar size={15} aria-hidden="true" /><Both pick={(copy) => copy.nav.kimi} /></a>
       </nav>
       <LanguageToggle label={TOGGLE_LABEL} announce={ANNOUNCE} compact />
+      <script dangerouslySetInnerHTML={{ __html: PRESSED_BOOT }} />
     </header>
     <main id="km-main" className="km-main">
       <ArticleBody locale="en" />

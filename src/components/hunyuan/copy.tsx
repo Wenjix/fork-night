@@ -12,8 +12,13 @@ export const LANGS: readonly { id: Lang; label: string; htmlLang: string }[] = [
   { id: "zh", label: "中文", htmlLang: "zh-CN" },
 ];
 
+/** The language a ?lang= value asks for; anything other than "zh" reads in English. */
+export const langFrom = (value: string | string[] | undefined): Lang =>
+  (Array.isArray(value) ? value[0] : value) === "zh" ? "zh" : "en";
+
 type Copy = {
   languageLabel: string;
+  skip: string;
   tryRoom: string;
   byline: string;
   title: readonly string[];
@@ -48,6 +53,7 @@ type Copy = {
 export const COPY: Record<Lang, Copy> = {
   en: {
     languageLabel: "Language",
+    skip: "Skip to the article",
     tryRoom: "Try the room",
     byline: "A sponsor spotlight on Tencent Hunyuan, used through GMI Cloud",
     title: ["One story, many branches.", "Hunyuan keeps them one film."],
@@ -98,6 +104,7 @@ export const COPY: Record<Lang, Copy> = {
   },
   zh: {
     languageLabel: "语言",
+    skip: "跳到正文",
     tryRoom: "体验房间",
     byline: "赞助商专题：通过 GMI Cloud 使用腾讯混元",
     title: ["一个故事，无数分支。", "混元让它们始终是同一部电影。"],

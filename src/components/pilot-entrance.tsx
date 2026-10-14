@@ -43,7 +43,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     try {
       const saved = JSON.parse(sessionStorage.getItem(formKey) ?? "null");
       if (saved && typeof saved.title === "string" && typeof saved.choice === "string") {
-        setTitle(saved.title.slice(0, 160)); setChoice(saved.choice); setEdited(true);
+        setTitle(Array.from(saved.title).slice(0, 160).join("")); setChoice(saved.choice); setEdited(true);
       }
     } catch { /* A new form works without a prior session. */ }
   }, []);
@@ -145,6 +145,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
       </form>
     </> : <><div className="pilot-intro"><h1>Make a story together.</h1><p>One beginning. A few storytellers. Follow a thread or take it somewhere new.</p></div><a className="pilot-create-invitation" href="/pilot?create=1"><Plus size={26} aria-hidden="true" /><span><strong>Create a room</strong><small>Start with a prepared opening and invite your storytellers.</small></span><ArrowRight size={22} aria-hidden="true" /></a></>}
     {(error || account?.error) && <div className="pilot-notice" role="alert"><p>{error || account?.error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
+    {account?.notice && <div className="pilot-notice" role="alert"><p>{account.notice}</p><button type="button" className="text-button" onClick={account.dismissNotice}>Dismiss</button></div>}
     {!!joined.length && <section aria-label="Your joined rooms"><h2>Your joined stories</h2>{cards(joined)}</section>}
     <section aria-label="Open shared stories"><h2>Stories to pick up</h2>{cards(rooms)}</section>
   </main></div>;

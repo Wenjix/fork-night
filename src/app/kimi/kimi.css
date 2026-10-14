@@ -62,13 +62,15 @@
 .km-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--km-line); border-radius: 999px; background: #0b1024b3; }
 .km-toggle button { min-height: 44px; min-width: 64px; padding: 6px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--km-mist); font: inherit; font-size: 15px; font-weight: 650; letter-spacing: 0; cursor: pointer; }
 .km-toggle button:hover { color: var(--km-ink); background: var(--km-raised); }
-.km-toggle button[aria-pressed="true"] { background: var(--km-kimi); color: var(--km-kimi-ink); }
+/* The root's data-lang marks the chosen language, so the highlight is right before hydration too. */
+.kimi-page[data-lang="en"] .km-toggle button[lang="en"],
+.kimi-page[data-lang="zh"] .km-toggle button[lang="zh-Hans"] { background: var(--km-kimi); color: var(--km-kimi-ink); }
 .km-toggle button[lang="zh-Hans"] { font-family: var(--km-cjk); }
 .km-toggle-compact { margin-left: auto; }
 .km-toggle-compact button { min-height: 44px; min-width: 60px; padding: 6px 12px; font-size: 15px; }
 
-/* Layout */
-.km-main { max-width: 1120px; margin: 0 auto; padding: 0 24px 96px; }
+/* Layout. The skip link's target clears the sticky header. */
+.km-main { max-width: 1120px; margin: 0 auto; padding: 0 24px 96px; scroll-margin-top: 80px; }
 .km-article { display: block; }
 
 /* Hero */
@@ -204,7 +206,7 @@ iframe.km-video-media { height: auto; }
 .km-request-title { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
 .km-request-title svg { color: var(--km-kimi); }
 .km-request-note { color: var(--km-mist); font-size: 14px; }
-.km-request pre { margin: 0; padding: 16px 18px; overflow-x: auto; color: #dfe6ff; font: 14px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.km-request pre { margin: 0; padding: 16px 18px; white-space: pre-wrap; overflow-wrap: anywhere; color: #dfe6ff; font: 14px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
 
 /* Built to fail safe, honest notes */
 .km-checklist, .km-honest { display: grid; gap: 10px; max-width: 76ch; }
@@ -253,13 +255,17 @@ iframe.km-video-media { height: auto; }
   .km-jobs, .km-reasons, .km-links { grid-template-columns: minmax(0, 1fr); }
   .km-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .km-takes { grid-template-columns: minmax(0, 1fr); }
+  /* Tighter header spacing, so the section nav fits beside the toggle down to the phone layout. */
+  .km-header { gap: 12px; padding: 12px 24px; }
+  .km-nav a { padding: 8px 10px; }
 }
 
 @media (max-width: 720px) {
   .km-header { position: static; flex-wrap: wrap; gap: 4px 12px; padding: 10px 16px; }
-  .km-nav { order: 3; width: 100%; margin-left: -12px; overflow-x: auto; }
+  .km-nav { order: 3; width: calc(100% + 12px); margin-left: -12px; flex-wrap: wrap; }
   .km-nav a { padding: 8px 10px; font-size: 14px; }
-  .km-main { padding: 0 16px 72px; }
+  .km-nav a:focus-visible { outline-offset: -3px; }
+  .km-main { padding: 0 16px 72px; scroll-margin-top: 0; }
   .km-hero { padding-top: 36px; }
   .km-dek { font-size: 18px; }
   .km-section { margin-top: 64px; }

@@ -10,11 +10,12 @@ import { tsImport } from "tsx/esm/api";
 
 // The /agents demo page: Wren's live work, its Tempo testnet allowance and clearly labeled concepts. These tests
 // guard the page's claims and its data boundary; the live rows themselves come from the room at runtime.
-const { WREN, WREN_ALLOWANCE, WREN_TOP_UPS, txUrl, addressUrl } = await tsImport("../../src/lib/agents/wren.ts", import.meta.url);
+const { WREN, WREN_ALLOWANCE, WREN_TOP_UPS, allowanceExpired, txUrl, addressUrl } = await tsImport("../../src/lib/agents/wren.ts", import.meta.url);
 const { AgentConcepts } = await tsImport("../../src/components/agents/agent-concepts.tsx", import.meta.url);
 const { WrenAllowance } = await tsImport("../../src/components/agents/wren-allowance.tsx", import.meta.url);
 const { TurnSteps } = await tsImport("../../src/components/agents/turn-steps.tsx", import.meta.url);
-const { loadVerifiedPanel } = await tsImport("../../src/components/agents/verified-panel-image.tsx", import.meta.url);
+const { WrenProfile } = await tsImport("../../src/components/agents/wren-profile.tsx", import.meta.url);
+const { loadVerifiedPanel, loadVerifiedPanelWithRetry, PANEL_RETRIES, PANEL_RETRY_MS } = await tsImport("../../src/components/agents/verified-panel-image.tsx", import.meta.url);
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const walk = (dir: string): string[] =>
@@ -124,4 +125,99 @@ test("a panel image is shown only when its bytes match the hash saved with the s
   const failing = client(() => ({ data: null, error: new Error("storage down") }));
   await assert.rejects(loadVerifiedPanel(failing, "op/3.webp", sha256), /Image unavailable/);
   assert.equal(await loadVerifiedPanel(good, "op/3.webp", sha256), blob, "a failed download is not cached");
+});
+
+test("a panel whose download fails is tried again a few times, 15 s apart, and a hash mismatch is final", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const until = async (done: () => boolean) => {
+    for (let i = 0; i < 2000 && !done(); i++) await new Promise((resolve) => setImmediate(resolve));
+  };
+  const bytes = new TextEncoder().encode("night shift retry bytes");
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  // A storage client whose first `failures` downloads fail, then succeed with `served`.
+  const flaky = (failures: number, served = bytes) => {
+    const seen = { downloads: 0, loaded: 0, failed: 0 };
+    const client = { storage: { from: () => ({ async download() {
+      seen.downloads++;
+      return seen.downloads <= failures ? { data: null, error: new Error("offline") } : { data: new Blob([served]), error: null };
+    } }) } };
+    const watch = (path: string) => loadVerifiedPanelWithRetry(client, path, sha256, () => seen.loaded++, () => seen.failed++);
+    return { seen, watch };
+  };
+  assert.equal(PANEL_RETRY_MS, 15_000);
+
+  const twice = flaky(2);
+  const stopTwice = twice.watch("op/retry-1.webp");
+  await until(() => twice.seen.failed === 1);
+  t.mock.timers.tick(PANEL_RETRY_MS - 1);
+  await until(() => false);
+  assert.deepEqual(twice.seen, { downloads: 1, loaded: 0, failed: 1 }, "no retry before 15 s");
+  t.mock.timers.tick(1);
+  await until(() => twice.seen.failed === 2);
+  t.mock.timers.tick(PANEL_RETRY_MS);
+  await until(() => twice.seen.loaded === 1);
+  assert.deepEqual(twice.seen, { downloads: 3, loaded: 1, failed: 2 }, "the third download succeeds");
+  t.mock.timers.tick(10 * PANEL_RETRY_MS);
+  await until(() => false);
+  assert.equal(twice.seen.downloads, 3, "a shown image is not downloaded again");
+  stopTwice();
+
+  const down = flaky(Infinity);
+  down.watch("op/retry-2.webp");
+  for (let tries = 1; tries <= PANEL_RETRIES; tries++) {
+    await until(() => down.seen.failed === tries);
+    t.mock.timers.tick(PANEL_RETRY_MS);
+  }
+  await until(() => down.seen.failed === PANEL_RETRIES + 1);
+  t.mock.timers.tick(10 * PANEL_RETRY_MS);
+  await until(() => false);
+  assert.deepEqual(down.seen, { downloads: PANEL_RETRIES + 1, loaded: 0, failed: PANEL_RETRIES + 1 }, "retries are bounded");
+
+  const tampered = flaky(0, new TextEncoder().encode("other bytes"));
+  tampered.watch("op/retry-3.webp");
+  await until(() => tampered.seen.failed === 1);
+  t.mock.timers.tick(10 * PANEL_RETRY_MS);
+  await until(() => false);
+  assert.deepEqual(tampered.seen, { downloads: 1, loaded: 0, failed: 1 }, "a hash mismatch is never retried");
+
+  const unmounted = flaky(1);
+  const stop = unmounted.watch("op/retry-4.webp");
+  await until(() => unmounted.seen.failed === 1);
+  stop();
+  t.mock.timers.tick(10 * PANEL_RETRY_MS);
+  await until(() => false);
+  assert.deepEqual(unmounted.seen, { downloads: 1, loaded: 0, failed: 1 }, "stopping cancels the waiting retry");
+});
+
+test("after its expiry Wren's allowance reads in the past tense and keeps every fact", () => {
+  const expiry = Date.parse(WREN_ALLOWANCE.expiresAtIso);
+  assert.equal(new Date(expiry).toISOString(), "2026-10-13T23:24:42.000Z", "the access key's on-chain expiry");
+  const pacific = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Los_Angeles", timeZoneName: "short" });
+  assert.equal(pacific.format(expiry).replace(/\s/g, " "), WREN_ALLOWANCE.expiresAt, "the display string names the same moment");
+  assert.equal(allowanceExpired(expiry - 1000), false);
+  assert.equal(allowanceExpired(expiry), true);
+  // Before mount (the server HTML) both sections already read as expired, so they never claim a key that can pay.
+  const allowance = renderToStaticMarkup(React.createElement(WrenAllowance));
+  const steps = renderToStaticMarkup(React.createElement(TurnSteps));
+  for (const html of [allowance, steps]) {
+    assert.ok(html.includes(`expired on ${WREN_ALLOWANCE.expiresAt}`), "names when it expired");
+    assert.doesNotMatch(html, /Wren can top the room up|Wren buys one top-up|Tops up the room first/);
+  }
+  assert.match(allowance, /<small>Expired<\/small>/);
+  assert.match(allowance, /Wren could top the room up/);
+  assert.match(steps, /Topped up the room first/);
+  for (const fact of [WREN_ALLOWANCE.limit, WREN_ALLOWANCE.limitNote, WREN_ALLOWANCE.allowedCall, WREN_ALLOWANCE.topUp.price, `${WREN_ALLOWANCE.topUp.credits} test credits`, `${WREN_ALLOWANCE.topUp.attempts} guest attempts`])
+    assert.ok(allowance.includes(fact), `the allowance keeps: ${fact}`);
+  // The concept note and the footer describe the allowance in the past tense too.
+  assert.match(renderToStaticMarkup(React.createElement(AgentConcepts)), /Wren’s test pathUSD only ever topped up room credits and guest attempts\./);
+  const footer = read("src/components/agents/agents-showcase.tsx").replace(/\s+/g, " ");
+  assert.match(footer, /Wren’s allowance spent test pathUSD from its steward’s Tempo Moderato testnet account until it expired on Oct 13, 2026\. Test pathUSD has no cash value\./);
+});
+
+test("Wren's card and the mock steward controls are named groups, not landmarks", () => {
+  const profile = renderToStaticMarkup(React.createElement(WrenProfile, { room: { status: "loading" } }));
+  assert.match(profile, /<div class="ag-id-card" role="group" aria-label="Wren’s agent card">/);
+  assert.doesNotMatch(profile, /<aside/, "an aside inside the labelled section would be a nested complementary landmark");
+  const concepts = renderToStaticMarkup(React.createElement(AgentConcepts));
+  assert.match(concepts, /<div class="ag-mock-controls" role="group" aria-label="Steward controls \(concept, disabled\)">/);
 });

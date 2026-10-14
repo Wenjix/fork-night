@@ -48,7 +48,7 @@ export function useNow(ms: number) {
   return now;
 }
 
-export function SignInButton({ label = "Sign in with Google", compact = false }: { label?: string; compact?: boolean }) {
+export function SignInButton({ label = "Sign in with Google", compact = false, disabled = false }: { label?: string; compact?: boolean; disabled?: boolean }) {
   const account = usePilotAccount();
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
@@ -65,8 +65,8 @@ export function SignInButton({ label = "Sign in with Google", compact = false }:
   }
   return <div className={`nw-signin${compact ? " nw-signin-compact" : ""}`}>
     <div className="pilot-account-entry nw-signin-choices">
-      <GoogleButton type="button" disabled={!account?.client || working} onClick={() => void start()}>{working ? "Opening Google…" : label}</GoogleButton>
-      <WalletSignInButton disabled={!account?.client || working} />
+      <GoogleButton type="button" disabled={disabled || !account?.client || working} onClick={() => void start()}>{working ? "Opening Google…" : label}</GoogleButton>
+      <WalletSignInButton disabled={disabled || !account?.client || working} />
     </div>
     {!account?.client && !compact && <small>Sign-in is awaiting Supabase setup on this server.</small>}
     {(error || (!compact && account?.error)) && <p role="alert" className="nw-error">{error || account?.error}</p>}

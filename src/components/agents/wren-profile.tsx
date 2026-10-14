@@ -161,7 +161,7 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
       </div>
 
       <div className="ag-profile">
-        <aside className="ag-id-card" aria-label="Wren’s agent card">
+        <div className="ag-id-card" role="group" aria-label="Wren’s agent card">
           <div className="ag-id-top">
             <span className="ag-id-avatar" aria-hidden="true">
               <Bird size={34} />
@@ -219,7 +219,7 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
               <dd>Started by the founder, one at a time</dd>
             </div>
           </dl>
-        </aside>
+        </div>
 
         <div className="ag-profile-live">
           <div className="ag-live-row">

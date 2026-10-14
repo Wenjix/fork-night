@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { PrivyProvider, useCreateWallet, usePrivy, useSubscribeToJwtAuthWithFlag, useWallets } from "@privy-io/react-auth";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database } from "../lib/supabase/database.types.ts";
@@ -8,7 +8,7 @@ import { createEmbeddedWalletIfCurrent, embeddedAddressForMaker, isSavedAccount,
 import { sameAddress } from "../lib/onchain/model.ts";
 import type { EmbeddedWalletState } from "./pilot-account.tsx";
 
-type Props = { client: SupabaseClient<Database>; user?: User; loading: boolean; onWallet: (wallet: EmbeddedWalletState) => void };
+type Props = { client: SupabaseClient<Database>; user?: User; loading: boolean; onWallet: (wallet: EmbeddedWalletState) => void; signOut?: RefObject<(() => Promise<void>) | undefined>; logoutOnly?: boolean };
 // Network and native-token display follow Monad's Next.js/Privy template.
 const monadTestnet = {
   id: 10143, name: "Monad Testnet",
@@ -25,8 +25,8 @@ export default function PilotPrivy(props: Props) {
   }}><WalletBridge {...props} /></PrivyProvider>;
 }
 
-function WalletBridge({ client, user, loading, onWallet }: Props) {
-  const { ready, authenticated, user: privyUser } = usePrivy();
+function WalletBridge({ client, user, loading, onWallet, signOut, logoutOnly }: Props) {
+  const { ready, authenticated, user: privyUser, logout } = usePrivy();
   const { ready: walletsReady, wallets } = useWallets();
   const { createWallet } = useCreateWallet();
   const creation = useRef(createWallet);
@@ -37,11 +37,13 @@ function WalletBridge({ client, user, loading, onWallet }: Props) {
   current.current = owner;
   const attempted = useRef("");
   const creating = useRef(false);
+  // A bridge mounted only to end a sign-out never signs in to Privy or opens the wallet.
+  const signingOut = useRef(!!logoutOnly);
   const failure = useCallback((error: Error) => {
     if (current.current) onWallet({ owner: current.current, address: "", loading: false, error: error.message, prepare: () => window.location.reload() });
   }, [onWallet]);
   const getExternalJwt = useCallback(async () => {
-    if (!owner) return undefined;
+    if (!owner || signingOut.current) return undefined;
     try { return await walletAuthToken(client, owner); }
     catch (reason) {
       if (current.current === owner) failure(reason instanceof Error ? reason : new Error("Wallet sign-in could not be checked. Refresh to try again."));
@@ -53,6 +55,23 @@ function WalletBridge({ client, user, loading, onWallet }: Props) {
     getExternalJwt,
     onError: () => failure(new Error("Your Google account is saved. Wallet sign-in could not finish; check the Privy JWT integration, then refresh.")),
   });
+  // Privy stores tokens when its init refresh or an in-flight JWT sign-in resolves,
+  // so a logout before then would clear nothing.
+  const settled = useRef(false);
+  settled.current = ready && state.status !== "loading";
+  // Sign-out ends the Privy session through this still-mounted bridge. The logout
+  // re-runs Privy's JWT sync, which must not sign the departing account back in.
+  useEffect(() => {
+    if (!signOut) return;
+    const end = async () => {
+      signingOut.current = true;
+      const until = Date.now() + 3000;
+      while (!settled.current && Date.now() < until) await new Promise(resolve => setTimeout(resolve, 50));
+      await logout();
+    };
+    signOut.current = end;
+    return () => { if (signOut.current === end) signOut.current = undefined; };
+  }, [signOut, logout]);
   const subjectMatches = !!owner && privyUser?.linkedAccounts.some(account => account.type === "custom_auth" && account.customUserId === owner);
   const address = embeddedAddressForMaker(owner, privyUser?.linkedAccounts ?? []);
   const embedded = address ? wallets.find(wallet => wallet.walletClientType === "privy" && sameAddress(wallet.address, address)) : undefined;
@@ -62,7 +81,7 @@ function WalletBridge({ client, user, loading, onWallet }: Props) {
     else if (state.status === "done" && authenticated && !subjectMatches) failure(new Error("The wallet belongs to a different storyteller account. Refresh to reconnect your own account."));
   }, [owner, ready, loading, state.status, authenticated, subjectMatches, failure]);
   useEffect(() => {
-    if (!owner || !ready || !authenticated || !walletsReady || !subjectMatches) return;
+    if (logoutOnly || !owner || !ready || !authenticated || !walletsReady || !subjectMatches) return;
     let active = true;
     if (embedded) {
       onWallet({ owner, address: embedded.address, loading: true, error: "" });
@@ -80,6 +99,6 @@ function WalletBridge({ client, user, loading, onWallet }: Props) {
       }).finally(() => { creating.current = false; if (active && current.current === owner) setCompletedCreation(value => value + 1); });
     }
     return () => { active = false; };
-  }, [owner, ready, authenticated, walletsReady, subjectMatches, embedded?.address, address, completedCreation, getExternalJwt, onWallet, failure]);
+  }, [logoutOnly, owner, ready, authenticated, walletsReady, subjectMatches, embedded?.address, address, completedCreation, getExternalJwt, onWallet, failure]);
   return null;
 }

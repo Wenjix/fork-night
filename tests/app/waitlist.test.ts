@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { tsImport } from "tsx/esm/api";
 import { normalizeWaitlistEmail, signupUrl, WAITLIST_CONSENT_VERSION } from "../../src/lib/waitlist.ts";
 import { handleWaitlist, saveWaitlistEntry } from "../../src/server/waitlist.ts";
+
+const { WaitlistForm } = await tsImport("../../src/components/waitlist-form.tsx", import.meta.url);
 
 const request = (data: unknown, headers?: HeadersInit) => new Request("https://fork-night-waitlist.example.workers.dev/api/waitlist", {
   method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(data),
@@ -14,6 +19,13 @@ test("signup URLs require a configured public HTTPS origin", () => {
   }
   assert.equal(signupUrl({ FORK_NIGHT_PUBLIC_URL: "https://fork-night-waitlist.example.workers.dev" }), "https://fork-night-waitlist.example.workers.dev/signup?source=demo");
   assert.equal(signupUrl({ VERCEL: "1", VERCEL_PROJECT_PRODUCTION_URL: "old-host.vercel.app" }), null);
+});
+
+test("a native submit before hydration cannot put the address in the URL", () => {
+  const html = renderToStaticMarkup(createElement(WaitlistForm, { source: "demo", configured: true }));
+  const email = html.match(/<input[^>]*id="waitlist-email"[^>]*>/)![0];
+  assert.doesNotMatch(email, /\sname=/);
+  assert.match(email, /autoComplete="email"/i);
 });
 
 test("emails are normalized without removing plus tags", () => {

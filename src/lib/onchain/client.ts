@@ -12,6 +12,10 @@ export type Snapshot = { block: number; curator: string; root: string; termsMatc
   scenes: { id: string; maker: string; registered: boolean; matches: boolean }[];
   release: { exists: boolean; received: bigint; paid: bigint; beneficiaries: { address: string; claimable: bigint; claimed: bigint }[] } };
 const bytes32 = /^0x[a-f0-9]{64}$/i;
+// Multicall3 at its canonical address, deployed on Monad testnet. Reads use it wherever it is deployed.
+const multicallAddress = "0xcA11bde05977b3631167028862bE2a173976CA11";
+const multicallAbi = ["function aggregate3((address target, bool allowFailure, bytes callData)[] calls) payable returns ((bool success, bytes returnData)[] returnData)"];
+type Read = [method: string, args: unknown[]];
 const methods: Record<Operation, string> = { create: "createProject", approve: "approveMaker", register: "registerMoment", release: "publishRelease", support: "supportRelease", claim: "claim" };
 const arities: Record<Operation, number> = { create: 4, approve: 3, register: 6, release: 3, support: 2, claim: 2 };
 export const transactionStorageKey = (config: ReleaseConfig, account: string, projectId: string) => `fork-night:chain:${config.chainId}:${config.address.toLowerCase()}:${account.toLowerCase()}:${projectId}`;
@@ -33,10 +37,15 @@ export class ReleaseClient {
   readonly provider: AbstractProvider;
   readonly contract: Contract;
   readonly config: ReleaseConfig;
+  private readonly multicall: Contract;
+  private reads?: Promise<boolean>;
   constructor(config: ReleaseConfig, provider?: AbstractProvider) {
     this.config = config;
-    this.provider = provider ?? new JsonRpcProvider(config.rpcUrl, undefined, { batchMaxCount: 1, cacheTimeout: -1 });
+    // The public RPC limits eth_call per second and fails batch elements without a retry, so requests stay single.
+    // A static network keeps its first chain ID answer instead of asking per call; verify() still checks that answer.
+    this.provider = provider ?? new JsonRpcProvider(config.rpcUrl, undefined, { batchMaxCount: 1, cacheTimeout: -1, staticNetwork: true });
     this.contract = new Contract(config.address, releaseAbi, this.provider);
+    this.multicall = new Contract(multicallAddress, multicallAbi, this.provider);
   }
   async verify() {
     const network = await this.provider.getNetwork();
@@ -46,19 +55,41 @@ export class ReleaseClient {
       throw new Error("The configured payout contract could not be verified. No transaction was sent.");
     }
   }
+  // Reads keep one successful verification per client, since deployed code does not change. Wallet actions verify each time.
+  // Resolves whether Multicall3 is deployed to batch the reads.
+  private readable() {
+    return this.reads ??= (async () => {
+      await this.verify();
+      return await this.provider.getCode(multicallAddress) !== "0x";
+    })().catch(error => { this.reads = undefined; throw error; });
+  }
+  // Reads one block in a single eth_call where Multicall3 is deployed. Each result is the value or error a direct call gives.
+  private async read(calls: Read[], blockTag: number) {
+    if (!calls.length) return [];
+    if (!await this.readable()) return Promise.all(calls.map(([method, args]) => this.contract.getFunction(method)(...args, { blockTag })));
+    const abi = this.contract.interface, address = this.config.address;
+    const requests = calls.map(([method, args]) => ({ target: address, allowFailure: true, callData: abi.encodeFunctionData(method, args) }));
+    // A failed batch call would otherwise report every batched call's calldata; each call's own failure is kept below.
+    const results: { success: boolean; returnData: string }[] = await this.multicall.aggregate3.staticCall(requests, { blockTag })
+      .catch((error: unknown) => { throw Object.assign(new Error("The testnet could not read this release."), { code: "NETWORK_ERROR", cause: error }); });
+    return results.map(({ success, returnData }, index) => {
+      if (!success) throw abi.makeError(returnData, { to: address, data: requests[index].callData });
+      const result = abi.decodeFunctionResult(calls[index][0], returnData);
+      return result.length === 1 ? result[0] : result;
+    });
+  }
   async load(prepared: PreparedRelease): Promise<Snapshot> {
-    await this.verify();
-    const block = await this.provider.getBlockNumber(), options = { blockTag: block };
-    const [project, release, scenes] = await Promise.all([
-      this.contract.projects(prepared.projectId, options), this.contract.getRelease(prepared.id, options),
-      Promise.all(prepared.scenes.map(async scene => {
-        const [moment, maker] = await Promise.all([this.contract.moments(scene.id, options), this.contract.makers(prepared.projectId, scene.makerId, options)]);
-        const registered = moment.beneficiary !== ZeroAddress;
-        const matches = registered && moment.projectId === prepared.projectId && moment.parentId === scene.parentId &&
-          moment.manifestHash === scene.hash && moment.makerId === scene.makerId && sameAddress(moment.beneficiary, maker);
-        return { id: scene.id, maker: String(maker), registered, matches };
-      })),
-    ]);
+    await this.readable();
+    const block = await this.provider.getBlockNumber();
+    const [project, release, ...sceneReads] = await this.read([["projects", [prepared.projectId]], ["getRelease", [prepared.id]],
+      ...prepared.scenes.flatMap((scene): Read[] => [["moments", [scene.id]], ["makers", [prepared.projectId, scene.makerId]]])], block);
+    const scenes = prepared.scenes.map((scene, index) => {
+      const moment = sceneReads[2 * index], maker = sceneReads[2 * index + 1];
+      const registered = moment.beneficiary !== ZeroAddress;
+      const matches = registered && moment.projectId === prepared.projectId && moment.parentId === scene.parentId &&
+        moment.manifestHash === scene.hash && moment.makerId === scene.makerId && sameAddress(moment.beneficiary, maker);
+      return { id: scene.id, maker: String(maker), registered, matches };
+    });
     if (project.curator !== ZeroAddress && (!sameAddress(project.curator, this.config.curator) || project.termsHash !== TERMS_HASH)) {
       throw new Error("This project's recorded curator or release terms differ from this rehearsal. No payment can be sent.");
     }
@@ -66,8 +97,9 @@ export class ReleaseClient {
     if (scenes.some(scene => scene.registered && !scene.matches)) throw new Error("A registered scene differs from this published version. Its payout record has been preserved; select the registered version.");
     const exists = release.projectId !== ZeroHash;
     if (exists && (release.projectId !== prepared.projectId || release.tipId !== prepared.tipId || release.manifestHash !== prepared.hash)) throw new Error("The release does not match this selected path.");
-    const beneficiaries = await Promise.all((release.beneficiaries as string[]).map(async address => ({ address,
-      claimable: BigInt(await this.contract.claimable(prepared.id, address, options)), claimed: BigInt(await this.contract.claimed(prepared.id, address, options)) })));
+    const addresses: string[] = [...release.beneficiaries];
+    const shares = await this.read(addresses.flatMap((address): Read[] => [["claimable", [prepared.id, address]], ["claimed", [prepared.id, address]]]), block);
+    const beneficiaries = addresses.map((address, index) => ({ address, claimable: BigInt(shares[2 * index]), claimed: BigInt(shares[2 * index + 1]) }));
     return { block, curator: String(project.curator), root: String(project.root), termsMatch: project.termsHash === TERMS_HASH,
       scenes, release: { exists, received: BigInt(release.received), paid: BigInt(release.paid), beneficiaries } };
   }

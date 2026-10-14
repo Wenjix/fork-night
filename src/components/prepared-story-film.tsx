@@ -11,7 +11,7 @@ import "@/app/prepared-story-film.css";
 export function PreparedFilmInvite({ film, onOpen }: { film: PreparedFilm; onOpen: () => void }) {
   return <Card className="fn-film-invite">
     <img src={film.poster} width={80} height={80} alt="" />
-    <div><h2>See this story come to life.</h2><p>Four images become a short film. A prepared example, ready to play.</p></div>
+    <div><h2>See this story come to life.</h2><p>{film.invite}</p></div>
     <Button type="button" className="fn-film-button" onClick={onOpen}><Film size={18} aria-hidden="true" />Images → video</Button>
   </Card>;
 }
@@ -57,12 +57,12 @@ export function PreparedStoryFilm({ film }: { film: PreparedFilm }) {
       <p>{film.intro}</p>
     </header>
 
-    <section className="fn-film-sources" aria-label="The four source images in story order">
-      <div className="fn-film-section-heading"><h3>The source images</h3><Badge className="fn-film-badge">{film.imageModel} · {film.provider}</Badge></div>
+    <section className="fn-film-sources" aria-label={`${film.sourcesHeading}, in story order`}>
+      <div className="fn-film-section-heading"><h3>{film.sourcesHeading}</h3><Badge className="fn-film-badge">{film.imageModel} · {film.provider}</Badge></div>
       <ol className="fn-film-images">
         {film.images.map((image, index) => <li key={image.frame}>
           <figure><img src={image.src} width={1024} height={1024} alt={image.caption} loading={index < 2 ? "eager" : "lazy"} />
-            <figcaption><span className="fn-film-image-position">Image {index + 1} of 4</span><h4>{image.title}</h4><p>{image.caption}</p></figcaption>
+            <figcaption><span className="fn-film-image-position">Image {index + 1} of {film.images.length}</span><h4>{image.title}</h4><p>{image.caption}</p></figcaption>
           </figure>
         </li>)}
       </ol>
@@ -84,7 +84,7 @@ export function PreparedStoryFilm({ film }: { film: PreparedFilm }) {
             <track kind="captions" src={film.captions} srcLang="en" label="English scene descriptions" />
             <a href={film.video}>Open the demo video</a>
           </video>
-          <figcaption id={descriptionId}>A prepared interpretation of the “{film.ending}” path, using the four source images above.</figcaption>
+          <figcaption id={descriptionId}>A prepared interpretation of the “{film.ending}” path, using the {film.images.length === 4 ? "four" : film.images.length} images above.</figcaption>
         </figure>
         <div className="fn-film-film-note">
           <Badge className="fn-film-badge fn-film-badge-night">Prepared motion example</Badge>

@@ -1130,6 +1130,18 @@
   .pilot-recap-desktop {
     grid-row: 1 / span 2;
   }
+  .pilot-recap-row {
+    grid-template-columns: 28px 44px minmax(0, 1fr);
+  }
+  .pilot-recap-art {
+    width: 44px;
+    height: 46px;
+  }
+  .pilot-recap-art .pilot-image-placeholder {
+    min-height: 46px;
+    padding: 0;
+    font-size: 0;
+  }
   .pilot-reading-table {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 0;
@@ -1239,7 +1251,7 @@
     gap: 7px;
     font-size: 14px;
     color: var(--ink);
-    min-height: 36px;
+    min-height: 44px;
   }
   .pilot-thumbnail-path {
     display: flex;
@@ -1363,6 +1375,10 @@
     font-size: 16px;
     line-height: 1.55;
   }
+  .pilot-expand {
+    width: 44px;
+    height: 44px;
+  }
   .pilot-reading-pager {
     display: flex;
     margin-top: 5px;
@@ -1387,6 +1403,10 @@
   }
   .pilot-credit-line > span {
     margin-left: 0;
+  }
+  .pilot-credits summary {
+    min-height: 44px;
+    padding-block: 11px;
   }
   .pilot-ideas {
     width: 100%;

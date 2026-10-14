@@ -113,7 +113,7 @@
 .creator-tree-node-copy strong { display: block; font-size: 14px; line-height: 1.35; margin-bottom: 6px; }
 .creator-tree-status { display: flex; align-items: center; gap: 5px; color: var(--wd-link); font-size: 12px; margin-bottom: 5px; }
 .creator-tree-discarded .creator-tree-status { color: var(--wd-muted); }
-.creator-tree-node-copy small { display: block; font-size: 11px; }
+.creator-tree-node-copy small { display: block; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .creator-tree-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--wd-line); color: var(--wd-muted); font-size: 13px; }
 .creator-tree-controls .wd-text-button { font-size: 14px; padding: 0; font-weight: 600; }
 .creator-event-inspector { min-width: 0; border-left: 1px solid var(--wd-line); padding-left: 22px; }
@@ -157,6 +157,7 @@
   .creator-event-inspector { border-left: 0; border-top: 1px solid var(--wd-line); padding: 26px 0 0; }
   .creator-event-inspector > img { max-width: 480px; }
   .creator-heading { flex-wrap: wrap; }
+  .creator-heading > div { flex: 1 1 calc(100% - 96px); min-width: 0; }
   .creator-heading > .wd-text-button { margin-left: 96px; }
   .creator-review-layout { grid-template-columns: minmax(0, 1fr) 280px; gap: 26px; }
   .creator-alternatives { grid-template-columns: 1fr; gap: 32px; }

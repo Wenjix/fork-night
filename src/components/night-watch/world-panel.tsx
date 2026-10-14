@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { BookOpen, Brush, Feather, Info, MoonStar, ScrollText, Sparkles, Star, Sunrise } from "lucide-react";
 import type { WorldMoment, WorldPanel as WorldPanelView, WorldResponse } from "../../night-watch/api-types.ts";
 import { isApprovedArtUrl } from "../../lib/art.ts";
@@ -12,16 +12,19 @@ function Unavailable({ caption, className }: { caption: string | undefined; clas
   return <span className={`nw-image-placeholder ${className}`} role="img" aria-label={caption ? `Image unavailable: ${caption}` : "Image unavailable"}>Image unavailable</span>;
 }
 
-/** One panel image: packaged story art, a same-origin image or a signed storage URL (which can expire). */
-export function MomentImage({ panel, className = "" }: { panel: WorldPanelView | undefined; className?: string }) {
+/**
+ * One panel image: packaged story art, a same-origin image or a signed storage URL (which can expire).
+ * `decorative` when the caption is shown right beside the image, so a screen reader does not hear it twice.
+ */
+export function MomentImage({ panel, className = "", decorative = false }: { panel: WorldPanelView | undefined; className?: string; decorative?: boolean }) {
   const url = panel?.imageUrl && !isApprovedArtUrl(panel.imageUrl) ? displayImageUrl(panel.imageUrl) : null;
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     setFailed(false);
   }, [url]);
   if (panel?.imageUrl && isApprovedArtUrl(panel.imageUrl)) return <StoryArt src={panel.imageUrl} description={panel.caption} className={className} />;
-  if (!panel || !url || failed) return <Unavailable caption={panel?.caption} className={className} />;
-  return <img className={`nw-image ${className}`} src={url} alt={panel.caption} width={1024} height={1024} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  if (!panel || !url || failed) return <Unavailable caption={decorative ? undefined : panel?.caption} className={className} />;
+  return <img className={`nw-image ${className}`} src={url} alt={decorative ? "" : panel.caption} width={1024} height={1024} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
 }
 
 export function ActHeading({ act, id, title, children }: { act: string; id: string; title: string; children?: ReactNode }) {
@@ -45,7 +48,7 @@ function MomentCard({ moment, index, friend, forkPoint, signedIn, onChoose }: {
   const first = moment.panels[0];
   const { heading, body } = momentHeadline(moment.title, first?.caption);
   return <article className="nw-moment" data-friend={friend || undefined} data-fork={forkPoint || undefined} data-source={moment.source}>
-    <div className="nw-moment-art"><MomentImage panel={first} /></div>
+    <div className="nw-moment-art"><MomentImage panel={first} decorative /></div>
     <div className="nw-moment-copy">
       <p className="nw-moment-meta">
         {index !== null && <span>Scene {index + 1}</span>}
@@ -62,17 +65,42 @@ function MomentCard({ moment, index, friend, forkPoint, signedIn, onChoose }: {
   </article>;
 }
 
-export function WorldPanel({ world, error, forkPointId, signedIn, onChooseForkPoint }: {
+export function WorldPanel({ world, error, reading, forkPointId, signedIn, onChooseForkPoint, onRetry }: {
   world: WorldResponse | null;
   error: string;
+  /** A world read is in flight (the quiet retries after a failure do not count). */
+  reading: boolean;
   forkPointId: string;
   signedIn: boolean;
   onChooseForkPoint: (id: string) => void;
+  onRetry: () => void;
 }) {
+  // Try again disappears when the world arrives. A polite status, kept across the swap, says the world loaded after a
+  // retry; and if Try again still held focus, focus moves to Act 1 (the same section node in both branches) instead of
+  // <body>. React drops the blur of a node it removes, so `retryFocused` is still set when the button goes.
+  const section = useRef<HTMLElement>(null);
+  const retried = useRef(false);
+  const retryFocused = useRef(false);
+  const [loaded, setLoaded] = useState("");
+  useLayoutEffect(() => {
+    if (!world) return;
+    const refocus = retryFocused.current;
+    if (retried.current || refocus) setLoaded("The world is loaded.");
+    retried.current = retryFocused.current = false;
+    if (refocus && document.activeElement === document.body) section.current?.focus({ preventScroll: true });
+  }, [world]);
+  const status = <p key="loaded" className="nw-visually-hidden" role="status">{loaded}</p>;
   if (!world) {
-    return <section id="world" className="nw-act" aria-labelledby="world-title">
+    // The keys make each failure a new alert; the button stays put (and keeps focus) while a retry reads.
+    return <section ref={section} tabIndex={-1} id="world" className="nw-act" aria-labelledby="world-title">
       <ActHeading act="Act 1" id="world-title" title="The world" />
-      <div className="nw-card">{error ? <p role="alert" className="nw-error">{error}</p> : <p role="status" className="nw-quiet">Reading the world…</p>}</div>
+      {status}
+      <div className="nw-card">
+        {error && !reading ? <p key="error" role="alert" className="nw-error">{error}</p> : <p key="reading" role="status" className="nw-quiet">Reading the world…</p>}
+        {error && <button type="button" className="button secondary nw-retry" aria-disabled={reading || undefined}
+          onFocus={() => { retryFocused.current = true; }} onBlur={() => { retryFocused.current = false; }}
+          onClick={reading ? undefined : () => { retried.current = true; onRetry(); }}>Try again</button>}
+      </div>
     </section>;
   }
   const { kit, credits, friendContribution } = world;
@@ -82,10 +110,11 @@ export function WorldPanel({ world, error, forkPointId, signedIn, onChooseForkPo
     .filter((moment) => moment.source === "night-watch" && !onPath.has(moment.id))
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   const friend = friendContribution ? world.moments.find((moment) => moment.id === friendContribution.momentId) : undefined;
-  return <section id="world" className="nw-act" aria-labelledby="world-title">
+  return <section ref={section} tabIndex={-1} id="world" className="nw-act" aria-labelledby="world-title">
     <ActHeading act="Act 1" id="world-title" title="The world">
       <p>{world.room.description || "A shared story that grows by forks. Every published moment stays credited to its maker."}</p>
     </ActHeading>
+    {status}
     {error && <p role="alert" className="nw-error nw-on-night">{error}</p>}
     <div className="nw-card nw-kit">
       <header className="nw-kit-head">
@@ -96,7 +125,7 @@ export function WorldPanel({ world, error, forkPointId, signedIn, onChooseForkPo
         </div>
         <ul className="nw-references" aria-label="Reference art">
           {kit.references.map((reference) => <li key={reference.label}>
-            <MomentImage panel={{ caption: reference.label, imageUrl: reference.imageUrl }} />
+            <MomentImage panel={{ caption: reference.label, imageUrl: reference.imageUrl }} decorative />
             <span>{reference.label}</span>
           </li>)}
         </ul>

@@ -133,9 +133,9 @@ export function AgentsShowcase() {
         <h2>What is real here</h2>
         <ul>
           <li>
-            <strong>Testnet only.</strong> Wren’s allowance spends test
-            pathUSD from its steward’s Tempo Moderato testnet account. Test
-            pathUSD has no cash value.
+            <strong>Testnet only.</strong> Wren’s allowance spent test
+            pathUSD from its steward’s Tempo Moderato testnet account until it
+            expired on Oct 13, 2026. Test pathUSD has no cash value.
           </li>
           <li>
             <strong>Throwaway keys.</strong> Every key involved is a throwaway

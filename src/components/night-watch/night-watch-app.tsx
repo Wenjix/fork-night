@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Bird, Lock, MoonStar } from "lucide-react";
 import type { MeResponse, WorldResponse } from "../../night-watch/api-types.ts";
 import { isSavedAccount } from "../../lib/supabase/onboarding.ts";
@@ -79,6 +80,14 @@ function Frame({ account, children, privyDemo = false }: { account: ReactNode; c
   </div>;
 }
 
+/** Until sign-in is known, the signed-out controls hold their place, disabled, so the page does not jump. */
+function CheckingSignIn() {
+  return <div className="nw-header-identity">
+    <SignInButton compact disabled />
+    <span className="nw-visually-hidden" role="status">Checking sign-in…</span>
+  </div>;
+}
+
 /**
  * Signed out: Google and wallet sign-in. Signed in: the pilot's own identity menu, so both pages read
  * the same (storyteller, full in-app wallet address with Copy, sign-out).
@@ -86,7 +95,7 @@ function Frame({ account, children, privyDemo = false }: { account: ReactNode; c
 function AccountMenu({ me }: { me: MeResponse | null }) {
   const account = usePilotAccount();
   if (!account) return null;
-  if (account.loading && !account.user) return <span className="nw-account-quiet" role="status">Checking sign-in…</span>;
+  if (account.loading && !account.user) return <CheckingSignIn />;
   // Signed out (or a browser guest): both sign-ins, never the pilot's guest-name detour.
   if (!isSavedAccount(account.user)) return <div className="nw-header-identity"><SignInButton compact /></div>;
   // "Maker" is the server's stand-in when no storyteller name exists yet (src/night-watch/maker.ts).
@@ -105,13 +114,22 @@ function LockedAct({ id, act, title, text }: { id: string; act: string; title: s
   </section>;
 }
 
+/**
+ * The frame is the same server-rendered nodes before and after mount, so hydration keeps it and any keyboard
+ * focus in it. The account provider and the acts mount inside it; the account menu is portalled into its header.
+ */
 export function NightWatchApp({ privyDemo = false }: { privyDemo?: boolean }) {
   const mounted = useSyncExternalStore(noSubscription, () => true, () => false);
-  if (!mounted) return <Frame account={null} privyDemo={privyDemo}><p className="nw-opening" role="status">Opening the Night Watch…</p></Frame>;
-  return <NightWatchAccountProvider><NightWatchExperience privyDemo={privyDemo} /></NightWatchAccountProvider>;
+  const [accountSlot, setAccountSlot] = useState<HTMLSpanElement | null>(null);
+  const slot = mounted ? accountSlot : null;
+  return <Frame account={<span ref={setAccountSlot} className="nw-account-slot">{!slot && <CheckingSignIn />}</span>} privyDemo={privyDemo}>
+    {slot
+      ? <NightWatchAccountProvider><NightWatchExperience privyDemo={privyDemo} accountSlot={slot} /></NightWatchAccountProvider>
+      : <p className="nw-opening" role="status">Opening the Night Watch…</p>}
+  </Frame>;
 }
 
-function NightWatchExperience({ privyDemo }: { privyDemo: boolean }) {
+function NightWatchExperience({ privyDemo, accountSlot }: { privyDemo: boolean; accountSlot: HTMLElement }) {
   const account = usePilotAccount()!;
   const client = account.client;
   const signedIn = isSavedAccount(account.user);
@@ -125,21 +143,41 @@ function NightWatchExperience({ privyDemo }: { privyDemo: boolean }) {
 
   const [world, setWorld] = useState<WorldResponse | null>(null);
   const [worldError, setWorldError] = useState("");
+  const [worldReading, setWorldReading] = useState(true);
   const [worldVersion, setWorldVersion] = useState(0);
+  const readWorld = useCallback((signal: AbortSignal) => userId
+    // The world is public; reading it as the maker only refines the friend's contribution.
+    ? api.viewerWorld(signal).catch(() => publicApi.world(signal))
+    : publicApi.world(signal), [api, userId]);
   useEffect(() => {
     const controller = new AbortController();
-    const read = userId
-      // The world is public; reading it as the maker only refines the friend's contribution.
-      ? api.viewerWorld(controller.signal).catch(() => publicApi.world(controller.signal))
-      : publicApi.world(controller.signal);
-    read.then((next) => {
+    setWorldReading(true);
+    readWorld(controller.signal).then((next) => {
       setWorld(next);
       setWorldError("");
     }).catch((reason) => {
       if (!controller.signal.aborted) setWorldError(errorMessage(reason, "The world could not be read."));
+    }).finally(() => {
+      if (!controller.signal.aborted) setWorldReading(false);
     });
     return () => controller.abort();
-  }, [api, userId, worldVersion]);
+  }, [readWorld, worldVersion]);
+  // After a failed read, keep trying quietly: with backoff, and at once when the reader returns or reconnects.
+  const worldFailed = !!worldError;
+  useEffect(() => {
+    if (!worldFailed) return;
+    const controller = new AbortController();
+    const stop = pollWhileVisible(async () => {
+      const next = await readWorld(controller.signal);
+      setWorld(next);
+      setWorldError("");
+    }, IDLE_POLL_MS);
+    return () => {
+      controller.abort();
+      stop();
+    };
+  }, [readWorld, worldFailed]);
+  const retryWorld = useCallback(() => setWorldVersion((value) => value + 1), []);
 
   const [me, setMe] = useState<MeResponse | null>(null);
   const [meError, setMeError] = useState("");
@@ -225,11 +263,13 @@ function NightWatchExperience({ privyDemo }: { privyDemo: boolean }) {
 
   const tip = currentJob?.publishedMomentId ?? latestNightWatchMoment(world?.moments ?? [], userId)?.id ?? null;
   const jobForkPoint = currentJob ? world?.moments.find((moment) => moment.id === currentJob.forkPointId) ?? null : null;
-  const worldPanel = <WorldPanel world={world} error={worldError} forkPointId={forkPoint} signedIn={signedIn} onChooseForkPoint={chooseForkPoint} />;
+  const worldPanel = <WorldPanel world={world} error={worldError} reading={worldReading} forkPointId={forkPoint} signedIn={signedIn}
+    onChooseForkPoint={chooseForkPoint} onRetry={retryWorld} />;
   const editionPanel = signedIn
     ? <EditionPanel api={api} tip={tip} world={world} me={me} job={currentJob} client={client} />
     : <LockedAct id="morning" act="Act 4" title="The morning edition" text="Published moments appear in the world above. Sign in to release your edition, support it and deliver its shares." />;
-  return <Frame account={<AccountMenu me={me} />} privyDemo={privyDemo}>
+  return <>
+    {createPortal(<AccountMenu me={me} />, accountSlot)}
     {account.error && <p role="alert" className="nw-error nw-on-night nw-page-alert">{account.error}</p>}
     {privyDemo
       ? <details className="nw-privy-context"><summary>Story context: {world?.room.title ?? "The Midnight Signal"}</summary>{worldPanel}</details>
@@ -246,5 +286,5 @@ function NightWatchExperience({ privyDemo }: { privyDemo: boolean }) {
     {privyDemo
       ? <details className="nw-privy-context nw-privy-bonus"><summary>Optional demo: a Privy wallet delivers a Monad share</summary><PrivyHelperCaption />{editionPanel}</details>
       : editionPanel}
-  </Frame>;
+  </>;
 }

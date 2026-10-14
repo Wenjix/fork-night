@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   CalendarClock,
@@ -13,11 +16,25 @@ import {
   WREN_ALLOWANCE,
   WREN_TOP_UPS,
   addressUrl,
+  allowanceExpired,
   shortHex,
   txUrl,
 } from "@/lib/agents/wren";
 import { momentHref } from "./agent-bits";
 import { NetworkBrandMark } from "../room-network-plate";
+
+/**
+ * Whether Wren's allowance has expired. It starts as expired, so the server
+ * HTML never claims a key that may have lapsed, and reads the clock after
+ * mount, so hydration always matches.
+ */
+export function useAllowanceExpired() {
+  const [expired, setExpired] = useState(true);
+  useEffect(() => {
+    setExpired(allowanceExpired(Date.now()));
+  }, []);
+  return expired;
+}
 
 function HexLink({ href, value }: { href: string; value: string }) {
   return (
@@ -37,11 +54,14 @@ function HexLink({ href, value }: { href: string; value: string }) {
 
 export function WrenAllowance() {
   const a = WREN_ALLOWANCE;
+  const expired = useAllowanceExpired();
   const rules = [
     { icon: Coins, label: "Limit", value: a.limit, hint: a.limitNote },
     { icon: KeyRound, label: "Allowed call", value: a.allowedCall, hint: "No other kind of call", mono: true },
     { icon: Target, label: "Only to", value: a.recipientLabel, hint: a.recipient, href: addressUrl(a.recipient) },
-    { icon: CalendarClock, label: "Expires", value: a.expiresAt, hint: "After that the key can no longer pay" },
+    expired
+      ? { icon: CalendarClock, label: "Expired", value: a.expiresAt, hint: "Since then the key can no longer pay" }
+      : { icon: CalendarClock, label: "Expires", value: a.expiresAt, hint: "After that the key can no longer pay" },
   ] as { icon: typeof Coins; label: string; value: string; hint: string; mono?: boolean; href?: string }[];
   return (
     <section
@@ -56,8 +76,18 @@ export function WrenAllowance() {
           <span>Wren’s allowance on Tempo</span>
         </h2>
         <p>
-          When The Night Shift runs low, Wren can top the room up from a small
-          allowance its steward gave it on the {a.network}.
+          {expired ? (
+            <>
+              When The Night Shift ran low, Wren could top the room up from a
+              small allowance its steward gave it on the {a.network}. The
+              allowance expired on {a.expiresAt}.
+            </>
+          ) : (
+            <>
+              When The Night Shift runs low, Wren can top the room up from a
+              small allowance its steward gave it on the {a.network}.
+            </>
+          )}
         </p>
       </div>
 

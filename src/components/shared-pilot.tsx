@@ -37,7 +37,7 @@ import { PilotIdeas } from "./pilot-ideas";
 import { PilotContinuation } from "./pilot-continuation";
 import { PilotIdentity } from "./pilot-identity";
 import { PilotDialog } from "./pilot-dialog";
-import { roomLink, validRoomId, newPublications, type RoomSnapshot } from "../lib/pilot-rooms";
+import { roomLink, validRoomId, newPublications, definitelyRejected, type RoomSnapshot } from "../lib/pilot-rooms";
 import { PilotCreditRefill } from "./pilot-credit-refill";
 import { PilotRoomActivity } from "./pilot-generation-status";
 import { SectionPlate } from "./visual-plates";
@@ -138,7 +138,13 @@ export function SharedPilot() {
       if (!exact.data) { setUnavailable(true); return; }
       setRooms([...(directory.data ?? []).filter(item => item.id !== requestedRoom), exact.data]);
       setRoomId(requestedRoom);
-      if (query.get("created") === "1") setNotice("Your room is ready. Invite your storytellers to join.");
+      if (query.get("created") === "1") {
+        setNotice("Your room is ready. Invite your storytellers to join.");
+        // A link copied from the creator's address bar must not greet others as the creator.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("created");
+        window.history.replaceState(null, "", url.href);
+      }
       const requestedMoment = query.get("moment");
       if (requestedMoment && isUuid(requestedMoment)) sharedTarget.current = { room: requestedRoom, moment: requestedMoment };
       else if (requestedMoment) setError("That shared moment link is incomplete. Choose a moment below.");
@@ -190,6 +196,8 @@ export function SharedPilot() {
     return () => { active = false; };
   }, [client, roomId, profile?.id]);
 
+  // Restarts only for another room or storyteller: it reads just the profile's id,
+  // and a restart clears notices, the invitation and the continuation.
   useEffect(() => {
     if (!client || !roomId) return;
     let active = true,
@@ -319,7 +327,7 @@ export function SharedPilot() {
       active = false;
       stop();
     };
-  }, [client, roomId, profile]);
+  }, [client, roomId, profile?.id]);
 
   useEffect(() => {
     if (!roomId) return;
@@ -550,15 +558,24 @@ export function SharedPilot() {
       p_request_id: input.requestId,
       p_room_id: input.roomId,
       p_parent_id: input.parentId,
-      p_title: input.captions[0].slice(0, 80),
+      p_title: Array.from(input.captions[0]).slice(0, 80).join(""),
       p_prompt: input.captions.join("\n"),
       p_captions: input.captions,
       p_idea_id: input.idea?.id,
     });
-    if (saved.error)
+    if (saved.error) {
+      // A refused save recorded nothing, so the draft opens again to edit or cancel.
+      // Only an unknown outcome keeps it locked to retry the same request.
+      if (definitelyRejected(saved)) {
+        changeDraft({ ...input, submitted: false });
+        throw new Error(
+          "This preview could not be saved. Edit it and try again, or cancel the draft.",
+        );
+      }
       throw new Error(
         "Your draft is kept in this browser. Reconnect and try saving it again.",
       );
+    }
     setOperation(saved.data);
     localStorage.removeItem(pendingKey(profile.id, roomId));
     setDraft(undefined);
@@ -828,6 +845,14 @@ export function SharedPilot() {
             onClick={() => window.location.reload()}
           >
             Reload saved story
+          </button>
+        </div>
+      )}
+      {account?.notice && (
+        <div className="pilot-notice" role="alert">
+          <p>{account.notice}</p>
+          <button className="text-button" onClick={account.dismissNotice}>
+            Dismiss
           </button>
         </div>
       )}

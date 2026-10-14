@@ -51,12 +51,12 @@ export function CreatorActivityLog({ agent, events, selectedId, onSelect }: { ag
 
 export function CreatorEventInspector({ agent, event, onCompare, onBible, onLog }: { agent: CreatorAgent; event: CreativeEvent; onCompare: () => void; onBible: () => void; onLog: () => void }) {
   const candidate = agent.candidates.find(item => item.id === event.candidateId);
-  return <aside className="creator-event-inspector" aria-label="Selected creative event">
+  return <section className="creator-event-inspector" aria-label="Selected creative event">
     {event.imageUrl && <img src={event.imageUrl} alt={event.description} width={600} height={338} />}
     <h3>{event.title}</h3><div className="creator-inspector-meta"><span>{event.actor === "agent" ? `${agent.name} · AI agent` : event.prepared ? "Creator · human" : "You · human"}</span><span>{event.prepared ? "Prepared example" : "Saved in this browser"}</span></div>
     <p className={event.kind === "bible" || event.kind === "brief" ? "creator-document" : ""}>{event.description}</p>
     {candidate && event.kind === "candidate" && <><h4>{candidate.status === "selected" ? "Why this was selected" : "Why this was discarded"}</h4><p>{candidate.rationale}</p><small>Recorded explanation · prepared example</small></>}
     {event.bibleVersion !== undefined && <p className="creator-inspector-version"><BookOpen size={15} />{event.kind === "bible" ? "Saved instructions" : "Instructions used"} · bible v{event.bibleVersion}</p>}
     <div className="creator-inspector-actions">{candidate && <button className="wd-button wd-yellow" onClick={onCompare}>Compare & give feedback <MessageCircle size={16} /></button>}{event.kind === "bible" && <button className="wd-button wd-outline" onClick={onBible}>Open creator bible <BookOpen size={16} /></button>}<button className="wd-text-button" onClick={onLog}>See in activity log <ArrowRight size={16} /></button></div>
-  </aside>;
+  </section>;
 }

@@ -83,6 +83,16 @@ export function googleCallbackError(currentUrl: string) {
   return "Google sign-in did not finish. Your guest work is preserved; try signing in again.";
 }
 
+/** The same address without a Google return's error, so a reload or a copied link does not report it again. */
+export function withoutGoogleCallbackError(currentUrl: string) {
+  const url = new URL(currentUrl);
+  const keys = ["error", "error_code", "error_description"];
+  for (const key of keys) url.searchParams.delete(key);
+  const hash = new URLSearchParams(url.hash.slice(1));
+  if (keys.some(key => hash.has(key))) url.hash = "";
+  return url.href;
+}
+
 export async function walletAuthToken(client: Client, userId: string) {
   const saved = await client.auth.getSession();
   if (saved.error || !saved.data.session) throw new Error("Sign in with Google before preparing your wallet.");

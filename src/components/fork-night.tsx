@@ -1296,7 +1296,7 @@ export function ForkNight() {
                             requestAnimationFrame(() => document.querySelector(".fn-film-demo")?.scrollIntoView({ block: "start" }));
                           }}
                         >
-                          <Film size={18} /> Turn these 4 scenes into a video{" "}
+                          <Film size={18} /> Turn these {preparedFilm.pathScenes} scenes into a video{" "}
                           <ArrowRight size={17} />
                         </button>
                       )}

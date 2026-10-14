@@ -81,3 +81,16 @@ test("the Night Shift film follows its lead path, people and Wren, and every pre
       assert(existsSync(new URL(`../../public${file}`, import.meta.url)), file);
   assert.match(NIGHT_SHIFT_FILM.disclosure, /Original story/);
 });
+
+test("each prepared film's scene count matches the path it follows, so the room's button never miscounts", async () => {
+  const { PREPARED_FILMS } = await import("../../src/lib/prepared-story-film.ts");
+  const state = extendFandomDemo(extendSocialDemo(createDemoState()));
+  for (const film of Object.values(PREPARED_FILMS)) {
+    // Counted from the film's first scene to the scene that offers it; Blade Runner's film fork starts after its opening.
+    const path = getPath(state, film.projectId, film.lastSceneId);
+    const first = path.findIndex(moment => moment.title === film.images[0].title);
+    assert(first >= 0, film.projectId);
+    assert.equal(path.length - first, film.pathScenes, film.projectId);
+    assert(film.images.length <= film.pathScenes);
+  }
+});

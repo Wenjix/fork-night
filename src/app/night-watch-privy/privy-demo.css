@@ -8,7 +8,7 @@
 .nw-privy-flow { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; padding: 0; margin-top: 16px; counter-reset: privy-step; }
 .nw-privy-flow li { counter-increment: privy-step; }
 .nw-privy-flow a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--nw-star); font-size: 15px; text-decoration-thickness: 1px; text-underline-offset: 5px; }
-.nw-privy-flow a::before { content: counter(privy-step) "."; color: var(--nw-agent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.nw-privy-flow a::before { content: counter(privy-step) "."; flex: none; white-space: nowrap; color: var(--nw-agent); font-weight: 700; font-variant-numeric: tabular-nums; }
 .nw-privy-flow svg { color: var(--nw-agent); }
 .nw-privy-flow a:hover { color: var(--nw-agent); }
 .nw-privy-scope { margin-top: 12px; max-width: 70ch; color: var(--nw-mist); font-size: 14px; }

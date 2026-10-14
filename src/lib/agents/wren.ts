@@ -48,12 +48,18 @@ export const WREN_ALLOWANCE = {
   recipient: "0x3B02f4be77C010d872Ace7149051003AB9855Ca1",
   recipientLabel: "Fork Night's top-up address",
   expiresAt: "Oct 13, 2026, 4:24 PM PDT",
+  /** The same moment as recorded on chain (key expiry 1791933882), for comparing with the clock. */
+  expiresAtIso: "2026-10-13T23:24:42Z",
   topUp: {
     price: "1.00 test pathUSD",
     credits: 5,
     attempts: 5,
   },
 } as const;
+
+/** True from the allowance's expiry on: after it, Wren's access key can no longer pay. */
+export const allowanceExpired = (now: number) =>
+  now >= Date.parse(WREN_ALLOWANCE.expiresAtIso);
 
 export type WrenTopUp = {
   /** Tempo testnet transaction hash of the top-up payment. */

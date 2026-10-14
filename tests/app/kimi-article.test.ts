@@ -6,12 +6,13 @@ import test from "node:test";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { tsImport } from "tsx/esm/api";
-import { ARTICLE, KIMI_FACTS, KIMI_QUOTES, KIMI_QUOTES_ZH, KIMI_VIDEO, LANG_STORAGE_KEY, fill, type ArticleCopy } from "../../src/lib/kimi-article.ts";
+import { ARTICLE, KIMI_FACTS, KIMI_QUOTES, KIMI_QUOTES_ZH, KIMI_VIDEO, LANG_STATUS_ID, LANG_STORAGE_KEY, PAGE_TITLE, YOUTUBE_ORIGIN, fill, type ArticleCopy } from "../../src/lib/kimi-article.ts";
 
 // /kimi: the Kimi K3 sponsor article in English and Simplified Chinese. Its numbers and quotes come from
 // the live testnet runs of Oct 13, 2026; these tests pin them, keep both languages in step, and keep the
 // page static and within the project's copy rules.
 const { KimiArticle, VideoSlot } = await tsImport("../../src/components/kimi/kimi-article.tsx", import.meta.url);
+const { choose } = await tsImport("../../src/components/kimi/language-toggle.tsx", import.meta.url);
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8");
@@ -128,23 +129,105 @@ test("both languages render; English is the server default; ?lang=zh selects Chi
   const css = read("src/app/kimi/kimi.css");
   assert.match(css, /\.kimi-page\[data-lang="zh"\] \.km-locale\[data-locale="en"\]/);
   assert.match(css, /\.kimi-page\[data-lang="en"\] \.km-locale\[data-locale="zh"\]/);
-  // Run the boot script against a stub page: ?lang=zh wins over a remembered "en".
-  const script = /<script>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
+  // Run the boot script against a stub page: ?lang=zh wins over a remembered "en", the document's language
+  // and tab title follow, and a valid ?lang is remembered so the page's own links keep it.
+  const [script = "", pressedScript = ""] = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
   assert.ok(script.includes(LANG_STORAGE_KEY));
   const run = (search: string, stored: string | null, throwing = false) => {
     const attributes: Record<string, string> = {};
     const root = { setAttribute: (name: string, value: string) => (attributes[name] = value) };
+    const page = { currentScript: { parentElement: root }, documentElement: { lang: "en" }, title: PAGE_TITLE.en };
+    const saved: string[] = [];
     const window = {
       location: { search },
-      localStorage: { getItem: () => { if (throwing) throw new Error("blocked"); return stored; } },
+      localStorage: {
+        getItem: () => { if (throwing) throw new Error("blocked"); return stored; },
+        setItem: (key: string, value: string) => { if (throwing) throw new Error("blocked"); assert.equal(key, LANG_STORAGE_KEY); saved.push(value); },
+      },
     };
-    new Function("document", "window", "URLSearchParams", script)({ currentScript: { parentElement: root } }, window, URLSearchParams);
-    return attributes;
+    new Function("document", "window", "URLSearchParams", script)(page, window, URLSearchParams);
+    return { ...attributes, html: page.documentElement.lang, title: page.title, saved };
   };
-  assert.deepEqual(run("?lang=zh", "en"), { "data-lang": "zh", lang: "zh-Hans" });
-  assert.deepEqual(run("", "zh"), { "data-lang": "zh", lang: "zh-Hans" });
-  assert.deepEqual(run("?lang=fr", null), { "data-lang": "en", lang: "en" });
-  assert.deepEqual(run("?lang=zh", null, true), { "data-lang": "zh", lang: "zh-Hans" }, "blocked storage still honours the link");
+  const zh = { "data-lang": "zh", lang: "zh-Hans", html: "zh-Hans", title: PAGE_TITLE.zh };
+  const en = { "data-lang": "en", lang: "en", html: "en", title: PAGE_TITLE.en };
+  assert.deepEqual(run("?lang=zh", "en"), { ...zh, saved: ["zh"] });
+  assert.deepEqual(run("", "zh"), { ...zh, saved: [] });
+  assert.deepEqual(run("?lang=en", "zh"), { ...en, saved: ["en"] });
+  assert.deepEqual(run("?lang=fr", null), { ...en, saved: [] });
+  assert.deepEqual(run("?lang=zh", null, true), { ...zh, saved: [] }, "blocked storage still honours the link");
+  // The tab titles: the English one is the route's metadata title.
+  assert.ok(read("src/app/kimi/page.tsx").includes(`title: ${JSON.stringify(PAGE_TITLE.en)},`), "page.tsx's metadata title is PAGE_TITLE.en");
+  assert.equal(PAGE_TITLE.zh, `${ARTICLE.zh.hero.title} · Fork Night`);
+  // A second script, right after the toggle, presses the boot script's language before hydration.
+  assert.match(html, />中文<\/button><\/div><script>/, "the pressed-state script follows the toggle");
+  const press = (dataLang: string) => {
+    const pressed: Record<string, string> = {};
+    const buttons = ["en", "zh-Hans"].map((lang) => ({ getAttribute: () => lang, setAttribute: (name: string, value: string) => { assert.equal(name, "aria-pressed"); pressed[lang] = value; } }));
+    const root = { getAttribute: (name: string) => (name === "data-lang" ? dataLang : null), querySelectorAll: (selector: string) => (selector === ".km-toggle button" ? buttons : []) };
+    new Function("document", pressedScript)({ currentScript: { closest: (selector: string) => (selector === ".kimi-page" ? root : null) } });
+    return pressed;
+  };
+  assert.deepEqual(press("zh"), { en: "false", "zh-Hans": "true" });
+  assert.deepEqual(press("en"), { en: "true", "zh-Hans": "false" });
+});
+
+test("switching language pauses the walkthrough being hidden, and moves the document's language and title", () => {
+  const events: string[] = [];
+  const attributes: Record<string, string> = { "data-lang": "en", lang: "en" };
+  // Each language's tree holds one <video>, a loaded YouTube frame (cross-origin, so no contentDocument) and a lazy
+  // frame still on its own about:blank; the stub root answers selectors by data-locale.
+  const players = Object.fromEntries(["en", "zh"].map((locale) => [locale, {
+    video: [{ pause: () => events.push(`pause ${locale} video while ${attributes["data-lang"]}`) }],
+    iframe: [
+      { contentDocument: null, contentWindow: { postMessage: (message: string, origin: string) => events.push(`post ${message} to ${origin} (${locale}) while ${attributes["data-lang"]}`) } },
+      { contentDocument: {}, contentWindow: { postMessage: () => events.push(`post to the unloaded ${locale} frame`) } },
+    ],
+  }]));
+  const root = {
+    getAttribute: (name: string) => attributes[name] ?? null,
+    setAttribute: (name: string, value: string) => { attributes[name] = value; },
+    querySelectorAll: (selector: string) => {
+      const tree = players[/\[data-locale="(\w+)"\]/.exec(selector)?.[1] ?? ""];
+      const kind = selector.trim().split(/\s+/).pop();
+      return tree && (kind === "video" || kind === "iframe") ? tree[kind] : [];
+    },
+  };
+  const status = { textContent: "" };
+  const page = { documentElement: { lang: "en" }, title: PAGE_TITLE.en, querySelector: (selector: string) => (selector === ".kimi-page" ? root : null), getElementById: (id: string) => (id === LANG_STATUS_ID ? status : null) };
+  const stored = new Map<string, string>();
+  const address = { href: "https://fork-night.vercel.app/kimi" };
+  const window = {
+    location: address,
+    localStorage: { setItem: (key: string, value: string) => stored.set(key, value) },
+    history: { state: null, replaceState: (_state: unknown, _unused: string, url: URL) => { address.href = String(url); } },
+    dispatchEvent: () => true,
+  };
+  const pause = (locale: string, lang: string) => [
+    `pause ${locale} video while ${lang}`,
+    `post {"event":"command","func":"pauseVideo","args":[]} to ${YOUTUBE_ORIGIN} (${locale}) while ${lang}`,
+  ];
+  Object.assign(globalThis, { document: page, window });
+  try {
+    choose("zh", ARTICLE.zh.toggle.announce);
+    assert.deepEqual(events.splice(0), pause("en", "en"), "the English players pause before their tree is hidden; an unloaded frame and the Chinese players are left alone");
+    assert.deepEqual(attributes, { "data-lang": "zh", lang: "zh-Hans" });
+    assert.equal(page.documentElement.lang, "zh-Hans");
+    assert.equal(page.title, PAGE_TITLE.zh);
+    assert.equal(stored.get(LANG_STORAGE_KEY), "zh");
+    assert.equal(address.href, "https://fork-night.vercel.app/kimi?lang=zh");
+    assert.equal(status.textContent, ARTICLE.zh.toggle.announce);
+    choose("en", ARTICLE.en.toggle.announce);
+    assert.deepEqual(events.splice(0), pause("zh", "zh"));
+    assert.deepEqual(attributes, { "data-lang": "en", lang: "en" });
+    assert.equal(page.documentElement.lang, "en");
+    assert.equal(page.title, PAGE_TITLE.en);
+    assert.equal(address.href, "https://fork-night.vercel.app/kimi");
+    choose("en", ARTICLE.en.toggle.announce);
+    assert.deepEqual(events, [], "choosing the language already shown changes nothing");
+  } finally {
+    Reflect.deleteProperty(globalThis, "document");
+    Reflect.deleteProperty(globalThis, "window");
+  }
 });
 
 test("the video slot: an empty frame now, a player or a link once the walkthrough exists", () => {
@@ -154,7 +237,8 @@ test("the video slot: an empty frame now, a player or a link once the walkthroug
   const file = renderToStaticMarkup(React.createElement(VideoSlot, { video: { kind: "file", src: "/kimi/walkthrough.mp4", poster: "/kimi/poster.webp" }, copy: en }));
   assert.match(file, /<video class="km-video-media" controls="" preload="metadata" playsInline="" poster="\/kimi\/poster.webp"><source src="\/kimi\/walkthrough.mp4"\/><\/video>/);
   const youtube = renderToStaticMarkup(React.createElement(VideoSlot, { video: { kind: "youtube", id: "KOdXT0_DNQI", href: "https://youtu.be/KOdXT0_DNQI" }, copy: en }));
-  assert.match(youtube, /<iframe class="km-video-media" src="https:\/\/www.youtube-nocookie.com\/embed\/KOdXT0_DNQI\?rel=0" title="Watch the walkthrough"/);
+  assert.match(youtube, /<iframe class="km-video-media" src="https:\/\/www.youtube-nocookie.com\/embed\/KOdXT0_DNQI\?rel=0&amp;enablejsapi=1" title="Watch the walkthrough"/, "enablejsapi lets the toggle pause it");
+  assert.equal(YOUTUBE_ORIGIN, "https://www.youtube-nocookie.com", "the privacy-enhanced host, where the pause command goes");
   assert.match(youtube, /referrerPolicy="strict-origin-when-cross-origin"|referrerpolicy="strict-origin-when-cross-origin"/i, "YouTube's player needs a referrer");
   assert.match(youtube, /href="https:\/\/youtu.be\/KOdXT0_DNQI"/, "a plain link stays for anyone who prefers YouTube itself");
   const zhCopy = ARTICLE.zh;
@@ -162,6 +246,19 @@ test("the video slot: an empty frame now, a player or a link once the walkthroug
   const link = renderToStaticMarkup(React.createElement(VideoSlot, { video: { kind: "link", href: "https://example.com/watch", label: "Watch the walkthrough" }, copy: en }));
   assert.match(link, /<a class="km-video-frame km-video-link" href="https:\/\/example.com\/watch" target="_blank" rel="noreferrer">/);
   assert.match(visibleText(link), /Watch the walkthrough/);
+});
+
+test("the toggle's highlight follows the root's language; the skip link clears the header; phones neither clip nor scroll sideways", () => {
+  const css = read("src/app/kimi/kimi.css");
+  assert.doesNotMatch(css, /aria-pressed/, "the highlight does not wait for hydration's aria-pressed");
+  assert.match(css, /\.kimi-page\[data-lang="en"\] \.km-toggle button\[lang="en"\],\s*\.kimi-page\[data-lang="zh"\] \.km-toggle button\[lang="zh-Hans"\] \{ background: var\(--km-kimi\);/);
+  assert.match(css, /\.km-main \{[^}]*scroll-margin-top: 80px;/, "the skip link's target lands below the sticky header");
+  assert.match(css, /\.km-request pre \{[^}]*white-space: pre-wrap;/, "the request sample wraps instead of scrolling");
+  const phone = /@media \(max-width: 720px\) \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+  assert.match(phone, /\.km-nav \{[^}]*width: calc\(100% \+ 12px\);[^}]*flex-wrap: wrap;/, "the section nav uses the header's full width and wraps");
+  assert.doesNotMatch(phone, /\.km-nav \{[^}]*overflow/, "no scroll box to clip the current pill or the focus rings");
+  assert.match(phone, /\.km-nav a:focus-visible \{ outline-offset: -3px; \}/, "the ring sits inside the pill, clear of the page edge");
+  assert.match(phone, /\.km-main \{[^}]*scroll-margin-top: 0;/, "the header is static on phones");
 });
 
 test("every class in the markup has a rule in kimi.css", () => {

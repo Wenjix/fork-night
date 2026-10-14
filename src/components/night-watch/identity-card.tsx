@@ -13,27 +13,28 @@ export function IdentityCard({ api }: { api: NightWatchClient }) {
   const ids = useId();
   const [identity, setIdentity] = useState<IdentityResponse | null>(null);
   const [error, setError] = useState("");
+  const [reading, setReading] = useState(true);
   const [version, setVersion] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
+    // Each read starts clean, so a failed refresh is announced again rather than left as the old message.
+    setReading(true);
+    setError("");
     api.identity(controller.signal).then((next) => {
       setIdentity(next);
-      setError("");
     }).catch((reason) => {
       if (!controller.signal.aborted) setError(errorMessage(reason, "The Night Watch identity could not be read."));
+    }).finally(() => {
+      if (!controller.signal.aborted) setReading(false);
     });
     return () => controller.abort();
   }, [api, version]);
 
-  const refresh = <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Read the identity again" onClick={() => setVersion((value) => value + 1)}><RefreshCw size={18} aria-hidden="true" /></button>;
-  if (!identity) {
-    return <section className="nw-card nw-agent-card" aria-labelledby={`${ids}-identity`}>
-      <AgentTop titleId={`${ids}-identity`} name="Night Watch" action={refresh} />
-      <p className="nw-agent-card-byline">{AGENT_ROLE}</p>
-      {error ? <p role="alert" className="nw-error">{error}</p> : <p role="status" className="nw-quiet">Reading the identity registry…</p>}
-    </section>;
-  }
-  return <AgentCard identity={identity} titleId={`${ids}-identity`} action={refresh} />;
+  // aria-disabled rather than disabled while reading, so the button keeps keyboard focus.
+  const refresh = <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Read the identity again" aria-disabled={reading || undefined}
+    onClick={reading ? undefined : () => setVersion((value) => value + 1)}><RefreshCw size={18} aria-hidden="true" className={reading ? "nw-spin" : undefined} /></button>;
+  // One element type in every state, so React keeps the section and the refresh button (and its focus) when the first read lands.
+  return <AgentCard identity={identity} titleId={`${ids}-identity`} action={refresh} error={error} />;
 }
 
 function AgentTop({ titleId, name, action }: { titleId: string; name: string; action?: ReactNode }) {
@@ -48,14 +49,27 @@ function AgentTop({ titleId, name, action }: { titleId: string; name: string; ac
   </div>;
 }
 
-/** The Night Watch drawn as an agent profile, like Wren's card on /agents, from what the registry reports. */
-export function AgentCard({ identity, titleId, action }: { identity: IdentityResponse; titleId: string; action?: ReactNode }) {
+/**
+ * The Night Watch drawn as an agent profile, like Wren's card on /agents, from what the registry reports.
+ * `error` is a later read that failed; the card still shows the last identity read. With no identity yet, it shows
+ * the reading line or the first read's error under the same top row.
+ */
+export function AgentCard({ identity, titleId, action, error = "" }: { identity: IdentityResponse | null; titleId: string; action?: ReactNode; error?: string }) {
+  if (!identity) {
+    // The keys make each failure a new alert.
+    return <section className="nw-card nw-agent-card" aria-labelledby={titleId}>
+      <AgentTop titleId={titleId} name="Night Watch" action={action} />
+      <p className="nw-agent-card-byline">{AGENT_ROLE}</p>
+      {error ? <p key="error" role="alert" className="nw-error">{error}</p> : <p key="reading" role="status" className="nw-quiet">Reading the identity registry…</p>}
+    </section>;
+  }
   const { card } = identity;
   const service = safeHref(card.service);
   const transaction = safeHref(identity.explorerUrl);
   const agentNumber = identity.registered && identity.agentId !== null ? ` as agent #${identity.agentId}` : "";
   return <section className="nw-card nw-agent-card" aria-labelledby={titleId}>
     <AgentTop titleId={titleId} name="Night Watch" action={action} />
+    {error && <p role="alert" className="nw-error">{error}</p>}
     <p className="nw-agent-card-byline">{AGENT_ROLE}</p>
     <p className="nw-agent-card-steward">Steward: <strong>{card.steward}</strong></p>
     <p className="nw-agent-card-status" data-pending={identity.registered ? undefined : ""}>

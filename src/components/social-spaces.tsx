@@ -121,6 +121,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
   const [help, setHelp] = useState(false);
   const original = useRef<string | null>(null);
   const heading = useRef<HTMLElement>(null);
+  const focusOnRestore = useRef(loaded);
   useEffect(() => {
     if (!loaded || restored) return;
     try {
@@ -141,7 +142,9 @@ export function SocialSpaces(props: SocialSpacesProps) {
   useEffect(() => {
     setActionError("");
     setNotice("");
-    if (restored) heading.current?.focus({ preventScroll: true });
+    if (!restored) return;
+    if (focusOnRestore.current) heading.current?.focus({ preventScroll: true });
+    focusOnRestore.current = true;
   }, [
     route.kind,
     "guildId" in route ? route.guildId : "",
@@ -196,7 +199,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
             value={userId}
             onChange={(event) => onUserChange(event.target.value)}
           >
-            {demo.users.map((person) => (
+            {demo.users.filter((person) => !person.agent || person.id === userId).map((person) => (
               <option key={person.id} value={person.id}>
                 {person.name}
               </option>

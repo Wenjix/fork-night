@@ -27,6 +27,8 @@
 .hy-page :is(a, button, input):focus-visible { outline: 3px solid var(--hy-yellow); outline-offset: 4px; }
 .hy-page img { display: block; max-width: 100%; height: auto; }
 .hy-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.hy-skip { position: absolute; left: 16px; top: -80px; z-index: 30; padding: 10px 18px; border-radius: 8px; background: var(--hy-yellow); color: #21113e !important; font-weight: 650; text-decoration: none; }
+.hy-skip:focus { top: 10px; }
 
 .hy-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
 .hy-brand { display: inline-flex; align-items: center; min-height: 44px; white-space: nowrap; font-family: var(--font-display), sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--hy-ink) !important; text-decoration: none; }

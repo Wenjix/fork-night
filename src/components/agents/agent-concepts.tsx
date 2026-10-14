@@ -248,8 +248,8 @@ export function AgentConcepts() {
             </ol>
             <p className="ag-today">
               <strong>Today:</strong> Fork Night’s operator pays for every
-              image through its own pipeline. Wren’s test pathUSD only tops up
-              room credits and guest attempts.
+              image through its own pipeline. Wren’s test pathUSD only ever
+              topped up room credits and guest attempts.
             </p>
           </div>
 
@@ -262,6 +262,7 @@ export function AgentConcepts() {
             </div>
             <div
               className="ag-mock-controls"
+              role="group"
               aria-label="Steward controls (concept, disabled)"
             >
               <div className="ag-mock-controls-head">

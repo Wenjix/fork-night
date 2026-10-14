@@ -7,7 +7,9 @@ import type { Database, Tables } from "@/lib/supabase/database.types";
 import { isUuid, type PilotMoment } from "@/lib/pilot";
 
 import { IDEA_DRAG_TYPE } from "@/lib/pilot-composer";
+import { definitelyRejected, ideaDraftKey, visitorActor } from "@/lib/pilot-rooms";
 import { whileVisible } from "@/lib/visible-interval";
+import { usePilotAccount } from "./pilot-account";
 import { SectionPlate } from "./visual-plates";
 
 type Idea = Tables<"pilot_ideas">;
@@ -35,6 +37,7 @@ export function PilotIdeas({
   onUse: (idea: Idea) => void;
 }) {
   const fieldId = useId();
+  const account = usePilotAccount();
   const [notes, setNotes] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
@@ -46,6 +49,7 @@ export function PilotIdeas({
   const [draft, setDraft] = useState<NoteDraft>();
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [rejected, setRejected] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const lock = useRef(false);
@@ -53,8 +57,26 @@ export function PilotIdeas({
   const trigger = useRef<HTMLButtonElement>(null);
   const currentNotes = useRef(notes);
   currentNotes.current = notes;
-  const draftKey = `fork-night-pilot-idea:${moment.room_id}:${moment.id}`;
+  // Unsent ideas belong to the signed-in account, or to the visitor while signed out.
+  // Nothing is read or saved while the account is still loading.
+  const actor = profile?.id ?? account?.user?.id ?? (account && !account.loading ? visitorActor : "");
+  const draftKey = actor ? ideaDraftKey(actor, moment.room_id, moment.id) : "";
+  const lastActor = useRef(actor);
+  const restoredKey = useRef("");
   useEffect(() => {
+    const previous = lastActor.current;
+    // Another account's idea never carries over; a visitor's carries into the account it joins as.
+    if (previous && previous !== visitorActor && previous !== actor) {
+      setDraft(undefined);
+      setEditing(false);
+      setRejected(false);
+    }
+    // A visitor stays the previous actor while its sign-in or join is loading.
+    if (actor || previous !== visitorActor) lastActor.current = actor;
+    if (!draftKey) return;
+    // A cancelled sign-in returns to the same key; an editor closed with "Keep for later" stays closed.
+    const reopen = restoredKey.current !== draftKey;
+    restoredKey.current = draftKey;
     try {
       const saved = JSON.parse(localStorage.getItem(draftKey) ?? "null");
       if (
@@ -65,14 +87,14 @@ export function PilotIdeas({
         (saved.submitted === undefined || typeof saved.submitted === "boolean")
       ) {
         setDraft(saved);
-        setEditing(true);
+        if (reopen) setEditing(true);
       }
     } catch {
       setError(
         "This browser could not restore your idea. Published ideas still appear below.",
       );
     }
-  }, [draftKey]);
+  }, [actor, draftKey]);
   useEffect(() => {
     let active = true,
       running = false,
@@ -145,6 +167,7 @@ export function PilotIdeas({
   function update(body: string) {
     const next = { requestId: draft?.requestId ?? crypto.randomUUID(), body };
     setDraft(next);
+    if (!draftKey) return;
     try {
       localStorage.setItem(draftKey, JSON.stringify(next));
     } catch {
@@ -161,14 +184,18 @@ export function PilotIdeas({
     }
     lock.current = true;
     setSaving(true);
+    setRejected(false);
     setError("");
     setNotice("");
     const input = { ...draft, body: draft.body.trim(), submitted: true };
     try {
-      if (!profile) await onJoin(name);
+      const maker = profile ?? (await onJoin(name));
+      const key = ideaDraftKey(maker.id, moment.room_id, moment.id);
       setDraft(input);
       try {
-        localStorage.setItem(draftKey, JSON.stringify(input));
+        localStorage.setItem(key, JSON.stringify(input));
+        // An idea written as a visitor now belongs to the account that posts it.
+        if (draftKey && draftKey !== key) localStorage.removeItem(draftKey);
       } catch {
         setNotice("Keep this page open while your idea is being saved.");
       }
@@ -178,18 +205,34 @@ export function PilotIdeas({
         p_moment_id: moment.id,
         p_body: input.body,
       });
-      if (result.error)
+      if (result.error) {
+        // A refused idea recorded nothing, so it opens again to edit or discard.
+        // Only an unknown outcome keeps it locked to retry the same request.
+        const refused = definitelyRejected(result);
+        if (refused) {
+          const editable = { ...input, submitted: false };
+          setDraft(editable);
+          setRejected(true);
+          try {
+            localStorage.setItem(key, JSON.stringify(editable));
+          } catch {
+            /* A restored copy stays locked until a retry is refused again. */
+          }
+        }
         throw new Error(
           result.error.message.includes("30-idea limit")
             ? "You’ve reached the 30-idea limit for this pilot room."
-            : "Your idea could not be confirmed. Retry this same idea when connected.",
+            : refused
+              ? "Your idea could not be saved. Edit it and try again, or discard it."
+              : "Your idea could not be confirmed. Retry this same idea when connected.",
         );
+      }
       setNotes((old) => merge(old, [result.data]));
       setDraft(undefined);
       setEditing(false);
       setNotice("Idea saved for the next storyteller.");
       try {
-        localStorage.removeItem(draftKey);
+        localStorage.removeItem(key);
       } catch {
         /* A restored request is idempotent. */
       }
@@ -204,6 +247,19 @@ export function PilotIdeas({
       lock.current = false;
       setSaving(false);
     }
+  }
+  function discard() {
+    try {
+      if (draftKey) localStorage.removeItem(draftKey);
+    } catch {
+      setError("This browser could not clear your idea. Try again before leaving.");
+      return;
+    }
+    setDraft(undefined);
+    setRejected(false);
+    setEditing(false);
+    setError("");
+    requestAnimationFrame(() => trigger.current?.focus());
   }
   return (
     <aside
@@ -380,6 +436,16 @@ export function PilotIdeas({
           >
             Keep for later
           </button>
+          {rejected && (
+            <button
+              type="button"
+              className="text-button"
+              disabled={saving}
+              onClick={discard}
+            >
+              Discard idea
+            </button>
+          )}
         </form>
       )}
       {error && (

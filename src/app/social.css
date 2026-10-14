@@ -489,6 +489,18 @@
   border: 0;
   background: #242b49;
 }
+.room-card .room-art-button:focus-visible {
+  outline-color: transparent;
+}
+.room-card .room-art-button:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 3px solid var(--social-yellow);
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px var(--night);
+  pointer-events: none;
+}
 .room-art-button .story-art,
 .room-art-button .social-scene {
   display: block;
@@ -697,6 +709,10 @@
 .room-invitation-plate .room-entry-actions {
   flex-direction: column;
   margin: 0;
+}
+.room-invitation-plate .room-entry-actions .social-button {
+  white-space: normal;
+  text-align: center;
 }
 .room-invitation-plate .social-button.outline {
   background: #fffdf8;
@@ -2520,6 +2536,12 @@
   .social-demo-strip button span {
     display: none;
   }
+  .social-demo-strip button,
+  .social-app:has(.hall-layout) .social-demo-strip button {
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
   .social-main {
     padding: 23px 18px 32px;
   }
@@ -2542,11 +2564,15 @@
   .social-search {
     margin-bottom: 12px;
   }
+  .social-search input {
+    min-height: 44px;
+  }
   .lobby-tools .social-segments {
     width: 100%;
   }
   .lobby-tools .social-segments button {
     flex: 1;
+    min-height: 44px;
     padding-inline: 6px;
   }
   .room-grid {
@@ -2568,8 +2594,8 @@
     margin-block: 10px;
   }
   .room-ribbon {
-    top: 7px;
-    right: 7px;
+    top: 10px;
+    right: 10px;
   }
   .room-preview {
     margin-top: 26px;

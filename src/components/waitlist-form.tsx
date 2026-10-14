@@ -39,7 +39,7 @@ export function WaitlistForm({ source, configured }: { source: "demo" | "signup"
   return <form onSubmit={submit} className="signup-form" aria-busy={state === "saving"}>
     <h2>Save me a place.</h2>
     <label htmlFor="waitlist-email">Email address</label>
-    <input id="waitlist-email" name="email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="you@example.com" required maxLength={254} value={email} onChange={event => { setEmail(event.target.value); setError(""); }} disabled={state === "saving"} aria-describedby={`signup-permission${error ? " signup-error" : ""}`} aria-invalid={!!error} />
+    <input id="waitlist-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="you@example.com" required maxLength={254} value={email} onChange={event => { setEmail(event.target.value); setError(""); }} disabled={state === "saving"} aria-describedby={`signup-permission${error ? " signup-error" : ""}`} aria-invalid={!!error} />
     <div className="signup-trap" aria-hidden="true"><label htmlFor="waitlist-website">Leave this field empty</label><input id="waitlist-website" name="website" tabIndex={-1} autoComplete="off" /></div>
     <button className="signup-button" disabled={!configured || state === "saving"} type="submit">{state === "saving" ? "Saving your place…" : "Join the waitlist"}<ArrowRight size={20} aria-hidden="true" /></button>
     <p id="signup-permission" className="signup-small">By joining, you agree to receive occasional Fork Night launch and playtest emails. Your address stays private.</p>

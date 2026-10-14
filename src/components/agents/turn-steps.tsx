@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ArrowRight,
   Brush,
@@ -10,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { WREN_ALLOWANCE } from "@/lib/agents/wren";
+import { useAllowanceExpired } from "./wren-allowance";
 
 const STEPS: { icon: LucideIcon; title: string; body: string }[] = [
   {
@@ -45,7 +48,8 @@ const STEPS: { icon: LucideIcon; title: string; body: string }[] = [
 ];
 
 export function TurnSteps() {
-  const { topUp } = WREN_ALLOWANCE;
+  const { topUp, expiresAt } = WREN_ALLOWANCE;
+  const expired = useAllowanceExpired();
   return (
     <section className="ag-section" id="turn" aria-labelledby="turn-title">
       <div className="ag-section-head">
@@ -76,13 +80,28 @@ export function TurnSteps() {
           <span className="ag-step-number">
             Only when needed · before step&nbsp;3
           </span>
-          <h3>Tops up the room first</h3>
-          <p>
-            If the room is out of credits or Wren has used its attempts, Wren
-            buys one top-up from its testnet allowance before it leaves its
-            idea note: {topUp.price} for {topUp.credits} test credits and{" "}
-            {topUp.attempts} guest attempts.
-          </p>
+          {expired ? (
+            <>
+              <h3>Topped up the room first</h3>
+              <p>
+                If the room was out of credits or Wren had used its attempts,
+                Wren bought one top-up from its testnet allowance before it
+                left its idea note: {topUp.price} for {topUp.credits} test
+                credits and {topUp.attempts} guest attempts. The allowance
+                expired on {expiresAt}; since then the key can no longer pay.
+              </p>
+            </>
+          ) : (
+            <>
+              <h3>Tops up the room first</h3>
+              <p>
+                If the room is out of credits or Wren has used its attempts,
+                Wren buys one top-up from its testnet allowance before it
+                leaves its idea note: {topUp.price} for {topUp.credits} test
+                credits and {topUp.attempts} guest attempts.
+              </p>
+            </>
+          )}
           <a href="#allowance">
             See Wren’s allowance <ArrowRight size={15} aria-hidden="true" />
           </a>

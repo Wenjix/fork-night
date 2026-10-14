@@ -32,6 +32,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${interfaceFont.variable} ${displayFont.variable}`}
+      suppressHydrationWarning
     >
       <body>{children}</body>
     </html>
