@@ -2,13 +2,13 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowDown, ArrowUpRight, Download, Film, Play, RotateCcw } from "lucide-react";
-import { BLADE_RUNNER_FILM as film } from "@/lib/prepared-story-film";
+import type { PreparedFilm } from "@/lib/prepared-story-film";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
 import "@/app/prepared-story-film.css";
 
-export function PreparedFilmInvite({ onOpen }: { onOpen: () => void }) {
+export function PreparedFilmInvite({ film, onOpen }: { film: PreparedFilm; onOpen: () => void }) {
   return <Card className="fn-film-invite">
     <img src={film.poster} width={80} height={80} alt="" />
     <div><h2>See this story come to life.</h2><p>Four images become a short film. A prepared example, ready to play.</p></div>
@@ -16,7 +16,7 @@ export function PreparedFilmInvite({ onOpen }: { onOpen: () => void }) {
   </Card>;
 }
 
-export function PreparedStoryFilm() {
+export function PreparedStoryFilm({ film }: { film: PreparedFilm }) {
   const headingId = useId();
   const playerId = useId();
   const descriptionId = useId();
@@ -52,9 +52,9 @@ export function PreparedStoryFilm() {
 
   return <section className="fn-film-demo" aria-labelledby={headingId}>
     <header className="fn-film-intro">
-      <h2 id={headingId}>Four images. One film.</h2>
+      <h2 id={headingId}>{film.heading}</h2>
       <Button type="button" className="fn-film-button" onClick={play} disabled={busy} aria-controls={playerId}><Play size={18} aria-hidden="true" />{playLabel}<ArrowDown size={17} aria-hidden="true" /></Button>
-      <p>Follow Mara from the memory shop to the greenhouse, then watch these exact images become a 12-second motion clip.</p>
+      <p>{film.intro}</p>
     </header>
 
     <section className="fn-film-sources" aria-label="The four source images in story order">
@@ -74,7 +74,7 @@ export function PreparedStoryFilm() {
       </div>
       <div className="fn-film-motion-body">
         <figure>
-          <video id={playerId} ref={player} src={film.video} poster={film.poster} width={720} height={720} controls playsInline preload="none" aria-label="Blade Runner: A Memory of Rain, prepared motion example" aria-describedby={descriptionId}
+          <video id={playerId} ref={player} src={film.video} poster={film.poster} width={720} height={720} controls playsInline preload="none" aria-label={film.videoLabel} aria-describedby={descriptionId}
             onPlay={() => { setStarted(true); setError(""); setPlayback("playing"); }}
             onPlaying={() => setPlayback("playing")}
             onWaiting={() => setPlayback("loading")}
@@ -89,14 +89,14 @@ export function PreparedStoryFilm() {
         <div className="fn-film-film-note">
           <Badge className="fn-film-badge fn-film-badge-night">Prepared motion example</Badge>
           <p>The images are the references. The film adds movement and camera work, with the original audio.</p>
-          <p>Generated on October 7, 2026. This fixed clip is ready to show; changes to your story can be made into a separate storyboard video through <strong>Make a video</strong>.</p>
-          <div className="fn-film-downloads"><Button asChild variant="outline" className="fn-film-button fn-film-button-outline"><a href={film.video} target="_blank" rel="noopener noreferrer">Open video<ArrowUpRight size={16} aria-hidden="true" /></a></Button><Button asChild variant="outline" className="fn-film-button fn-film-button-outline"><a href={film.video} download="fork-night-memory-of-rain.mp4"><Download size={17} aria-hidden="true" />Download MP4</a></Button></div>
+          <p>Generated on {film.preparedOnLabel}. This fixed clip is ready to show; changes to your story can be made into a separate storyboard video through <strong>Make a video</strong>.</p>
+          <div className="fn-film-downloads"><Button asChild variant="outline" className="fn-film-button fn-film-button-outline"><a href={film.video} target="_blank" rel="noopener noreferrer">Open video<ArrowUpRight size={16} aria-hidden="true" /></a></Button><Button asChild variant="outline" className="fn-film-button fn-film-button-outline"><a href={film.video} download={film.downloadName}><Download size={17} aria-hidden="true" />Download MP4</a></Button></div>
           <details><summary>Read the story captions</summary><ol>{film.images.map(image => <li key={image.frame}>{image.caption}</li>)}</ol></details>
         </div>
       </div>
       <p className="fn-film-playback" role="status">{playback === "loading" ? "Loading the prepared video…" : playback === "playing" ? "Playing the prepared video." : playback === "ended" ? "Video finished. Replay it or return to the story map." : playback === "paused" && !error ? "Video paused." : "Play when you’re ready. Audio is included."}</p>
       {error && <p className="fn-film-error" role="alert">{error}</p>}
     </Card>
-    <p className="fn-film-disclosure">Unofficial fan story with original fictional characters. Authored sample collaboration; AI-generated images and motion.</p>
+    <p className="fn-film-disclosure">{film.disclosure}</p>
   </section>;
 }

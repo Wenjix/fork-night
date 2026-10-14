@@ -74,7 +74,7 @@ export function renderFinishedHtml(
     branch.moments.some(moment => moment.id.startsWith(`${story.id}-`)),
   );
   const contentLabel = fanStory
-    ? `Authored unofficial fan story · ${fanStory.fandom}`
+    ? fanStory.original ? `Authored original story · prepared with Wren, an AI agent` : `Authored unofficial fan story · ${fanStory.fandom}`
     : "Original demonstration content";
   const visualStyles = fanStory?.visualStyles?.filter(style =>
     assets.includes(style.artwork),

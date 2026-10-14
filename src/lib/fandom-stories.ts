@@ -9,6 +9,8 @@ type StoryBeat = {
   authorId: string;
   frames: readonly Frame[];
   captions: readonly string[];
+  /** Another packaged sheet for this beat; defaults to the story's artwork. */
+  artwork?: ArtAssetUrl;
 };
 export type FandomStory = {
   id: string;
@@ -19,6 +21,10 @@ export type FandomStory = {
   question: string;
   artwork: ArtAssetUrl;
   visualStyles?: readonly { id: "anime" | "film"; label: string; artwork: ArtAssetUrl }[];
+  /** An original prepared story rather than fan fiction. */
+  original?: true;
+  /** A room skin; "neon" is the Night Shift's red-and-cyan night city. */
+  theme?: "neon";
   leadEnding: string;
   alternateEnding: string;
   beats: readonly StoryBeat[];
@@ -27,6 +33,60 @@ export type FandomStory = {
 
 /** Authored examples, not official scenes, live fandom activity or model output at runtime. */
 export const FANDOM_STORIES: readonly FandomStory[] = [
+  {
+    // A prepared mix of human makers and Wren, Fork Night's AI agent, across two forks. Original characters; frames
+    // generated Oct 14, 2026 with Hy-Image 3.5 preview on GMI Cloud (.internal/implementation/night-shift-neon-2026-10-14).
+    id: "kessler-night-shift",
+    title: "The Night Shift",
+    original: true,
+    theme: "neon",
+    fandom: "Original story",
+    artStyle: "Neon anime cel shading",
+    description: "A blackout hits Kessler Ward. Mika has one insulin case, eighty-one floors and until dawn. People and Wren, an AI agent, take turns writing how she gets there.",
+    question: "Over the rooftops behind Wren's bird of light, or up the stairs with everyone else?",
+    artwork: "/art/night-shift-neon.webp",
+    leadEnding: "dawn-81",
+    alternateEnding: "window-81",
+    beats: [
+      { id: "opening", parent: null, title: "Lights out in Kessler Ward", authorId: "sam", frames: [0, 1], captions: [
+        "The grid drops at midnight. Every tower in Kessler Ward goes dark except the red emergency strips, and the trains stop where they stand.",
+        "Odo presses an insulated case into Mika's hands. ‘Mrs. Ito, floor eighty-one. Her insulin runs out at dawn. No lifts tonight.’",
+      ] },
+      // Branch one: over the rooftops.
+      { id: "billboard", parent: "opening", title: "The billboard blinks back", authorId: "wren", frames: [2], captions: [
+        "A dead billboard flickers awake for one breath. A small bird of cyan light traces a path across the rooftops, along the one cable line that still carries power.",
+      ] },
+      { id: "dish", parent: "billboard", title: "Rei on the dish", authorId: "priya", frames: [3], captions: [
+        "The bird's path ends at a cable bridge. Rei waves from the satellite dish on the far tower, headphones on, calling out every loose rung over the radio.",
+      ] },
+      { id: "bridge-dark", parent: "dish", title: "The bridge goes dark", authorId: "wren", artwork: "/art/night-shift-neon-2.webp", frames: [0], captions: [
+        "Halfway across, the billboard's power fails. The bird flares once and breaks into sparks, and Mika is left holding the chain in the dark and the wind.",
+      ] },
+      { id: "tower-lights", parent: "bridge-dark", title: "A tower full of lights", authorId: "sam", artwork: "/art/night-shift-neon-2.webp", frames: [1], captions: [
+        "Rei gets on every channel in the next tower. Window by window, people hold up their phones until the whole tower shines, and Mika can see every rung.",
+      ] },
+      { id: "window-81", parent: "tower-lights", title: "In through the window", authorId: "jules", artwork: "/art/night-shift-neon-2.webp", frames: [2], captions: [
+        "At first light Mika swings in through Mrs. Ito's kitchen window on floor eighty-one. Mrs. Ito takes the case in both hands. ‘You came the long way.’",
+      ] },
+      // Branch two: up the stairs.
+      { id: "stairs", parent: "opening", title: "Eighty-one floors", authorId: "jules", frames: [4], captions: [
+        "No lift, no light. Mika takes the stairwell two steps at a time, her flashlight the only thing moving in the tower.",
+      ] },
+      { id: "floor-forty", parent: "stairs", title: "Floor forty", authorId: "priya", artwork: "/art/night-shift-neon-2.webp", frames: [3], captions: [
+        "On the fortieth landing her legs give out. A door opens and Kenji from 40C crouches beside her with a bottle of water. ‘Who's it for?’",
+      ] },
+      { id: "every-door", parent: "floor-forty", title: "Every door left open", authorId: "wren", frames: [5], captions: [
+        "Kenji knocks on the next door, and that neighbor knocks on the next. Doors open on every landing, phones light the stairs, and a bird of light flies ahead to show the way.",
+      ] },
+      { id: "chain", parent: "every-door", title: "Hand to hand", authorId: "sam", artwork: "/art/night-shift-neon-2.webp", frames: [4], captions: [
+        "The neighbors form a chain, one person to a step. The case goes up hand to hand, floor after floor, while Mika gets her breath back and follows.",
+      ] },
+      { id: "dawn-81", parent: "chain", title: "Dawn on eighty-one", authorId: "wren", artwork: "/art/night-shift-neon-2.webp", frames: [5], captions: [
+        "The case reaches Mrs. Ito as the sun comes up and the city's lights blink back on. The bird of light settles on her windowsill, then fades into the morning.",
+      ] },
+    ],
+    continuation: { title: "The next shift", caption: "Mika rests on the eighty-first floor. Somewhere below, another night shift is starting. Whose turn is it: a person's, or Wren's?" },
+  },
   {
     id: "night-city-after-hours",
     title: "Night City After Hours",
@@ -117,6 +177,19 @@ export const FANDOM_STORIES: readonly FandomStory[] = [
       ] },
       { id: "no-owner", parent: "archive", title: "No one owns this morning", authorId: "priya", frames: [5], captions: [
         "Vale closes the file. Mara watches the rain without selling it, proving it, or asking permission to remember.",
+      ] },
+      // The four Hunyuan v3.5 references behind the prepared film, laid out as their own fork.
+      { id: "film-scene-1", parent: "opening", title: "Scene 1 · Memory shop", authorId: "jules", artwork: "/art/blade-runner-film.webp", frames: [0], captions: [
+        "In a Los Angeles memory shop, Mara finds the sound of rain she remembers from a childhood the records say never happened.",
+      ] },
+      { id: "film-scene-2", parent: "film-scene-1", title: "Scene 2 · The capsule", authorId: "jules", artwork: "/art/blade-runner-film.webp", frames: [1], captions: [
+        "A glass capsule holds the memory. Detective Vale calls it evidence. Mara calls it the only thing she has kept.",
+      ] },
+      { id: "film-scene-3", parent: "film-scene-2", title: "Scene 3 · Greenhouse", authorId: "priya", artwork: "/art/blade-runner-film.webp", frames: [2], captions: [
+        "Mara follows the recording to a greenhouse above the city. Vale comes with her, leaving his questions at the door.",
+      ] },
+      { id: "film-scene-4", parent: "film-scene-3", title: "Scene 4 · A seedling", authorId: "sam", artwork: "/art/blade-runner-film.webp", frames: [3], captions: [
+        "Beside an empty child's chair, a seedling survives. There is no proof the memory was hers—only something living because someone cared.",
       ] },
     ],
     continuation: { title: "The next morning is hers", caption: "Mara carries the memory into another morning. Vale lets her choose which part becomes the beginning of her own story." },

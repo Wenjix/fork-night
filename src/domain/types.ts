@@ -6,6 +6,8 @@ export interface DemoUser {
   name: string;
   initials: string;
   color: string;
+  /** An AI agent maker, such as Wren: it authors moments but is never a person you can switch to. */
+  agent?: true;
 }
 
 export interface Project {

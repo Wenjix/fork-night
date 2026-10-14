@@ -202,7 +202,7 @@ const stateShape = shape({
           typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value),
           path,
         ),
-    }),
+    }, { agent: choice(true) }),
   ),
   projects: list(
     shape({

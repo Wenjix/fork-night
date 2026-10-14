@@ -46,7 +46,8 @@ test("legacy holds, deliveries and receipts survive refresh and settle at their 
   const restored = restoreLocalWorkspace(saved, extendCatalog);
   assert.deepEqual(restored.state.operations, saved.state.operations);
   assert.deepEqual(restored.state.ledger, saved.state.ledger);
-  assert.deepEqual(restored.state.claims, saved.state.claims);
+  // Restoring adds Wren, the prepared rooms' AI agent author, with nothing to claim; every saved claim is unchanged.
+  assert.deepEqual(restored.state.claims, { ...saved.state.claims, wren: 0 });
   assert.equal(restored.draft, saved.draft);
   assert.equal(restored.operationId, saved.operationId);
   assert.deepEqual(restored.state.moments.slice(0, saved.state.moments.length), saved.state.moments);

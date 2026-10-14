@@ -325,3 +325,11 @@
     padding-block: 28px;
   }
 }
+
+/* Desktop: the map fills its column, as tall as the inspector beside it, so a deep path leaves no empty band
+   and the tree isn't clipped by a fixed-height box. It still scrolls inside when the tree is taller. */
+@media (min-width: 820px) {
+  .main-pane { display: flex; flex-direction: column; }
+  .main-pane > .map-region { flex: 1 1 auto; display: flex; flex-direction: column; }
+  .map-region > .map-scroller { flex: 1 1 0; min-height: 630px; max-height: none; }
+}

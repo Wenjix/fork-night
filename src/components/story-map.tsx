@@ -56,7 +56,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
               >
                 {author.initials}
               </span>
-              {author.name}
+              {author.agent ? <>{author.name.replace(/ \(AI agent\)$/, "")}<span className="agent-chip" title="AI agent">AI</span></> : author.name}
             </span>
             <span>
               {formatCredits(fee)} {fee === DEMO_UNIT ? "credit" : "credits"}{" "}
@@ -77,7 +77,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
         <span>
           <ArrowUp size={15} /> One beginning. Many possibilities.
         </span>
-        <span>Selected path in violet</span>
+        <span>Selected path highlighted</span>
       </div>
       <div className="map-scroller" ref={scroller}>
         <div className="map-world" style={{ width, height }}>
