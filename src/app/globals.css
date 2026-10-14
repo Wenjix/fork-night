@@ -1,6 +1,7 @@
 @import url("./workspace.css");
 @import url("./visual-plates.css");
 @import url("./shadcn.css");
+@import url("./navigation.css");
 
 :root {
   --paper: #faf9f5;
@@ -264,33 +265,6 @@ svg {
 }
 .skip-link:focus {
   top: 12px;
-}
-.app-header {
-  height: 74px;
-  padding: 0 30px;
-  display: flex;
-  align-items: center;
-  gap: 25px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-}
-.brand {
-  border: 0;
-  background: none;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 0;
-  font-weight: 850;
-  font-size: 27px;
-  letter-spacing: -0.04em;
-  white-space: nowrap;
-}
-.brand > svg {
-  color: var(--violet);
-}
-.brand-dot {
-  color: var(--violet);
 }
 .header-spacer {
   flex: 1;
@@ -1221,10 +1195,6 @@ form .fine-print {
   }
 }
 @media (max-width: 1100px) {
-  .app-header {
-    gap: 15px;
-    padding-inline: 23px;
-  }
   .collaborators > span {
     display: none;
   }
@@ -1239,21 +1209,6 @@ form .fine-print {
   }
 }
 @media (max-width: 819px) {
-  .app-header {
-    min-height: 64px;
-    height: auto;
-    padding-block: 10px;
-    padding-inline: 18px;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .brand {
-    font-size: 22px;
-    gap: 6px;
-  }
-  .brand > svg {
-    width: 23px;
-  }
   .project-navigation {
     margin-left: auto;
   }
@@ -1398,16 +1353,6 @@ form .fine-print {
   }
 }
 @media (max-width: 370px) {
-  .brand {
-    font-size: 19px;
-  }
-  .brand > svg {
-    display: none;
-  }
-  .app-header {
-    gap: 6px;
-    padding-inline: 12px;
-  }
   .view-switch > button {
     padding: 8px;
   }

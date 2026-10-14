@@ -1,3 +1,21 @@
+.story-room-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 12px 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.story-room-toolbar .project-navigation { margin-left: 0; }
+.story-room-toolbar .nav-button { min-height: 44px; }
+@media (max-width: 819px) {
+  .story-room-toolbar { padding: 10px 16px; gap: 8px 12px; }
+  .story-room-toolbar > .button { order: 3; flex-basis: 100%; }
+  .story-room-toolbar .balance-button { margin-left: auto; min-height: 44px; }
+  .story-room-toolbar .project-menu { left: 0; right: auto; width: min(310px, calc(100vw - 32px)); }
+}
+
 .map-region {
   position: relative;
   padding-top: 15px;

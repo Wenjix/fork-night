@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { SharedPilot } from "./shared-pilot";
 import { PilotEntrance } from "./pilot-entrance";
+import { AppHeader } from "./app-header";
 
 export function PilotExperience() {
   const [route, setRoute] = useState<string>();
@@ -14,7 +15,7 @@ export function PilotExperience() {
     window.history.pushState(null, "", path);
     setRoute(window.location.search);
   }
-  if (route === undefined) return <main className="pilot-shell"><p role="status">Opening shared stories…</p></main>;
+  if (route === undefined) return <><AppHeader current="rooms" /><main className="pilot-shell"><div className="pilot-intro" role="status"><h1>Shared stories</h1><p>Opening the rooms…</p></div></main></>;
   const query = new URLSearchParams(route);
   return query.has("room") ? <SharedPilot key={query.get("room")} /> : <PilotEntrance creating={query.get("create") === "1"} navigate={navigate} />;
 }

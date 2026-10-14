@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AgentRoomHeader } from "./agents/agent-room-header";
 import { ArrowRight, BookOpen, Check, Copy, Download, GitBranch, MessageCircle, Save } from "lucide-react";
 import { addCreatorFeedback, CREATOR_AGENTS, creatorReviewKey, initialCreatorReview, parseCreatorReview, prepareCreatorBrief, reviseCreatorBible, type CandidateId, type CreatorAgent, type CreatorReviewState } from "@/lib/creator-review";
 
@@ -14,7 +15,7 @@ export function CreatorReview() {
   const agent = CREATOR_AGENTS.find(item => item.id === agentId)!;
   return <div className="world-demo creator-review">
     <a className="wd-skip" href="#creator-main">Skip to creator review</a>
-    <header className="wd-header"><a className="wd-brand" href="/">fork night<span>.</span></a><nav aria-label="Creative spaces"><a href="/#/project/midnight-signal">Story tree</a><a href="/world-demo">Shared world</a><a href="/creator-demo" aria-current="page">Creator review</a></nav><span className="creator-operator">You · creator operator</span></header>
+    <AgentRoomHeader current="creator"><span className="creator-operator">You · creator operator</span></AgentRoomHeader>
     <main id="creator-main" className="creator-main">
       <div className="creator-space-heading"><h1>Your AI creators</h1><p>Follow each persona’s choices, then give the next story direction.</p></div>
       <div className="creator-workspace-layout"><aside className="creator-personas" aria-label="AI creator personas"><h2>AI agents</h2><div role="group" aria-label="Choose an AI creator">{CREATOR_AGENTS.map(item => <button type="button" key={item.id} aria-pressed={agentId === item.id} onClick={() => setAgentId(item.id)}><img src={item.avatar} alt="" width={48} height={48} /><span><strong>{item.name}</strong><small>{item.role}</small></span></button>)}</div><p>Prepared activity for two fictional agents. Your saved guidance stays with each persona.</p></aside><AgentReview key={agent.id} agent={agent} /></div>

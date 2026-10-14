@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AppHeader } from "../app-header";
 import { ArrowRight, BookOpen, Check, RefreshCw } from "lucide-react";
 import { draftTemplate, worldLink } from "@/lib/world-demo/model";
 import { useWorldDemo } from "@/lib/world-demo/use-world-demo";
@@ -20,8 +21,11 @@ export function WorldDemo() {
   const landing = !state || !!location?.invite;
   return <div className="world-demo wd-night">
     <a className="wd-skip" href="#world-main">Skip to story</a>
-    <header className="wd-header">
-      <a className="wd-brand" href="/world-demo" aria-label="Fork Night concept home">fork night<span>.</span></a>
+    <AppHeader current="rooms">
+      <div className="wd-account">{state && <><button className="wd-icon-button" onClick={() => void demo.refresh()} aria-label="Refresh shared work" disabled={busy}><RefreshCw size={18} /></button><AccountSwitcher demo={demo} /></>}</div>
+    </AppHeader>
+    <div className="wd-room-navigation">
+      <a className="fn-context-link" href="/pilot">Shared rooms</a>
       <nav aria-label="Shared world">
         {state ? <>
           <button aria-current={location?.view === "story" ? "page" : undefined} onClick={() => demo.navigate("story")}>The room</button>
@@ -30,8 +34,7 @@ export function WorldDemo() {
         </> : <><a href="#world-main" aria-current="page">After Hours</a><a href="#example-source">The idea</a></>}
         <a href="/creator-demo">Creator review</a>
       </nav>
-      <div className="wd-account">{state && <><button className="wd-icon-button" onClick={() => void demo.refresh()} aria-label="Refresh shared work" disabled={busy}><RefreshCw size={18} /></button><AccountSwitcher demo={demo} /></>}</div>
-    </header>
+    </div>
     <aside className="wd-disclosure" aria-label="Concept disclosure">
       <strong>Unofficial shared world · fictional participation</strong>
       <span>No affiliation with Mike Pondsmith, CD PROJEKT RED or R. Talsorian Games.</span>

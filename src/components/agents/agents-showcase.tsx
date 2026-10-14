@@ -1,5 +1,7 @@
 "use client";
 
+import { AgentRoomHeader } from "./agent-room-header";
+
 import { ArrowRight, Bird, ChevronDown } from "lucide-react";
 import { WREN } from "@/lib/agents/wren";
 import { useWrenRoom, type WrenRoomState } from "./use-wren-room";
@@ -77,20 +79,9 @@ export function AgentsShowcase() {
       <a className="ag-skip" href="#wren">
         Skip to Wren
       </a>
-      <header className="ag-header">
-        <a className="ag-brand" href="/">
-          Fork <span>Night</span>
-        </a>
-        <nav aria-label="Agents page">
-          <a href="#wren">Wren</a>
-          <a href="#turn">A turn</a>
-          <a href="#allowance">Allowance</a>
-          <a href="#concept">Concept</a>
-        </nav>
-        <a className="ag-button ag-button-yellow ag-header-cta" href={ROOM_HREF}>
-          Open the room
-        </a>
-      </header>
+      <AgentRoomHeader current="agents">
+        <a className="ag-button ag-button-yellow" href={ROOM_HREF}>Open the room</a>
+      </AgentRoomHeader>
 
       <main>
         <section className="ag-hero" aria-labelledby="agents-title">

@@ -101,54 +101,6 @@
   outline: none;
   min-height: 70svh;
 }
-.social-header {
-  display: flex;
-  align-items: center;
-  gap: 42px;
-  padding: 13px 34px;
-  min-height: 81px;
-  border-bottom: 1px solid var(--night-line);
-  background: #10152f;
-}
-.social-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-family: var(--hand);
-  font-weight: 700;
-  font-size: 38px;
-  line-height: 1;
-  text-decoration: none;
-  transform: rotate(-3deg);
-  white-space: nowrap;
-  letter-spacing: -0.025em;
-}
-.social-brand > span {
-  color: var(--social-yellow);
-  display: flex;
-  transform: rotate(6deg);
-}
-.social-header nav {
-  align-self: stretch;
-  display: flex;
-  gap: 31px;
-  align-items: center;
-}
-.social-header nav a {
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--night-muted);
-  text-decoration: none;
-  padding: 14px 0 11px;
-  border-bottom: 4px solid transparent;
-}
-.social-header nav a[aria-current] {
-  color: #fff;
-  border-bottom-color: #9778ff;
-}
-.social-header nav a:hover {
-  color: #fff;
-}
 .social-user {
   display: flex;
   align-items: center;
@@ -183,7 +135,12 @@
   color: var(--night-muted);
   padding: 5px 34px;
   background: #141a36;
+  flex-wrap: wrap;
 }
+.social-demo-strip > span { margin-right: auto; }
+.social-demo-strip .social-live-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #ffdb67; font-weight: 600; text-decoration: none; }
+.social-demo-strip .social-live-link:hover { text-decoration: underline; }
+.social-paper .social-demo-strip .social-live-link { color: #5937b9; }
 .social-demo-strip button {
   display: inline-flex;
   gap: 6px;
@@ -1038,11 +995,6 @@
 .social-app:has(.hall-layout) .social-button {
   padding: 11px 16px;
 }
-.social-app:has(.hall-layout) .social-header nav a {
-  font-family: var(--font-interface), sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-}
 .social-app:has(.hall-layout) .social-user select {
   font-size: 14px;
   font-weight: 600;
@@ -1766,20 +1718,6 @@
   --night-line: #ddd7e4;
   --night-muted: #675d7c;
 }
-.social-paper .social-header {
-  background: #fffcf5;
-  border-color: #dfd9e5;
-}
-.social-paper .social-brand > span {
-  color: #9d6b0b;
-}
-.social-paper .social-header nav a {
-  color: #625577;
-}
-.social-paper .social-header nav a[aria-current] {
-  color: #442bbb;
-  border-color: #7356df;
-}
 .social-paper .social-user select option {
   color: #211a32;
   background: white;
@@ -2355,20 +2293,6 @@
 }
 
 /* Entry back into the original story engine. */
-.workspace-social-nav {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-.workspace-social-nav button {
-  border: 0;
-  background: transparent;
-  color: var(--violet);
-  font: inherit;
-  font-size: 14px;
-  padding: 8px;
-  font-weight: 600;
-}
 .draft-switch-notice {
   position: relative;
   z-index: 65;
@@ -2406,12 +2330,6 @@
   height: auto;
   padding-block: 12px;
 }
-
-@media (min-width: 1600px) {
-  .social-header {
-    padding-inline: max(34px, calc((100vw - 1532px) / 2));
-  }
-}
 @media (min-width: 1500px) {
   .room-grid,
   .idea-grid {
@@ -2440,10 +2358,6 @@
 }
 @media (max-width: 1250px) {
   .social-main {
-    padding-inline: 24px;
-  }
-  .social-header {
-    gap: 25px;
     padding-inline: 24px;
   }
   .room-grid {
@@ -2487,15 +2401,6 @@
   }
 }
 @media (max-width: 1000px) {
-  .social-header {
-    gap: 22px;
-  }
-  .social-header nav {
-    gap: 22px;
-  }
-  .social-brand {
-    font-size: 31px;
-  }
   .lobby-layout {
     grid-template-columns: minmax(0, 1.6fr) minmax(270px, 1fr);
     gap: 20px;
@@ -2600,23 +2505,6 @@
   }
 }
 @media (max-width: 760px) {
-  .social-header {
-    gap: 13px;
-    padding: 15px 18px 0;
-    flex-wrap: wrap;
-  }
-  .social-brand {
-    font-size: 32px;
-  }
-  .social-header nav {
-    order: 3;
-    width: 100%;
-    gap: 29px;
-  }
-  .social-header nav a {
-    padding: 13px 0 10px;
-
-  }
   .social-user {
     gap: 6px;
   }
@@ -2852,12 +2740,6 @@
   .desk-drafts article > .story-art {
     aspect-ratio: 1.8;
   }
-  .workspace-social-nav {
-    order: 5;
-    width: 100%;
-    border-top: 1px solid var(--line);
-    padding-top: 5px;
-  }
   .app-shell .app-header {
     height: auto;
   }
@@ -2947,12 +2829,6 @@
   }
 }
 @media (max-width: 380px) {
-  .social-header nav {
-    gap: 21px;
-  }
-  .social-brand {
-    font-size: 28px;
-  }
   .social-user .social-avatar {
     width: 29px;
     height: 29px;

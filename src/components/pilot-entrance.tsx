@@ -1,5 +1,7 @@
 "use client";
 
+import { AppHeader } from "./app-header";
+
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Plus, Users } from "lucide-react";
 import { pilotBrowserClient } from "../lib/supabase/pilot-client";
@@ -121,8 +123,11 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
   }
   const available = !!policy?.enabled && policy.remainingRooms > 0 && !policy.ownRoomId;
   const cards = (items: Room[]) => <div className="pilot-room-cards">{items.map(room => <a className="pilot-room-card" key={room.id} href={`/pilot?room=${encodeURIComponent(room.id)}`}><Users size={22} aria-hidden="true" /><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={17} aria-hidden="true" /></span></a>)}</div>;
-  return <main className="pilot-shell pilot-entrance">
-    <header className="pilot-header"><a className="pilot-brand" href="/pilot">fork night<span>.</span></a><div className="pilot-header-actions"><PilotIdentity profile={profile} disabled={busy || !!pending || !!account?.loading} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" /></div></header>
+  return <div className="pilot-page">
+    <a className="skip-link" href="#shared-stories">Skip to shared stories</a>
+    <AppHeader current="rooms" />
+    <main className="pilot-shell pilot-entrance" id="shared-stories" tabIndex={-1}>
+    <div className="pilot-entrance-account"><span>Shared rooms · public stories, private previews</span><div className="pilot-header-actions"><PilotIdentity profile={profile} disabled={busy || !!pending || !!account?.loading} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" /></div></div>
     {creating ? <>
       <a className="text-button" href="/pilot"><ArrowLeft size={16} aria-hidden="true" />Shared stories</a>
       <div className="pilot-intro"><h1>A beginning for your story.</h1><p>Choose a prepared opening, then invite two or three storytellers to see where it goes.</p></div>
@@ -142,5 +147,5 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     {(error || account?.error) && <div className="pilot-notice" role="alert"><p>{error || account?.error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
     {!!joined.length && <section aria-label="Your joined rooms"><h2>Your joined stories</h2>{cards(joined)}</section>}
     <section aria-label="Open shared stories"><h2>Stories to pick up</h2>{cards(rooms)}</section>
-  </main>;
+  </main></div>;
 }

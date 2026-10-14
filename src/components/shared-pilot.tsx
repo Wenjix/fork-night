@@ -17,6 +17,7 @@ import type { Database, Tables } from "@/lib/supabase/database.types";
 import { joinPilotAsGuest } from "@/lib/supabase/guest";
 import { pilotBrowserClient } from "@/lib/supabase/pilot-client";
 import { usePilotAccount } from "./pilot-account";
+import { AppHeader } from "./app-header";
 import { isSavedAccount } from "../lib/supabase/onboarding";
 import {
   isUuid,
@@ -747,14 +748,15 @@ export function SharedPilot() {
       />
     ) : null;
 
-  if (unavailable) return <main className="pilot-shell"><a className="pilot-brand" href="/pilot">fork night<span>.</span></a><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main>;
+  if (unavailable) return <><AppHeader current="rooms" /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
 
   return (
-    <main className="pilot-shell">
-      <header className="pilot-header">
-        <a className="pilot-brand" href="/pilot">
-          fork night<span>.</span>
-        </a>
+    <>
+      <a className="skip-link" href="#shared-story">Skip to story</a>
+      <AppHeader current="rooms" />
+      <main className="pilot-shell" id="shared-story" tabIndex={-1}>
+      <div className="pilot-room-toolbar">
+        <a className="fn-context-link" href="/pilot"><ArrowLeft size={17} aria-hidden="true" />All shared rooms</a>
         <label className="pilot-room-choice">
           <span>Story room</span>
           <select
@@ -795,7 +797,7 @@ export function SharedPilot() {
             {view === "map" ? "Back to story" : "Map"}
           </button>
         </div>
-      </header>
+      </div>
       <div className="pilot-intro">
         <h1>{room?.title ?? "Opening the shared story…"}</h1>
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
@@ -1124,9 +1126,10 @@ export function SharedPilot() {
       )}
       <footer className="pilot-footer">
         <span>{room?.description}</span>
-        <a href="/">Explore the local preview</a>
+        <a href="/pilot">Back to shared rooms</a>
       </footer>
     </main>
+    </>
   );
 }
 

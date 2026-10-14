@@ -6,6 +6,15 @@
   font-size: 15px;
   line-height: 1.55;
 }
+.pilot-room-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 16px 32px; border-bottom: 1px solid var(--line); }
+.pilot-room-toolbar .pilot-header-actions { margin-left: auto; flex-wrap: wrap; }
+.pilot-room-toolbar > .fn-context-link { white-space: nowrap; }
+.pilot-room-toolbar .pilot-room-choice { flex: 1 1 200px; }
+@media (max-width: 760px) {
+  .pilot-room-toolbar { padding: 12px 16px; gap: 8px 16px; }
+  .pilot-room-toolbar .pilot-header-actions { width: 100%; justify-content: space-between; }
+  .pilot-room-toolbar .pilot-room-choice { order: 0; }
+}
 .pilot-shell :is(h1, h2, h3, h4),
 .pilot-dialog :is(h2, h3) {
   font-family: var(--font-display), sans-serif;
@@ -38,25 +47,6 @@
 .pilot-dialog button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
-}
-.pilot-header {
-  min-height: 76px;
-  padding: 14px 32px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-.pilot-brand {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.pilot-brand span {
-  color: var(--violet);
 }
 .pilot-room-choice {
   display: flex;
@@ -1159,10 +1149,6 @@
   .pilot-leave-idea > span {
     grid-column: 2;
   }
-  .pilot-header {
-    padding-inline: 20px;
-    gap: 20px;
-  }
   .pilot-room-choice > span {
     display: none;
   }
@@ -1172,16 +1158,6 @@
     margin-inline: 20px;
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
-  }
-  .pilot-header {
-    position: relative;
-    padding: 13px 20px 12px;
-    flex-wrap: wrap;
-    gap: 6px 16px;
-    min-height: 100px;
-  }
-  .pilot-brand {
-    font-size: 25px;
   }
   .pilot-header-actions {
     margin-left: auto;

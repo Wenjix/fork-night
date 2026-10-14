@@ -1,5 +1,7 @@
 "use client";
 
+import { AppHeader } from "./app-header";
+
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ArrowDownToLine,
@@ -753,31 +755,16 @@ export function ForkNight() {
           >
             Skip to your story
           </a>
-          <header className="app-header">
-            <button
-              className="brand"
-              onClick={() => navigate({ kind: "lobby" })}
-              aria-label="Fork Night, return to the public lobby"
-            >
-              <GitBranch size={29} strokeWidth={2.7} />
-              <span>
-                fork night<span className="brand-dot">.</span>
-              </span>
-            </button>
-            <nav className="workspace-social-nav" aria-label="Spaces">
-              <button
-                className="nav-button"
-                onClick={() => navigate({ kind: "lobby" })}
-              >
-                Lobby
-              </button>
-              <button
-                className="nav-button"
-                onClick={() => navigate({ kind: "spaces" })}
-              >
-                My spaces
-              </button>
-            </nav>
+          <AppHeader current="spaces" onLocalNavigate={navigate}>
+            <label className="user-switch workspace-user-switch">
+              <span className="avatar" style={{ backgroundColor: user.color }}>{user.initials}</span>
+              <select aria-label="Preview as collaborator" value={userId} onChange={event => switchUser(event.target.value)}>
+                {state.users.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+              <ChevronDown size={13} aria-hidden="true" />
+            </label>
+          </AppHeader>
+          <div className="story-room-toolbar" role="group" aria-label="Story workspace tools">
             <div className="project-navigation">
               <button
                 className={`nav-button ${menu ? "active" : ""}`}
@@ -828,24 +815,7 @@ export function ForkNight() {
                 <Plus size={14} />
               </button>
             )}
-            <label className="user-switch">
-              <span className="avatar" style={{ backgroundColor: user.color }}>
-                {user.initials}
-              </span>
-              <select
-                aria-label="Preview as collaborator"
-                value={userId}
-                onChange={(event) => switchUser(event.target.value)}
-              >
-                {state.users.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={13} />
-            </label>
-          </header>
+          </div>
 
           <div className="demo-strip" role="region" aria-label="Local preview">
             <span>

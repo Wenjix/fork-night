@@ -1,29 +1,32 @@
 import type { ReactNode } from "react";
+import { AppHeader } from "../app-header";
 
-/** The lobby's wordmark and room navigation, shared by both agent experiences. */
+const SPACES = [
+  { id: "agents", href: "/agents", label: "Meet the agents" },
+  { id: "night-watch", href: "/night-watch", label: "Night Watch" },
+  { id: "creator", href: "/creator-demo", label: "Creator review" },
+  { id: "privy", href: "/night-watch-privy", label: "Privy demo" },
+  { id: "tempo", href: "/tempo", label: "Tempo demo" },
+] as const;
+
+/** Agent destinations stay together beneath the product navigation, folded away until a visitor opens them. */
 export function AgentRoomHeader({
   current,
   children,
 }: {
-  current: "agents" | "night-watch" | "privy" | "tempo";
+  current: (typeof SPACES)[number]["id"];
   children?: ReactNode;
 }) {
+  const here = SPACES.find(space => space.id === current);
   return (
-    <header className="agent-room-header">
-      <a className="agent-room-brand" href="/" aria-label="Fork Night, return to the lobby">
-        Fork Night
-        <svg aria-hidden="true" width="28" height="32" viewBox="0 0 28 32" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-          <path d="M14 28V15M14 15 4 5M14 15 24 5M14 15V3" />
-        </svg>
-      </a>
-      <nav className="agent-room-nav" aria-label="Fork Night">
-        <a href="/pilot">Rooms</a>
-        <a href="/agents" aria-current={current === "agents" ? "page" : undefined}>Agents</a>
-        <a href="/night-watch" aria-current={current === "night-watch" ? "page" : undefined}>Night Watch</a>
-        {current === "privy" && <a href="/night-watch-privy" aria-current="page">Privy demo</a>}
-        {current === "tempo" && <a href="/tempo" aria-current="page">Tempo demo</a>}
-      </nav>
-      {children && <div className="agent-room-header-actions">{children}</div>}
-    </header>
+    <>
+      <AppHeader current="agents">{children}</AppHeader>
+      <details className="fn-agent-spaces">
+        <summary>More agent pages{here && <span className="fn-agent-spaces-current"> · {here.label}</span>}</summary>
+        <nav className="fn-section-nav" aria-label="Agent spaces">
+          {SPACES.map(space => <a key={space.id} href={space.href} aria-current={space.id === current ? "page" : undefined}>{space.label}</a>)}
+        </nav>
+      </details>
+    </>
   );
 }

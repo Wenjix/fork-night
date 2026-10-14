@@ -50,3 +50,6 @@
   .pilot-room-sign > .button { flex: 1; }
   .pilot-publication-notice li { flex-wrap: wrap; }
 }
+
+.pilot-entrance-account { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.pilot-entrance-account > span { color: var(--muted); font-size: 13px; margin-right: auto; }

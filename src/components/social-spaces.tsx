@@ -68,6 +68,7 @@ import {
   type WorkspaceDraft,
 } from "@/social/navigation";
 import { StoryArt } from "./story-art";
+import { AppHeader } from "./app-header";
 import { fandomStory, showcaseProjects, storyStyleLabel } from "@/lib/fandom-stories";
 import { fandomImageInStyle, type ArtDirections } from "@/lib/fandom-art-direction";
 import { FandomArtDirection } from "./fandom-art-direction";
@@ -186,50 +187,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
       >
         Skip to content
       </a>
-      <header className="social-header">
-        <RouteLink
-          route={{ kind: "lobby" }}
-          navigate={navigate}
-          className="social-brand"
-        >
-          Fork Night
-          <span aria-hidden="true">
-            <svg
-              width="28"
-              height="32"
-              viewBox="0 0 28 32"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-            >
-              <path d="M14 28V15M14 15 4 5M14 15 24 5M14 15V3" />
-            </svg>
-          </span>
-        </RouteLink>
-        <nav aria-label="Main navigation">
-          <RouteLink
-            route={{ kind: "lobby" }}
-            navigate={navigate}
-            current={route.kind === "lobby" || route.kind === "guild"}
-          >
-            Lobby
-          </RouteLink>
-          <RouteLink
-            route={{ kind: "spaces" }}
-            navigate={navigate}
-            current={["spaces", "hall", "ideas"].includes(route.kind)}
-          >
-            My spaces
-          </RouteLink>
-          <RouteLink
-            route={{ kind: "desk" }}
-            navigate={navigate}
-            current={route.kind === "desk"}
-          >
-            Your desk
-          </RouteLink>
-        </nav>
+      <AppHeader current={route.kind === "desk" ? "desk" : ["spaces", "hall", "ideas"].includes(route.kind) ? "spaces" : "lobby"} onLocalNavigate={navigate}>
         <label className="social-user">
           <Maker id={userId} name={user.name} />
           <span className="sr-only">Preview as collaborator</span>
@@ -246,7 +204,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
           </select>
           <ChevronDown size={15} />
         </label>
-      </header>
+      </AppHeader>
       <div className="social-demo-strip" role="region" aria-label="Local preview information">
         <span>
           Local preview · fictional people and credits · saved in this browser
