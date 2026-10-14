@@ -60,6 +60,9 @@ import { StoryArt } from "./story-art";
 import { StoryMap } from "./story-map";
 import { StoryFilm } from "./story-film";
 import { PreparedFilmInvite, PreparedStoryFilm } from "./prepared-story-film";
+import { BLADE_RUNNER_FILM } from "@/lib/prepared-story-film";
+import { BLADE_RUNNER_RESTYLE, restyledMoment } from "@/lib/prepared-restyle";
+import { PreparedRestyle } from "./prepared-restyle";
 import { makeFilmPlan } from "@/lib/story-film";
 import { artAssetUrl, isApprovedArtUrl } from "@/lib/art";
 import { renderFinishedHtml } from "@/lib/finished-export";
@@ -165,6 +168,7 @@ export function ForkNight() {
   const [showInfo, setShowInfo] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [artDirections, setArtDirections] = useState<ArtDirections>({});
+  const [restyleApplied, setRestyleApplied] = useState(false);
   const [resetPending, setResetPending] = useState(false);
   const taskHeading = useRef<HTMLHeadingElement>(null);
   const conflictHeading = useRef<HTMLHeadingElement>(null);
@@ -188,13 +192,21 @@ export function ForkNight() {
     ) ?? state.moments.find((item) => item.id === project.seedId)!;
   const path = accessible ? getPath(state, projectId, selected.id) : [];
   const visualStyle = fandomVisualStyle(projectId, artDirections[projectId]);
-  const presentedSelected = fandomMomentInStyle(projectId, selected, visualStyle?.id);
-  const presentedPath = path.map(moment => fandomMomentInStyle(projectId, moment, visualStyle?.id));
-  const presentedState = visualStyle ? {
+  // A prepared restyle changes only how this room's frames are shown, never the saved story.
+  const present = (moment: typeof selected) => {
+    const styled = fandomMomentInStyle(projectId, moment, visualStyle?.id);
+    return restyleApplied ? restyledMoment(styled) : styled;
+  };
+  const presentedSelected = present(selected);
+  const presentedPath = path.map(present);
+  const presentedState = visualStyle || restyleApplied ? {
     ...state,
-    moments: state.moments.map(moment => moment.projectId === projectId
-      ? fandomMomentInStyle(projectId, moment, visualStyle.id) : moment),
+    moments: state.moments.map(moment => moment.projectId === projectId ? present(moment) : moment),
   } : state;
+  const restyleScenes = BLADE_RUNNER_RESTYLE.frames.map(item => {
+    const moment = state.moments.find(candidate => candidate.id === item.momentId);
+    return { title: moment?.title ?? "", caption: moment?.panels[0].caption ?? "" };
+  });
   const account = accessible
     ? getFundingAccount(state, userId, projectId)
     : null;
@@ -816,7 +828,7 @@ export function ForkNight() {
             </div>
             <span className="header-spacer" />
             <span className="demo-badge">Local preview</span>
-            <a className="text-button" href="/pilot">Shared pilot</a>
+            <a className="button primary" href="/pilot">Make a story together</a>
             {account && (
               <button
                 className="balance-button"
@@ -1305,8 +1317,28 @@ export function ForkNight() {
                             : "No internal maker fees. Your group shares generation costs and keeps the credits."}
                         </p>
                       </div>
+                      {hasPreparedFilm && selected.id === BLADE_RUNNER_FILM.lastSceneId && (
+                        <button
+                          className="button primary full"
+                          onClick={() => {
+                            showStoryView("images-to-video");
+                            requestAnimationFrame(() => document.querySelector(".fn-film-demo")?.scrollIntoView({ block: "start" }));
+                          }}
+                        >
+                          <Film size={18} /> Turn these 4 scenes into a video{" "}
+                          <ArrowRight size={17} />
+                        </button>
+                      )}
+                      {(BLADE_RUNNER_RESTYLE.momentIds as readonly string[]).includes(selected.id) && (
+                        <PreparedRestyle
+                          scenes={restyleScenes}
+                          applied={restyleApplied}
+                          onApply={() => setRestyleApplied(true)}
+                          onRestore={() => setRestyleApplied(false)}
+                        />
+                      )}
                       <button
-                        className="button primary full"
+                        className={`button ${hasPreparedFilm && selected.id === BLADE_RUNNER_FILM.lastSceneId ? "secondary" : "primary"} full`}
                         onClick={() => openTask("compose")}
                       >
                         <GitBranch size={18} /> Make a version from here{" "}

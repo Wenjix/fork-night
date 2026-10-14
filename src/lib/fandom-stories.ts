@@ -9,6 +9,8 @@ type StoryBeat = {
   authorId: string;
   frames: readonly Frame[];
   captions: readonly string[];
+  /** Another packaged sheet for this beat; defaults to the story's artwork. */
+  artwork?: ArtAssetUrl;
 };
 export type FandomStory = {
   id: string;
@@ -117,6 +119,19 @@ export const FANDOM_STORIES: readonly FandomStory[] = [
       ] },
       { id: "no-owner", parent: "archive", title: "No one owns this morning", authorId: "priya", frames: [5], captions: [
         "Vale closes the file. Mara watches the rain without selling it, proving it, or asking permission to remember.",
+      ] },
+      // The four Hunyuan v3.5 references behind the prepared film, laid out as their own fork.
+      { id: "film-scene-1", parent: "opening", title: "Scene 1 · Memory shop", authorId: "jules", artwork: "/art/blade-runner-film.webp", frames: [0], captions: [
+        "In a Los Angeles memory shop, Mara finds the sound of rain she remembers from a childhood the records say never happened.",
+      ] },
+      { id: "film-scene-2", parent: "film-scene-1", title: "Scene 2 · The capsule", authorId: "jules", artwork: "/art/blade-runner-film.webp", frames: [1], captions: [
+        "A glass capsule holds the memory. Detective Vale calls it evidence. Mara calls it the only thing she has kept.",
+      ] },
+      { id: "film-scene-3", parent: "film-scene-2", title: "Scene 3 · Greenhouse", authorId: "priya", artwork: "/art/blade-runner-film.webp", frames: [2], captions: [
+        "Mara follows the recording to a greenhouse above the city. Vale comes with her, leaving his questions at the door.",
+      ] },
+      { id: "film-scene-4", parent: "film-scene-3", title: "Scene 4 · A seedling", authorId: "sam", artwork: "/art/blade-runner-film.webp", frames: [3], captions: [
+        "Beside an empty child's chair, a seedling survives. There is no proof the memory was hers—only something living because someone cared.",
       ] },
     ],
     continuation: { title: "The next morning is hers", caption: "Mara carries the memory into another morning. Vale lets her choose which part becomes the beginning of her own story." },

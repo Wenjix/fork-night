@@ -1,0 +1,24 @@
+.restyle-open { margin-top: 10px; }
+.restyle-panel { margin-top: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--violet-soft); }
+.restyle-panel h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 1.05rem; }
+.restyle-panel h3:focus { outline: none; }
+.restyle-panel p { margin: 0 0 12px; color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+.restyle-sources, .restyle-compare { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.restyle-sources { grid-template-columns: repeat(3, 1fr); }
+.restyle-sources li span:last-child, .restyle-label { display: block; margin-top: 4px; font-size: 0.75rem; color: var(--ink); line-height: 1.25; }
+.restyle-sources .story-art, .restyle-compare .story-art { display: block; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
+.restyle-compare li > div { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+.restyle-compare figure { margin: 0; }
+.restyle-compare figcaption { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.restyle-styles { border: 0; margin: 0 0 8px; padding: 0; display: flex; align-items: center; gap: 8px; }
+.restyle-styles legend { float: left; margin-right: 8px; font-size: 0.8rem; color: var(--muted); }
+.restyle-styles button { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--violet); background: var(--violet); color: #fff; font-weight: 600; }
+.restyle-model { font-size: 0.78rem !important; }
+.restyle-cancel { display: block; margin: 8px auto 0; }
+.restyle-working p { color: var(--ink); font-weight: 600; }
+.restyle-bar { height: 8px; border-radius: 999px; background: #fff; overflow: hidden; margin-bottom: 12px; }
+.restyle-bar span { display: block; height: 100%; background: var(--violet); transition: width 0.6s ease; }
+.restyle-note { margin: 12px 0 0 !important; font-size: 0.75rem !important; }
+.restyle-applied { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--violet-soft); color: var(--ink); font-size: 0.85rem; }
+.restyle-applied .text-button { margin-left: auto; }
+.restyle-applied > span { flex: 1 1 200px; }

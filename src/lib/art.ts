@@ -8,6 +8,8 @@ export const APPROVED_ART_ASSETS = [
   "/art/malfoy-anime.webp",
   "/art/malfoy-film.webp",
   "/art/blade-runner-cinema.webp",
+  "/art/blade-runner-film.webp",
+  "/art/blade-runner-anime.webp",
 ] as const;
 
 export type ArtAssetUrl = (typeof APPROVED_ART_ASSETS)[number];
