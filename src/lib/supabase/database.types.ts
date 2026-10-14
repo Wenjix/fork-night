@@ -1,3 +1,11 @@
+export type ExecutionClaim = { p_operation_id: string; p_claim_token: string; p_version: number; p_environment: string; p_run_id: string }
+export type JobDispatch = {
+  operation_id: string; dispatch_version: number; environment: string; state: string;
+  run_id: string | null; lease_token: string | null; lease_until: string | null;
+  enqueue_attempts: number; next_check_at: string; observed_status: string | null;
+  terminal_observed_at: string | null; error_code: string | null; created_at: string;
+}
+
 export type Json =
   | string
   | number
@@ -14,6 +22,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      pilot_execution_reviews: {
+        Row: { id: string; operation_id: string; action: string; observed_status: string; run_id: string | null; reason: string; evidence_ref: string; created_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      pilot_rehearsal_allowances: {
+        Row: { id: string; room_id: string; settings: Json; created_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      pilot_room_templates: {
+        Row: { id: string; version: number; title: string; description: string; seed_title: string; seed_byline: string; panels: Json; source_ref: string; enabled: boolean }
+        Insert: { id: string; version: number; title: string; description: string; seed_title: string; seed_byline: string; panels: Json; source_ref: string; enabled?: boolean }
+        Update: { enabled?: boolean }
+        Relationships: []
+      }
+      pilot_demo_limits: {
+        Row: { id: boolean; creation_enabled: boolean; campaign: string; room_limit: number; credit_limit: number; credits_per_room: number; rooms_per_creator: number; guest_attempt_limit: number }
+        Insert: { id?: boolean; creation_enabled?: boolean; campaign?: string; room_limit?: number; credit_limit?: number; credits_per_room?: number; rooms_per_creator?: number; guest_attempt_limit?: number }
+        Update: { creation_enabled?: boolean; campaign?: string; room_limit?: number; credit_limit?: number; credits_per_room?: number; guest_attempt_limit?: number }
+        Relationships: []
+      }
+      pilot_room_creations: {
+        Row: { maker_id: string; request_id: string; room_id: string; campaign: string; template_id: string; template_version: number; title: string; granted_credits: number; created_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      pilot_room_participants: {
+        Row: { room_id: string; maker_id: string; public_id: string; display_name: string; joined_at: string }
+        Insert: never
+        Update: never
+        Relationships: [{ foreignKeyName: "pilot_room_participants_room_id_fkey"; columns: ["room_id"]; isOneToOne: false; referencedRelation: "pilot_rooms"; referencedColumns: ["id"] }]
+      }
+      pilot_job_dispatches: {
+        Row: JobDispatch
+        Insert: Partial<JobDispatch> & { operation_id: string; dispatch_version: number; environment: string }
+        Update: Partial<JobDispatch>
+        Relationships: []
+      }
+      pilot_expense_reviews: {
+        Row: { sequence: number; id: string; operation_id: string; panel_number: number; actual_micro: number; reason: string; evidence_ref: string; created_at: string }
+        Insert: { id: string; operation_id: string; panel_number: number; actual_micro: number; reason: string; evidence_ref: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
       pilot_wallet_requests: {
         Row: { id: string; room_id: string; project_id: string; moment_id: string; maker_id: string; maker_label: string; moment_title: string; wallet_address: string; issued_at: number; signature: string; state: string; created_at: string; decided_at: string | null; decision_signature: string | null }
         Insert: { id: string; room_id: string; project_id: string; moment_id: string; maker_id: string; maker_label: string; moment_title: string; wallet_address: string; issued_at: number; signature: string; state?: string; created_at?: string; decided_at?: string | null; decision_signature?: string | null }
@@ -125,6 +181,8 @@ export type Database = {
       }
       pilot_generation_budget: {
         Row: {
+          execution_environment: string | null
+          last_reconcile_at: string | null
           cap_micro: number
           enabled: boolean
           id: boolean
@@ -133,6 +191,8 @@ export type Database = {
           max_requests: number
         }
         Insert: {
+          execution_environment?: string | null
+          last_reconcile_at?: string | null
           cap_micro?: number
           enabled?: boolean
           id?: boolean
@@ -141,6 +201,8 @@ export type Database = {
           max_requests?: number
         }
         Update: {
+          execution_environment?: string | null
+          last_reconcile_at?: string | null
           cap_micro?: number
           enabled?: boolean
           id?: boolean
@@ -207,6 +269,12 @@ export type Database = {
       }
       pilot_jobs: {
         Row: {
+          legacy_terminal_observed_at: string | null
+          execution_environment: string | null
+          run_id: string | null
+          lease_until: string | null
+          heartbeat_at: string | null
+          recovery_count: number
           claim_token: string | null
           dispatch_version: number
           held_micro: number
@@ -216,6 +284,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          legacy_terminal_observed_at?: string | null
+          execution_environment?: string | null
+          run_id?: string | null
+          lease_until?: string | null
+          heartbeat_at?: string | null
+          recovery_count?: number
           claim_token?: string | null
           dispatch_version?: number
           held_micro?: number
@@ -225,6 +299,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          legacy_terminal_observed_at?: string | null
+          execution_environment?: string | null
+          run_id?: string | null
+          lease_until?: string | null
+          heartbeat_at?: string | null
+          recovery_count?: number
           claim_token?: string | null
           dispatch_version?: number
           held_micro?: number
@@ -464,6 +544,8 @@ export type Database = {
       }
       pilot_panel_attempts: {
         Row: {
+          request_deadline: string | null
+          expense_basis: string
           created_at: string
           elapsed_ms: number | null
           error_code: string | null
@@ -478,6 +560,8 @@ export type Database = {
           state: string
         }
         Insert: {
+          request_deadline?: string | null
+          expense_basis?: string
           created_at?: string
           elapsed_ms?: number | null
           error_code?: string | null
@@ -492,6 +576,8 @@ export type Database = {
           state?: string
         }
         Update: {
+          request_deadline?: string | null
+          expense_basis?: string
           created_at?: string
           elapsed_ms?: number | null
           error_code?: string | null
@@ -561,6 +647,10 @@ export type Database = {
       }
       pilot_rooms: {
         Row: {
+          is_listed: boolean
+          template_id: string | null
+          template_version: number | null
+          revision: number
           description: string
           funding_policy: string
           id: string
@@ -569,6 +659,10 @@ export type Database = {
           title: string
         }
         Insert: {
+          is_listed?: boolean
+          template_id?: string | null
+          template_version?: number | null
+          revision?: number
           description: string
           funding_policy?: string
           id: string
@@ -577,6 +671,10 @@ export type Database = {
           title: string
         }
         Update: {
+          is_listed?: boolean
+          template_id?: string | null
+          template_version?: number | null
+          revision?: number
           description?: string
           funding_policy?: string
           id?: string
@@ -596,9 +694,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      pilot_panel_accounting: {
+        Row: Database["public"]["Tables"]["pilot_panel_attempts"]["Row"] & { accounted_micro: number; expense_known: boolean; reviewed: boolean }
+        Relationships: []
+      }
     }
     Functions: {
+      pilot_prepare_judge_room: { Args: { p_grant_id: string; p_room_id: string }; Returns: Json }
+      pilot_readiness: { Args: { p_room_id: string }; Returns: Json }
+      pilot_review_legacy_job: { Args: { p_review_id: string; p_operation_id: string; p_action: string; p_status: string; p_run_id: string | null; p_reason: string; p_evidence_ref: string }; Returns: undefined }
+      pilot_creation_status: { Args: Record<string, never>; Returns: Json }
+      pilot_create_room: { Args: { p_request_id: string; p_template_id: string; p_template_version: number; p_title: string }; Returns: Json }
+      pilot_join_room: { Args: { p_room_id: string }; Returns: Json }
+      pilot_room_snapshot: { Args: { p_room_id: string }; Returns: Json }
+      pilot_spending_paused: { Args: { p_allow_healthy?: boolean }; Returns: boolean }
+      pilot_lease_dispatch: { Args: { p_operation_id: string; p_version: number; p_environment: string; p_token: string }; Returns: Json }
+      pilot_ack_dispatch: { Args: { p_operation_id: string; p_version: number; p_token: string; p_run_id: string }; Returns: boolean }
+      pilot_claim_execution: { Args: ExecutionClaim; Returns: boolean }
+      pilot_heartbeat: { Args: ExecutionClaim; Returns: boolean }
+      pilot_defer_job: { Args: { p_operation_id: string; p_claim_token: string }; Returns: undefined }
+      pilot_reconcile_execution: { Args: { p_operation_id: string; p_version: number; p_run_id: string; p_status: string; p_recover: boolean }; Returns: string }
+      pilot_review_expense: { Args: { p_review_id: string; p_operation_id: string; p_panel_number: number; p_actual_micro: number; p_reason: string; p_evidence_ref: string }; Returns: undefined }
       pilot_submit_wallet_request: {
         Args: { p_id: string; p_room_id: string; p_project_id: string; p_moment_id: string; p_actor: string; p_wallet: string; p_issued_at: number; p_signature: string }
         Returns: Database["public"]["Tables"]["pilot_wallet_requests"]["Row"]
@@ -734,21 +850,7 @@ export type Database = {
       }
       pilot_request_generation: {
         Args: { p_operation_id: string }
-        Returns: {
-          claim_token: string | null
-          dispatch_version: number
-          held_micro: number
-          operation_id: string
-          panel_count: number
-          state: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "pilot_jobs"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+        Returns: { operation_id: string; state: string; panel_count: number; updated_at: string; dispatch_version: number }
       }
       pilot_room_credits: { Args: { p_room_id: string }; Returns: Json }
       pilot_save_continuation: {

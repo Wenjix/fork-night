@@ -1,10 +1,9 @@
-import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { mkdtemp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
-import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
+import { provePilotConcurrency } from "./pilot-db-concurrency.mjs";
 
 // A new isolated PostgreSQL cluster; never connects to or changes an existing database.
 // The Auth shim tests database policy, not JWT signature verification or Supabase Auth.
@@ -14,17 +13,13 @@ const root = await mkdtemp(join(tmpdir(), "fork-night-pg-"));
 const data = join(root, "data");
 const socket = join(root, "socket");
 await mkdir(socket);
-const listener = createServer();
-await new Promise((resolve, reject) => { listener.once("error", reject); listener.listen(0, "127.0.0.1", resolve); });
-const address = listener.address();
-assert(address && typeof address === "object");
-const port = address.port;
-await new Promise((resolve, reject) => listener.close((error) => error ? reject(error) : resolve()));
+// The unique socket directory isolates this cluster without opening a TCP port.
+const port = 5432;
 let started = false;
 const execute = (program, args) => exec(join(binaries, program), args, { maxBuffer: 2 * 1024 * 1024 });
 try {
   await execute("initdb", ["-D", data, "--username=fork_night_test", "--auth=trust", "--no-locale", "--encoding=UTF8"]);
-  await execute("pg_ctl", ["-D", data, "-l", join(root, "server.log"), "-w", "-t", "20", "-o", `-h 127.0.0.1 -p ${port} -k ${socket}`, "start"]);
+  await execute("pg_ctl", ["-D", data, "-l", join(root, "server.log"), "-w", "-t", "20", "-o", `-c listen_addresses='' -p ${port} -k ${socket}`, "start"]);
   started = true;
   const bootstrap = join(root, "bootstrap.sql");
   await writeFile(bootstrap, `
@@ -44,11 +39,12 @@ grant usage on schema storage to anon,authenticated,service_role;
 grant select on storage.objects to anon,authenticated;
 grant all on storage.objects,storage.buckets to service_role;
 `);
-  const args = ["-h", "127.0.0.1", "-p", String(port), "-U", "fork_night_test", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "--no-psqlrc"];
+  const args = ["-h", socket, "-p", String(port), "-U", "fork_night_test", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "--no-psqlrc"];
   const migrations=(await readdir("supabase/migrations")).filter(name=>name.endsWith(".sql")).sort().map(name=>resolve("supabase/migrations",name));
   const proofs=(await readdir("supabase/tests")).filter(name=>name.endsWith(".sql")).sort().map(name=>resolve("supabase/tests",name));
   for (const file of [bootstrap, ...migrations, resolve("supabase/seed.sql"), ...proofs])
     await execute("psql", [...args, "-f", file]);
+  await provePilotConcurrency(execute, args);
   console.log("Pilot database proof passed: guest isolation, immutable authorship, idempotent drafts/publication, valid same-room parents and public reads. Auth is a test shim; no Supabase service or provider call was used.");
 } catch (error) {
   console.error(error.stderr ?? error.message);

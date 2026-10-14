@@ -1,12 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-import { tasks } from "@trigger.dev/sdk";
 import type { Database } from "@/lib/supabase/database.types";
-import type { generateContinuation } from "@/trigger/generate";
 import { isUuid } from "@/lib/pilot";
+import { dispatchGeneration } from "@/generation/dispatch";
 
 export const runtime = "nodejs";
 const reply = (body: unknown, status = 200) =>
-  Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  Response.json(body, { status, headers: { "Cache-Control": "no-store", Vary: "Authorization" } });
 
 export async function POST(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -16,7 +15,7 @@ export async function POST(request: Request) {
     return reply({ error: "Request is too large." }, 413);
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL,
     key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key || !process.env.TRIGGER_SECRET_KEY)
+  if (!url || !key || !process.env.PILOT_EXECUTION_ENV)
     return reply(
       { error: "Generation is being set up. Your draft is saved." },
       503,
@@ -45,9 +44,12 @@ export async function POST(request: Request) {
   const accepted = await client.rpc("pilot_request_generation", {
     p_operation_id: operationId,
   });
-  if (accepted.error)
+  if (accepted.error) {
+    let activeWork: unknown;
+    try { activeWork = JSON.parse(accepted.error.details); } catch { /* Ordinary admission errors have no active-work projection. */ }
     return reply(
       {
+        activeWork,
         error:
           accepted.error.code === "P0001"
             ? accepted.error.message
@@ -55,16 +57,11 @@ export async function POST(request: Request) {
       },
       409,
     );
+  }
   if (accepted.data.state !== "queued")
     return reply({ operationId, state: accepted.data.state });
   try {
-    await tasks.trigger<typeof generateContinuation>(
-      "fork-night-generate",
-      { operationId },
-      {
-        idempotencyKey: `pilot-${operationId}-${accepted.data.dispatch_version}`,
-      },
-    );
+    await dispatchGeneration(operationId, accepted.data.dispatch_version);
     return reply({ operationId, state: "queued" }, 202);
   } catch {
     return reply(
@@ -72,9 +69,9 @@ export async function POST(request: Request) {
         operationId,
         state: "queued",
         error:
-          "Your continuation is saved. The worker could not be reached; use Check saved result to reconnect.",
+          "Your continuation is saved and waiting to start. You can leave this page while it is checked.",
       },
-      503,
+      202,
     );
   }
 }

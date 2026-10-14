@@ -2,7 +2,7 @@ reset role;
 begin;
 update public.pilot_rooms set is_open=true where id='midnight-signal';
 insert into auth.users values('21000000-0000-4000-8000-000000000001'),('21000000-0000-4000-8000-000000000002');
-update public.pilot_generation_budget set enabled=true,cap_micro=2038871,imported_expense_micro=38871,imported_requests=2;
+update public.pilot_generation_budget set execution_environment='DEVELOPMENT',enabled=true,cap_micro=2038871,imported_expense_micro=38871,imported_requests=2;
 set role authenticated;
 set request.jwt.claim.sub='21000000-0000-4000-8000-000000000001';
 select public.pilot_set_display_name('Generation Alice');
@@ -12,7 +12,7 @@ select public.pilot_request_generation(current_setting('test.gen_op')::uuid);
 do $$ begin
   if (select count(*) from public.pilot_jobs)<>1 then raise exception 'Duplicate generation hold'; end if;
   begin
-    perform public.pilot_claim_job(current_setting('test.gen_op')::uuid,'41000000-0000-4000-8000-000000000001');
+    perform public.pilot_claim_execution(current_setting('test.gen_op')::uuid,'41000000-0000-4000-8000-000000000001',1,'DEVELOPMENT','run-initial');
     raise exception 'Guest claimed worker job';
   exception when insufficient_privilege then null; end;
   begin
@@ -37,8 +37,8 @@ end $$;
 reset role;
 set role service_role;
 do $$ begin
-  if not public.pilot_claim_job(current_setting('test.gen_op')::uuid,'41000000-0000-4000-8000-000000000001') then raise exception 'Could not claim job'; end if;
-  if public.pilot_claim_job(current_setting('test.gen_op')::uuid,'41000000-0000-4000-8000-000000000002') then raise exception 'Duplicate worker claimed'; end if;
+  if not public.pilot_claim_execution(current_setting('test.gen_op')::uuid,'41000000-0000-4000-8000-000000000001',1,'DEVELOPMENT','run-initial') then raise exception 'Could not claim job'; end if;
+  if public.pilot_claim_execution(current_setting('test.gen_op')::uuid,'41000000-0000-4000-8000-000000000002',1,'DEVELOPMENT','run-initial') then raise exception 'Duplicate worker claimed'; end if;
   if not public.pilot_begin_panel(current_setting('test.gen_op')::uuid,1,repeat('a',64),'41000000-0000-4000-8000-000000000001') then raise exception 'Could not begin panel'; end if;
   if public.pilot_begin_panel(current_setting('test.gen_op')::uuid,1,repeat('a',64),'41000000-0000-4000-8000-000000000001') then raise exception 'Duplicate paid dispatch'; end if;
 end $$;
@@ -81,7 +81,7 @@ set role authenticated;
 set request.jwt.claim.sub='21000000-0000-4000-8000-000000000002';
 select public.pilot_request_generation(current_setting('test.gen_other')::uuid);
 set role service_role;
-select public.pilot_claim_job(current_setting('test.gen_other')::uuid,'41000000-0000-4000-8000-000000000002');
+select public.pilot_claim_execution(current_setting('test.gen_other')::uuid,'41000000-0000-4000-8000-000000000002',1,'DEVELOPMENT','run-initial');
 select public.pilot_begin_panel(current_setting('test.gen_other')::uuid,1,repeat('a',64),'41000000-0000-4000-8000-000000000002');
 select public.pilot_finish_job(current_setting('test.gen_other')::uuid,'41000000-0000-4000-8000-000000000002','Connection lost');
 do $$ begin
@@ -91,7 +91,9 @@ end $$;
 set role authenticated;
 select public.pilot_request_generation(current_setting('test.gen_other')::uuid);
 set role service_role;
-select public.pilot_claim_job(current_setting('test.gen_other')::uuid,'41000000-0000-4000-8000-000000000003');
+-- Browser checks retain the current fence. Only terminal evidence permits recovery.
+select public.pilot_reconcile_execution(current_setting('test.gen_other')::uuid,1,'run-initial','FAILED',true);
+select public.pilot_claim_execution(current_setting('test.gen_other')::uuid,'41000000-0000-4000-8000-000000000003',2,'DEVELOPMENT','run-recovery');
 do $$ begin
   if public.pilot_begin_panel(current_setting('test.gen_other')::uuid,1,repeat('a',64),'41000000-0000-4000-8000-000000000003') then raise exception 'Recovery bought the panel again'; end if;
 end $$;

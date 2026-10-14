@@ -1,10 +1,10 @@
 reset role;
 begin;
 update public.pilot_rooms set is_open=true where id in ('midnight-signal','paper-moon');
-insert into auth.users values('93000000-0000-4000-8000-000000000001');
+insert into auth.users values('93000000-0000-4000-8000-000000000001'),('93000000-0000-4000-8000-000000000002');
 insert into public.pilot_profiles(id,display_name) values('93000000-0000-4000-8000-000000000001','Local tester');
 update public.pilot_room_capacity set delivery_limit=0,guest_attempt_limit=0 where room_id='midnight-signal';
-update public.pilot_generation_budget set enabled=true,cap_micro=10000000,imported_expense_micro=200000,imported_requests=10,max_requests=10 where id;
+update public.pilot_generation_budget set execution_environment='DEVELOPMENT',enabled=true,cap_micro=10000000,imported_expense_micro=200000,imported_requests=10,max_requests=10 where id;
 set local role authenticated;
 set local request.jwt.claim.sub='93000000-0000-4000-8000-000000000001';
 do $$ begin
@@ -34,6 +34,8 @@ do $$ declare result jsonb; begin
 end $$;
 update public.pilot_generation_budget set cap_micro=1200000 where id;
 set local role authenticated;
+set local request.jwt.claim.sub='93000000-0000-4000-8000-000000000002';
+select public.pilot_set_display_name('Other tester');
 select set_config('test.over_cap',(public.pilot_save_continuation(gen_random_uuid(),'midnight-signal','10000000-0000-4000-8000-000000000001','Another','Another','["Another"]')).id::text,true);
 do $$ begin
   begin perform public.pilot_request_generation(current_setting('test.over_cap')::uuid); raise exception 'Refill bypassed dollar limit'; exception when raise_exception then if sqlerrm<>'The generation allowance has been used for this rehearsal' then raise; end if; end;

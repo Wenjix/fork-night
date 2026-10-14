@@ -1,13 +1,16 @@
 reset role;
 begin;
 update public.pilot_rooms set is_open=true where id='midnight-signal';
-update public.pilot_generation_budget set enabled=true,cap_micro=10000000,imported_expense_micro=0,imported_requests=0,max_requests=3;
+update public.pilot_generation_budget set execution_environment='DEVELOPMENT',enabled=true,cap_micro=10000000,imported_expense_micro=0,imported_requests=0,max_requests=3;
 update public.pilot_room_capacity set delivery_limit=2,guest_attempt_limit=10 where room_id='midnight-signal';
 insert into auth.users values('22000000-0000-4000-8000-000000000001'),('22000000-0000-4000-8000-000000000002');
 set role authenticated;
 set request.jwt.claim.sub='22000000-0000-4000-8000-000000000001';
 select public.pilot_set_display_name('Flexible Alice');
+set request.jwt.claim.sub='22000000-0000-4000-8000-000000000002';
+select public.pilot_set_display_name('Flexible Bob');
 select set_config('test.flex_one',(public.pilot_save_continuation(gen_random_uuid(),'midnight-signal','10000000-0000-4000-8000-000000000001','One scene','One scene','["The lighthouse waits."]')).id::text,true);
+set request.jwt.claim.sub='22000000-0000-4000-8000-000000000001';
 select set_config('test.flex_three',(public.pilot_save_continuation(gen_random_uuid(),'midnight-signal','10000000-0000-4000-8000-000000000001','A small journey','A small journey','["It waits.","A boat arrives.","They leave together."]')).id::text,true);
 do $$ begin
   begin
@@ -20,8 +23,8 @@ select public.pilot_request_generation(current_setting('test.flex_three')::uuid)
 do $$ begin
   if (public.pilot_room_credits('midnight-signal')->>'reserved')::int<>2 then raise exception 'Three panels did not reserve two credits'; end if;
   if (select panel_count from public.pilot_jobs where operation_id=current_setting('test.flex_three')::uuid)<>3 then raise exception 'Wrong planned image count'; end if;
-  if (select held_micro from public.pilot_jobs where operation_id=current_setting('test.flex_three')::uuid)<>3000000 then raise exception 'Wrong expense hold'; end if;
   begin
+    perform set_config('request.jwt.claim.sub','22000000-0000-4000-8000-000000000002',true);
     perform public.pilot_request_generation(current_setting('test.flex_one')::uuid);
     raise exception 'Admitted more than three images';
   exception when raise_exception then if sqlerrm<>'The generation allowance has been used for this rehearsal' then raise; end if; end;
@@ -31,12 +34,14 @@ update public.pilot_generation_budget set max_requests=10;
 set role authenticated;
 do $$ begin
   begin
+    perform set_config('request.jwt.claim.sub','22000000-0000-4000-8000-000000000002',true);
     perform public.pilot_request_generation(current_setting('test.flex_one')::uuid);
     raise exception 'Overspent weighted room credits';
   exception when raise_exception then if sqlerrm<>'This room needs more generation credits' then raise; end if; end;
 end $$;
 set role service_role;
-select public.pilot_claim_job(current_setting('test.flex_three')::uuid,'42000000-0000-4000-8000-000000000001');
+do $$ begin if (select held_micro from public.pilot_jobs where operation_id=current_setting('test.flex_three')::uuid)<>3000000 then raise exception 'Wrong expense hold'; end if; end $$;
+select public.pilot_claim_execution(current_setting('test.flex_three')::uuid,'42000000-0000-4000-8000-000000000001',1,'DEVELOPMENT','run-initial');
 do $$ begin
   begin
     perform public.pilot_begin_panel(current_setting('test.flex_three')::uuid,3,repeat('a',64),'42000000-0000-4000-8000-000000000001');
@@ -64,7 +69,8 @@ do $$ begin
 end $$;
 select public.pilot_request_generation(current_setting('test.flex_three')::uuid);
 set role service_role;
-select public.pilot_claim_job(current_setting('test.flex_three')::uuid,'42000000-0000-4000-8000-000000000002');
+select public.pilot_reconcile_execution(current_setting('test.flex_three')::uuid,1,'run-initial','FAILED',true);
+select public.pilot_claim_execution(current_setting('test.flex_three')::uuid,'42000000-0000-4000-8000-000000000002',2,'DEVELOPMENT','run-recovery');
 do $$ begin
   if public.pilot_begin_panel(current_setting('test.flex_three')::uuid,3,repeat('a',64),'42000000-0000-4000-8000-000000000002') then raise exception 'Recovery bought third panel again'; end if;
 end $$;
@@ -96,9 +102,10 @@ end $$;
 reset role;
 update public.pilot_room_capacity set delivery_limit=3 where room_id='midnight-signal';
 set role authenticated;
+set request.jwt.claim.sub='22000000-0000-4000-8000-000000000002';
 select public.pilot_request_generation(current_setting('test.flex_one')::uuid);
 set role service_role;
-select public.pilot_claim_job(current_setting('test.flex_one')::uuid,'42000000-0000-4000-8000-000000000003');
+select public.pilot_claim_execution(current_setting('test.flex_one')::uuid,'42000000-0000-4000-8000-000000000003',1,'DEVELOPMENT','run-initial');
 do $$ begin
   begin
     perform public.pilot_begin_panel(current_setting('test.flex_one')::uuid,2,repeat('a',64),'42000000-0000-4000-8000-000000000003');
@@ -122,7 +129,7 @@ set role authenticated;
 select set_config('test.flex_fail',(public.pilot_save_continuation(gen_random_uuid(),'midnight-signal','10000000-0000-4000-8000-000000000001','Failure','Failure','["A","B","C"]')).id::text,true);
 select public.pilot_request_generation(current_setting('test.flex_fail')::uuid);
 set role service_role;
-select public.pilot_claim_job(current_setting('test.flex_fail')::uuid,'42000000-0000-4000-8000-000000000004');
+select public.pilot_claim_execution(current_setting('test.flex_fail')::uuid,'42000000-0000-4000-8000-000000000004',1,'DEVELOPMENT','run-initial');
 do $$ declare n integer; begin
   for n in 1..3 loop
     perform public.pilot_begin_panel(current_setting('test.flex_fail')::uuid,n,repeat('a',64),'42000000-0000-4000-8000-000000000004');

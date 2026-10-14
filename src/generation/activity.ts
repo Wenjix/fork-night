@@ -1,6 +1,7 @@
 import { pilotAdmin } from "./client.ts";
 
-const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
+const reply = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
+  Response.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
 
 export async function handleRoomActivity(request: Request) {
   const roomId = new URL(request.url).searchParams.get("room");
@@ -21,6 +22,8 @@ export async function handleRoomActivity(request: Request) {
     ]);
     if ([queued, generating, checking].some(result => result.error || result.count === null)) return reply({ error: "Room activity could not be checked." }, 503);
     // Only totals leave the server. Private rows, bylines and claim tokens do not.
-    return reply({ queued_requests: queued.count, generating_requests: generating.count, checking_requests: checking.count });
+    // Every viewer sees the same totals, so Vercel's CDN may share them briefly; browsers still never store them.
+    return reply({ queued_requests: queued.count, generating_requests: generating.count, checking_requests: checking.count }, 200,
+      { "Vercel-CDN-Cache-Control": "max-age=5" });
   } catch { return reply({ error: "Room activity could not be checked." }, 503); }
 }

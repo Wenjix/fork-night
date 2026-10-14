@@ -222,8 +222,8 @@ export async function handleAssist(request: Request, kind: "voice" | "shape") {
       const stored = await admin
         .from("pilot_assist_requests")
         .update({ state: "complete", usage: { token_expires_in: 60 } })
-        .eq("id", claim.request.id);
-      if (stored.error)
+        .eq("id", claim.request.id).eq("state", "pending").select("id").maybeSingle();
+      if (stored.error || !stored.data)
         throw new Error("Token admission could not be confirmed");
       return assistReply({
         token: result.token,
@@ -305,8 +305,8 @@ export async function handleAssist(request: Request, kind: "voice" | "shape") {
         usage: result.usage ?? null,
         provider_request_id: requestId,
       })
-      .eq("id", claim.request.id);
-    if (saved.error) throw new Error("Could not confirm saved draft");
+      .eq("id", claim.request.id).eq("state", "pending").select("id").maybeSingle();
+    if (saved.error || !saved.data) throw new Error("Could not confirm saved draft");
     return assistReply({ draft });
   } catch {
     await admin

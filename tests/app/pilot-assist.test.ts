@@ -25,7 +25,7 @@ test("assist admission, provider protocol and replay stay behind server authenti
     claimed = true,
     quota = false,
     malformed = false,
-    providerFails = false;
+    providerFails = false, expired = false;
   t.mock.method(
     globalThis,
     "fetch",
@@ -68,8 +68,10 @@ test("assist admission, provider protocol and replay stay behind server authenti
               claimed,
               request: { id: requestId, state: "complete", result: shaped },
             });
-      if (url.includes("/rest/v1/pilot_assist_requests"))
-        return new Response(null, { status: 204 });
+      if (url.includes("/rest/v1/pilot_assist_requests")) {
+        assert(url.includes("state=eq.pending"), "a late helper may only complete a pending claim");
+        return Response.json(expired ? null : { id: requestId });
+      }
       if (url === "https://api.cartesia.ai/access-token")
         return Response.json({ token: "ephemeral-test-token" });
       if (url === "https://api.openai.com/v1/chat/completions")
@@ -205,4 +207,11 @@ test("assist admission, provider protocol and replay stay behind server authenti
       }
     },
   );
+  await t.test("a response arriving after claim expiry cannot replace the saved draft", async () => {
+    claimed = true; quota = false; malformed = false; providerFails = false; expired = true;
+    const result = await handleAssist(request(), "shape");
+    assert.equal(result.status, 503);
+    assert.match((await result.json()).error, /words and existing preview are still here/);
+  });
+
 });

@@ -25,13 +25,16 @@ test("room activity returns scoped counts without disclosing private jobs", asyn
   });
   const request = () => new Request("http://localhost:3005/api/pilot/activity?room=midnight-signal");
   await t.test("invalid room queries cannot reach the database", async () => {
-    assert.equal((await handleRoomActivity(new Request("http://localhost:3005/api/pilot/activity"))).status, 400);
+    const invalid = await handleRoomActivity(new Request("http://localhost:3005/api/pilot/activity"));
+    assert.equal(invalid.status, 400);
+    assert.equal(invalid.headers.get("vercel-cdn-cache-control"), null, "errors are never shared from the CDN");
     assert.equal(queries.length, 0);
   });
   await t.test("a public open room gets counts and no private metadata", async () => {
     const response = await handleRoomActivity(request());
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.equal(response.headers.get("vercel-cdn-cache-control"), "max-age=5", "viewers share totals for a few seconds");
     assert.deepEqual(await response.json(), { queued_requests: 2, generating_requests: 1, checking_requests: 1 });
     assert.equal(queries.length, 4);
   });
@@ -42,6 +45,8 @@ test("room activity returns scoped counts without disclosing private jobs", asyn
   });
   await t.test("a failed count is unavailable rather than a fabricated idle room", async () => {
     open = true; failCounts = true;
-    assert.equal((await handleRoomActivity(request())).status, 503);
+    const failed = await handleRoomActivity(request());
+    assert.equal(failed.status, 503);
+    assert.equal(failed.headers.get("vercel-cdn-cache-control"), null);
   });
 });

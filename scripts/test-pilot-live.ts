@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { joinPilotAsGuest } from "../src/lib/supabase/guest.ts";
 import type { Database } from "../src/lib/supabase/database.types.ts";
 
-// Explicit integration command only. Creates two temporary Auth guests and a
+// Explicit integration command only. Creates three temporary Auth guests and a
 // labeled fixture room, then removes those exact records. Never calls a model.
 const url = process.env.SUPABASE_URL;
 const publicKey = process.env.SUPABASE_PUBLISHABLE_KEY;
@@ -19,6 +19,7 @@ const admin = createClient<Database>(url, secretKey, options);
 const publicReader = createClient<Database>(url, publicKey, options);
 const alice = createClient<Database>(url, publicKey, options);
 const bob = createClient<Database>(url, publicKey, options);
+const charlie = createClient<Database>(url, publicKey, options);
 const restored = createClient<Database>(url, publicKey, options);
 const roomId = `verification-${randomUUID()}`;
 const seedId = randomUUID();
@@ -36,30 +37,37 @@ function checked<T>({ data, error }: { data: T; error: { message: string } | nul
 }
 
 try {
-  const roomInsert = await admin.from("pilot_rooms").insert({ id: roomId, title: "Temporary verification room", description: "Synthetic integration test, removed after completion.", is_open: true });
+  const roomInsert = await admin.from("pilot_rooms").insert({ id: roomId, title: "Temporary verification room", description: "Synthetic integration test, removed after completion.", is_open: true, is_listed: false });
   assert.equal(roomInsert.error, null);
   assert.equal((await admin.from("pilot_moments").insert({ id: seedId, room_id: roomId, maker_label: "Verification fixture", title: "Fixture starter", source_kind: "fixture", panels })).error, null);
 
-  for (const client of [alice, bob]) {
+  for (const client of [alice, bob, charlie]) {
     const data = checked(await client.auth.signInAnonymously());
     assert(data.user?.is_anonymous);
     makers.add(data.user.id);
   }
-  const [a, duplicateJoin, b] = await Promise.all([
+  const [a, duplicateJoin, b, c] = await Promise.all([
     joinPilotAsGuest(alice, "Verification Alice"),
     joinPilotAsGuest(alice, "Verification Alice"),
     joinPilotAsGuest(bob, "Verification Bob"),
+    joinPilotAsGuest(charlie, "Verification Charlie"),
   ]);
   assert.equal(a.id, duplicateJoin.id);
   assert.notEqual(a.id, b.id);
+  assert.equal(new Set([a.id, b.id, c.id]).size, 3);
   assert.equal((await joinPilotAsGuest(alice, "Verification Alice")).id, a.id);
   assert.equal(checked(await publicReader.from("pilot_moments").select("id").eq("room_id", roomId)).length, 1);
+  for (const client of [alice, bob, charlie]) checked(await client.rpc("pilot_join_room", { p_room_id: roomId }));
+  const before = checked(await publicReader.rpc("pilot_room_snapshot", { p_room_id: roomId })) as { revision: number; participants: { id: string; name: string }[] };
+  assert.equal(before.participants.length, 3);
+  assert(before.participants.every(participant => ![a.id, b.id, c.id].includes(participant.id)), "Roster IDs must not expose Auth IDs");
 
   const input = { p_request_id: randomUUID(), p_room_id: roomId, p_parent_id: seedId, p_title: "Verification continuation", p_prompt: "An original fixture continuation used only to verify persistence." };
   const draft = checked(await alice.rpc("pilot_save_draft", input));
   assert.equal(checked(await alice.rpc("pilot_save_draft", input)).id, draft.id);
   assert((await alice.rpc("pilot_save_draft", { ...input, p_prompt: "Different input under the same request ID." })).error);
   assert.deepEqual(checked(await bob.from("pilot_operations").select("id").eq("id", draft.id)), []);
+  assert.deepEqual(checked(await charlie.from("pilot_operations").select("id").eq("id", draft.id)), []);
   assert((await alice.from("pilot_operations").update({ status: "delivered", panels, source_kind: "fixture" }).eq("id", draft.id)).error);
   assert((await alice.rpc("pilot_publish", { p_operation_id: draft.id })).error);
   assert((await bob.rpc("pilot_publish", { p_operation_id: draft.id })).error);
@@ -75,6 +83,8 @@ try {
   assert.equal(checked(publicationResults[1]!).id, first.id);
   assert.equal(first.maker_id, a.id);
   assert.equal(first.maker_label, "Verification Alice");
+  const after = checked(await charlie.rpc("pilot_room_snapshot", { p_room_id: roomId })) as { revision: number };
+  assert(after.revision > before.revision, "Peers can detect the new publication through the room revision");
   await joinPilotAsGuest(alice, "Verification Alice renamed");
   const peerView = checked(await bob.from("pilot_moments").select("id,maker_label").eq("id", first.id).single());
   assert.equal(peerView.maker_label, "Verification Alice");
@@ -98,17 +108,17 @@ try {
   tokenParts[1] = Buffer.from(JSON.stringify(forgedClaims)).toString("base64url");
   const forged = await fetch(`${url}/rest/v1/pilot_profiles?select=id`, { headers: { apikey: publicKey, Authorization: `Bearer ${tokenParts.join(".")}` } });
   assert([401, 403].includes(forged.status), "Forged JWT must be denied by the hosted service");
-  console.log("Hosted pilot proof passed: distinct real Auth guests, session recovery, private drafts, forged-identity denial, once-only concurrent publication, stable credit and peer continuation. Delivery used labeled fixtures; no AI call or email was sent.");
+  console.log("Hosted pilot proof passed: three real Auth guests, joined roster, publication revision, session recovery, private drafts, forged-identity denial, once-only concurrent publication, stable credit and peer continuation. Delivery used labeled fixtures; no AI call or email was sent.");
 } catch (error) {
   failure = error;
 } finally {
   const cleanupErrors: string[] = [];
   // Include a guest whose Auth request succeeded before profile setup failed.
-  for (const client of [alice, bob]) {
+  for (const client of [alice, bob, charlie]) {
     const session = await client.auth.getSession();
     if (session.data.session) makers.add(session.data.session.user.id);
   }
-  for (const table of ["pilot_operations", "pilot_moments"] as const) {
+  for (const table of ["pilot_operations", "pilot_moments", "pilot_room_participants"] as const) {
     const result = await admin.from(table).delete().eq("room_id", roomId);
     if (result.error) cleanupErrors.push(`${table} in ${roomId}: ${result.error.message}`);
   }

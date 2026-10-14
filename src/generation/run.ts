@@ -15,21 +15,39 @@ import { sendOpenAiPanel } from "../experiments/openai-live.ts";
 import { pilotAdmin } from "./client.ts";
 import { readStored, saveStored } from "./storage.ts";
 import { validPilotCaptions } from "../lib/pilot-format.ts";
+import { executionEnvironment, maintainClaim, type Execution } from "./execution.ts";
+
+function parseReply(body: string) {
+  try {
+    return JSON.parse(body);
+  } catch {
+    return undefined;
+  }
+}
 
 /** Trigger owns execution. Postgres owns dispatch uniqueness, holds and delivery. */
-export async function generatePilotContinuation(operationId: string) {
+export async function generatePilotContinuation(operationId: string, execution: Execution, signal?: AbortSignal) {
   if (!isUuid(operationId)) throw new Error("Invalid contribution ID.");
+  const environment = executionEnvironment(execution.environment);
+  if (!execution.runId || !Number.isSafeInteger(execution.dispatchVersion) || execution.dispatchVersion < 1)
+    throw new Error("The saved execution is unavailable.");
   const client = pilotAdmin();
   const claimToken = randomUUID();
-  const claimed = await client.rpc("pilot_claim_job", {
+  const claim = {
     p_operation_id: operationId,
     p_claim_token: claimToken,
-  });
+    p_version: execution.dispatchVersion,
+    p_environment: environment,
+    p_run_id: execution.runId,
+  };
+  const claimed = await client.rpc("pilot_claim_execution", claim);
   if (claimed.error)
     throw new Error("Could not claim the saved generation job.");
   if (!claimed.data)
     return { operationId, status: "already-claimed-or-finished" };
+  const heartbeat = maintainClaim(client, claim, signal);
   let stopped: string | undefined;
+  let deferred = false;
   try {
     const key = process.env.OPENAI_API_KEY;
     if (!key) throw new Error("Image generation is not configured.");
@@ -131,14 +149,26 @@ export async function generatePilotContinuation(operationId: string) {
         p_input_digest: request.inputDigest,
         p_claim_token: claimToken,
       });
+      if (begin.error?.code === "P0002") {
+        const waiting = await client.rpc("pilot_defer_job", { p_operation_id: operationId, p_claim_token: claimToken });
+        if (waiting.error) throw new Error("Your saved generation needs checking.");
+        deferred = true;
+        break;
+      }
       if (begin.error)
         throw new Error(
           "Generation is paused while a previous request is checked.",
         );
       if (begin.data) {
+        await heartbeat.check();
         // No automatic retry. The durable intent already exists before this POST.
         const start = performance.now();
-        const response = await sendOpenAiPanel(request, key);
+        // Persist transport uncertainty. A missing reply is not a known charge.
+        const response = await sendOpenAiPanel(request, key).catch(() => ({
+          status: 0,
+          requestId: null,
+          body: "",
+        }));
         const receipt = {
           inputDigest: request.inputDigest,
           clientRequestId: request.clientRequestId,
@@ -177,8 +207,8 @@ export async function generatePilotContinuation(operationId: string) {
           "The saved provider reply did not match this continuation.",
         );
       const existing = await client
-        .from("pilot_panel_attempts")
-        .select("response_digest")
+        .from("pilot_panel_accounting")
+        .select("response_digest,expense_micro,expense_known")
         .eq("operation_id", operationId)
         .eq("panel_number", panelNumber)
         .single();
@@ -194,22 +224,24 @@ export async function generatePilotContinuation(operationId: string) {
       let state = "failed",
         code: string | null = "invalid_provider_output";
       try {
-        const raw = JSON.parse(receipt.body);
+        const raw = parseReply(receipt.body);
         try {
           const micro = parseUsd(
-            readOpenAiUsage(raw.usage).calculatedExpenseUsd,
+            readOpenAiUsage(raw?.usage).calculatedExpenseUsd,
           );
           if (micro <= BigInt(Number.MAX_SAFE_INTEGER)) expense = Number(micro);
         } catch {
-          /* Unknown expense stays reserved. */
+          /* Keep the reservation until cost can be established. */
         }
         if (receipt.status < 200 || receipt.status >= 300) {
           const candidate = raw?.error?.code;
           code =
-            typeof candidate === "string" &&
-            /^[a-z0-9_-]{1,100}$/.test(candidate)
-              ? candidate
-              : "provider_error";
+            receipt.status === 0
+              ? "provider_unreachable"
+              : typeof candidate === "string" &&
+                  /^[a-z0-9_-]{1,100}$/.test(candidate)
+                ? candidate
+                : "provider_error";
         } else {
           const result = await inspectOpenAiPanelResponse(raw);
           // Failures from here are recoverable from the saved raw response.
@@ -224,6 +256,8 @@ export async function generatePilotContinuation(operationId: string) {
           code = null;
         }
       } finally {
+        // Historical booked amounts are immutable; corrections use the audited ledger.
+        expense = existing.data.expense_micro ?? expense;
         // Generated RPC types do not express nullable PostgreSQL arguments.
         const recorded = await client.rpc("pilot_record_panel", {
           p_operation_id: operationId,
@@ -249,10 +283,8 @@ export async function generatePilotContinuation(operationId: string) {
             ? "This request could not be completed. Try changing the story idea."
             : "A complete image could not be delivered. No room credit was used.",
         );
-      if (expense === null && panelNumber < captions.length)
-        throw new Error(
-          "The panel is saved, but its expense needs checking before continuing.",
-        );
+      if (expense === null && !existing.data.expense_known && panelNumber < captions.length)
+        throw new Error("The saved image is being checked before another panel can start.");
     }
   } catch (error) {
     // Only our bounded, authored messages reach the guest; never raw provider errors.
@@ -261,7 +293,10 @@ export async function generatePilotContinuation(operationId: string) {
       /^[A-Za-z][A-Za-z0-9 .,;'’-]{1,239}$/.test(error.message)
         ? error.message
         : "Generation was interrupted. Check the saved result before trying again.";
+  } finally {
+    heartbeat.stop();
   }
+  if (deferred) return { operationId, status: "waiting" };
   const finished = await client.rpc("pilot_finish_job", {
     p_operation_id: operationId,
     p_claim_token: claimToken,

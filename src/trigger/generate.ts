@@ -6,6 +6,10 @@ export const generateContinuation = task({
   queue: { name: "fork-night-images", concurrencyLimit: 1 },
   maxDuration: 600,
   retry: { maxAttempts: 1 },
-  run: async (payload: { operationId: string }) =>
-    generatePilotContinuation(payload.operationId),
+  run: async (payload: { operationId: string; dispatchVersion: number }, { ctx, signal }) =>
+    generatePilotContinuation(payload.operationId, {
+      dispatchVersion: payload.dispatchVersion,
+      environment: ctx.environment.type,
+      runId: ctx.run.id,
+    }, signal),
 });

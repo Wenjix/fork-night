@@ -1,10 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import sharp from "sharp";
-import { generatePilotContinuation } from "../../src/generation/run.ts";
+import {
+  generatePilotContinuation,
+} from "../../src/generation/run.ts";
 import { digest } from "../../src/experiments/storage.ts";
 
 const operationId = "10000000-0000-4000-8000-000000000010";
+const execution = { environment: "DEVELOPMENT", runId: "run-test", dispatchVersion: 1 };
 const parentId = "10000000-0000-4000-8000-000000000011";
 test("worker delivers exact sequence length and recovers a third image without rebuying it", async (t) => {
   const env = { ...process.env };
@@ -12,6 +15,7 @@ test("worker delivers exact sequence length and recovers a third image without r
     NEXT_PUBLIC_SUPABASE_URL: "https://worker.invalid",
     SUPABASE_SECRET_KEY: "test-secret",
     OPENAI_API_KEY: "test-image-key",
+    PILOT_EXECUTION_ENV: "DEVELOPMENT",
   });
   t.after(() => {
     process.env = env;
@@ -33,7 +37,8 @@ test("worker delivers exact sequence length and recovers a third image without r
   let calls: any[] = [],
     recorded: any[] = [],
     finish: any;
-  let failThirdStorage = false;
+  let failThirdStorage = false, claimAllowed = true, heartbeatAllowed = true, spendingPaused = false, deferred = false;
+  let reply: "image" | "no-usage" | "moderation" | "timeout" = "image";
   const saved = new Map<string, Buffer>();
   const attempts = new Map<
     number,
@@ -45,6 +50,8 @@ test("worker delivers exact sequence length and recovers a third image without r
     calls = [];
     recorded = [];
     finish = undefined;
+    reply = "image";
+    claimAllowed = true; heartbeatAllowed = true; spendingPaused = false; deferred = false;
     saved.clear();
     attempts.clear();
     saved.set(`pilot-media/${parentPath}`, parentImage);
@@ -58,15 +65,25 @@ test("worker delivers exact sequence length and recovers a third image without r
         typeof init?.body === "string" ? JSON.parse(init.body) : undefined;
       if (url.hostname === "api.openai.com") {
         calls.push(body);
+        if (reply === "timeout")
+          throw new DOMException("The operation timed out.", "TimeoutError");
+        if (reply === "moderation")
+          return Response.json(
+            { error: { code: "moderation_blocked", message: "Blocked." } },
+            { status: 400 },
+          );
         return Response.json({
           data: [{ b64_json: image.toString("base64") }],
-          usage,
+          ...(reply === "no-usage" ? {} : { usage }),
         });
       }
       assert.equal(url.hostname, "worker.invalid");
       const rpc = url.pathname.split("/rpc/")[1];
-      if (rpc === "pilot_claim_job") return Response.json(true);
+      if (rpc === "pilot_claim_execution") return Response.json(claimAllowed);
+      if (rpc === "pilot_heartbeat") return Response.json(heartbeatAllowed);
+      if (rpc === "pilot_defer_job") { deferred = true; return Response.json(null); }
       if (rpc === "pilot_begin_panel") {
+        if (spendingPaused) return Response.json({ code: "P0002", message: "Earlier expense is being checked" }, { status: 400 });
         const old = attempts.get(body.p_panel_number);
         if (old) {
           assert.equal(old.inputDigest, body.p_input_digest);
@@ -111,7 +128,7 @@ test("worker delivers exact sequence length and recovers a third image without r
             ],
           },
         ]);
-      if (url.pathname === "/rest/v1/pilot_panel_attempts") {
+      if (url.pathname === "/rest/v1/pilot_panel_accounting") {
         const n = Number(
           url.searchParams.get("panel_number")!.replace("eq.", ""),
         );
@@ -163,11 +180,12 @@ test("worker delivers exact sequence length and recovers a third image without r
     "one-panel continuation from a one-panel parent dispatches once",
     async () => {
       reset(["The lighthouse closes its eyes."]);
-      await generatePilotContinuation(operationId);
+      await generatePilotContinuation(operationId, execution);
       assert.equal(finish.p_error, undefined);
       assert.equal(calls.length, 1);
       assert.equal(recorded[0].p_panel_number, 1);
       assert.equal(recorded[0].p_state, "complete");
+      assert.equal(recorded[0].p_expense_micro, 3085, "usage-derived expense");
       assert.deepEqual(calls[0].images, [{ image_url: originalReference }]);
       assert(calls[0].prompt.includes("1-panel"));
     },
@@ -181,7 +199,7 @@ test("worker delivers exact sequence length and recovers a third image without r
         "They leave together.",
       ]);
       failThirdStorage = true;
-      await generatePilotContinuation(operationId);
+      await generatePilotContinuation(operationId, execution);
       assert.equal(calls.length, 3);
       assert(finish.p_error, "storage interruption must be reported");
       assert.deepEqual(
@@ -200,7 +218,7 @@ test("worker delivers exact sequence length and recovers a third image without r
       assert(
         calls[2].prompt.includes("Draw this beat only: They leave together."),
       );
-      await generatePilotContinuation(operationId);
+      await generatePilotContinuation(operationId, execution);
       assert.equal(calls.length, 3, "recovery must not buy any panel twice");
       assert.equal(finish.p_error, undefined);
       assert.equal(recorded.at(-1).p_state, "complete");
@@ -211,7 +229,7 @@ test("worker delivers exact sequence length and recovers a third image without r
     "legacy pairs retain request wording for receipt identity",
     async () => {
       reset(["It waits.", "A boat arrives."]);
-      await generatePilotContinuation(operationId);
+      await generatePilotContinuation(operationId, execution);
       assert.equal(calls.length, 2);
       assert(
         calls[1].prompt.includes(
@@ -228,4 +246,58 @@ test("worker delivers exact sequence length and recovers a third image without r
       );
     },
   );
+  await t.test(
+    "missing usage remains unknown and never authorizes another paid panel",
+    async () => {
+      for (const [kind, errorCode, message] of [
+        ["moderation", "moderation_blocked", /Try changing the story idea/],
+        ["timeout", "provider_unreachable", /No room credit was used/],
+      ] as const) {
+        reset(["The lighthouse waits.", "A boat arrives."]);
+        reply = kind;
+        await generatePilotContinuation(operationId, execution);
+        assert.equal(calls.length, 1, `${kind}: a failed panel stops the sequence`);
+        assert.equal(recorded.length, 1);
+        assert.equal(recorded[0].p_state, "failed");
+        assert.equal(recorded[0].p_error_code, errorCode);
+        assert.equal(recorded[0].p_expense_micro, null);
+        assert.match(finish.p_error, message);
+        const receipt = JSON.parse(
+          saved.get(`pilot-receipts/${operationId}/1-response.json`)!.toString("utf8"),
+        );
+        assert.equal(receipt.status, kind === "timeout" ? 0 : 400);
+        await generatePilotContinuation(operationId, execution);
+        assert.equal(calls.length, 1, `${kind}: recovery never resends`);
+        assert.equal(recorded.at(-1).p_expense_micro, null);
+      }
+      reset(["The lighthouse waits.", "A boat arrives."]);
+      reply = "no-usage";
+      await generatePilotContinuation(operationId, execution);
+      assert.match(finish.p_error, /being checked/, "unaccounted expense pauses the remaining sequence");
+      assert.equal(calls.length, 1);
+      assert.deepEqual(
+        recorded.map((r) => [r.p_state, r.p_expense_micro]),
+        [
+          ["complete", null],
+        ],
+      );
+    },
+  );
+  await t.test("wrong environment and duplicate execution never buy images", async () => {
+    reset(["A new idea"]);
+    await assert.rejects(generatePilotContinuation(operationId, { ...execution, environment: "PRODUCTION" }));
+    assert.equal(calls.length, 0);
+    claimAllowed = false;
+    assert.equal((await generatePilotContinuation(operationId, execution)).status, "already-claimed-or-finished");
+    assert.equal(calls.length, 0); assert.equal(finish, undefined);
+  });
+  await t.test("lease loss stops the next POST and paused queued work keeps its saved job", async () => {
+    reset(["A new idea"]); heartbeatAllowed = false;
+    await generatePilotContinuation(operationId, execution);
+    assert.equal(calls.length, 0); assert.match(finish.p_error, /stopped/);
+    reset(["A new idea"]); spendingPaused = true;
+    assert.equal((await generatePilotContinuation(operationId, execution)).status, "waiting");
+    assert.equal(calls.length, 0); assert.equal(deferred, true); assert.equal(finish, undefined);
+  });
+
 });
