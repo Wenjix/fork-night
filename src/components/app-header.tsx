@@ -1,7 +1,14 @@
 "use client";
 
-import type { MouseEvent, ReactNode } from "react";
+import { createContext, type MouseEvent, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { FirstNightGuide } from "./first-night-guide";
+
+/** False hides the storyteller account chip, for wrappers that show the account in their own header menu. */
+export const HeaderAccountVisibility = createContext(true);
+// Its own chunk with its stylesheet; it reads the account only when a session is stored.
+// If the chunk cannot load, the header goes without the chip rather than failing the page.
+const HeaderAccount = dynamic(() => import("./header-account.tsx").catch(() => ({ default: () => null })));
 
 type LocalDestination = { kind: "lobby" | "spaces" | "desk" };
 export type AppDestination = LocalDestination["kind"] | "rooms" | "agents";
@@ -15,11 +22,13 @@ const destinations: { id: AppDestination; label: string; href: string; local?: L
 ];
 
 /** Native cross-page links preserve each workspace's existing leave protection. */
-export function AppHeader({ current, onLocalNavigate, children, guide }: {
+export function AppHeader({ current, onLocalNavigate, children, guide, account = true }: {
   current: AppDestination;
   onLocalNavigate?: (route: LocalDestination) => void;
   children?: ReactNode;
   guide?: ReactNode;
+  /** The storyteller account chip. Views with their own account bar pass false. */
+  account?: boolean;
 }) {
   function followLocal(event: MouseEvent<HTMLAnchorElement>, route?: LocalDestination) {
     if (!route || !onLocalNavigate || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -37,7 +46,7 @@ export function AppHeader({ current, onLocalNavigate, children, guide }: {
     <nav className="fn-primary-nav" aria-label="Main navigation">
       {destinations.map(item => <a key={item.id} href={item.href} aria-current={current === item.id ? "page" : undefined} onClick={event => followLocal(event, item.local)}>{item.label}</a>)}
     </nav>
-    {children && <div className="fn-header-actions">{children}</div>}
+    {(children || account) && <div className="fn-header-actions">{children}{account && <HeaderAccount />}</div>}
   </header>
     {guide !== false && <div className="fn-first-header-guide">{guide === undefined ? <FirstNightGuide compact /> : guide}</div>}
   </>;

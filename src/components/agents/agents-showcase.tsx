@@ -80,7 +80,7 @@ export function AgentsShowcase() {
         Skip to Wren
       </a>
       <AgentRoomHeader current="agents">
-        <a className="ag-button ag-button-yellow" href={ROOM_HREF}>Open the room</a>
+        <a className="ag-button ag-button-yellow ag-header-room" href={ROOM_HREF}><ArrowRight size={18} aria-hidden="true" /><span className="ag-header-room-label">Open the room</span></a>
       </AgentRoomHeader>
 
       <main>

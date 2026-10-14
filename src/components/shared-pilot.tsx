@@ -39,7 +39,7 @@ import { useCanvasNavigation } from "./use-canvas-navigation";
 import { PilotArtwork } from "./pilot-artwork";
 import { PilotIdeas } from "./pilot-ideas";
 import { PilotContinuation } from "./pilot-continuation";
-import { PilotIdentity } from "./pilot-identity";
+import { PilotIdentity, roomSignOutBlock } from "./pilot-identity";
 import { PilotDialog } from "./pilot-dialog";
 import { roomLink, validRoomId, newPublications, definitelyRejected, type RoomSnapshot } from "../lib/pilot-rooms";
 import { PilotCreditRefill } from "./pilot-credit-refill";
@@ -415,6 +415,7 @@ export function SharedPilot() {
   const selectedLabel = momentLetter(Math.max(0, selectedIndex));
   const updates = pathUpdates(path, baseline);
   const reviewing = operation?.status === "delivered";
+  const signOutBlock = roomSignOutBlock({ generating: hasActive, drafting: !!draft, walletBusy: releaseBusy, checking: !!account?.loading, busy });
 
   useEffect(() => {
     if (!roomId || loadedRoom !== roomId || account?.loading || profileLoadedFor !== actorId || profile && profile.id !== actorId) return;
@@ -871,7 +872,7 @@ export function SharedPilot() {
   return (
     <>
       <a className="skip-link" href="#shared-story">Skip to story</a>
-      <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} />
+      <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} account={false} />
       <main className="pilot-shell" id="shared-story" tabIndex={-1}>
       <div className="pilot-room-toolbar">
         <a className="fn-context-link" href="/pilot"><ArrowLeft size={17} aria-hidden="true" />All shared rooms</a>
@@ -905,7 +906,7 @@ export function SharedPilot() {
           </select>
         </label>
         <div className="pilot-header-actions">
-          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || hasActive || !!draft || !!account?.loading} signOutBlockedReason={hasActive ? "Finish generation or publish or discard your preview before signing out." : draft ? "Finish or cancel your continuation before signing out." : ""} onJoin={() => setJoinOpen(true)} />
+          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || hasActive || !!draft || !!account?.loading} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={() => setJoinOpen(true)} />
           <button
             className="button secondary pilot-map-toggle"
             onClick={() => setView(view === "map" ? "read" : "map")}

@@ -1,0 +1,192 @@
+/* The storyteller account in the shared header. Its box has a fixed size from the first paint, so the
+   header neither moves nor wraps differently when the account resolves. */
+.fn-header .fn-account {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: flex-end;
+  width: 184px;
+  height: 44px;
+}
+/* Narrow tablets keep the agents page's call to action on the same row. */
+@media (max-width: 720px) {
+  .fn-header .fn-account { width: 152px; }
+}
+/* Controls a page adds after hydration (the social pages' preview switcher) must not move the chip: the actions
+   box fills the rest of its row and right-aligns its items, so it stays put when they arrive. */
+.fn-header .fn-header-actions { flex: 1 1 auto; justify-content: flex-end; }
+.fn-header .fn-account-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Signed out: a link to /pilot, where wallet sign-in and storyteller names live. */
+.fn-header .fn-account-signin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px 0 14px;
+  border: 1px solid var(--fn-header-line);
+  border-radius: 999px;
+  color: var(--fn-header-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.fn-header .fn-account-signin:hover { border-color: var(--fn-header-current); background: rgb(151 120 255 / 14%); }
+
+/* Signed in: the account's menu. "Signed in" over the name sets it apart from a demo persona switcher. */
+.fn-header .fn-account-menu { min-width: 0; max-width: 100%; }
+.fn-header .fn-account-menu > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  height: 44px;
+  padding: 0 10px 0 6px;
+  border: 1px solid var(--fn-header-line);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 4%);
+  color: var(--fn-header-text);
+  cursor: pointer;
+  list-style: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.fn-header .fn-account-menu > summary::-webkit-details-marker { display: none; }
+.fn-header .fn-account-menu > summary:hover,
+.fn-header .fn-account-menu[open] > summary { border-color: var(--fn-header-current); background: rgb(151 120 255 / 14%); }
+.fn-header .fn-account-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--fn-header-current);
+  color: var(--fn-header-bg);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1;
+}
+.fn-header .fn-account-text { display: grid; min-width: 0; line-height: 1.2; text-align: left; }
+.fn-header .fn-account-eyebrow { color: var(--fn-header-muted); font-size: 11px; font-weight: 600; }
+.fn-header .fn-account-name { overflow: hidden; font-size: 14px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.fn-header .fn-account-pending { width: 64px; height: 10px; margin: 4px 0 3px; border-radius: 5px; background: rgb(192 197 224 / 28%); }
+.fn-header .fn-account-chevron { flex: none; color: var(--fn-header-muted); transition: transform 150ms ease; }
+.fn-header .fn-account-menu[open] .fn-account-chevron { transform: rotate(180deg); }
+
+/* The menu opens under the chip, against its right edge, and never wider than the screen allows. */
+.fn-header .fn-account-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  width: min(300px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--fn-header-line);
+  border-radius: 14px;
+  background: #181d3d;
+  box-shadow: 0 18px 44px rgb(4 6 20 / 50%);
+  color: var(--fn-header-text);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+}
+.fn-header .fn-account-heading { color: var(--fn-header-muted); font-size: 12px; font-weight: 650; letter-spacing: 0.02em; }
+.fn-header .fn-account-who { display: grid; gap: 2px; overflow-wrap: anywhere; }
+.fn-header .fn-account-who strong { font-size: 16px; font-weight: 700; }
+.fn-header .fn-account-who span,
+.fn-header .fn-account-panel small { color: var(--fn-header-muted); }
+.fn-header .fn-account-panel small { font-size: 13px; }
+.fn-header .fn-account-panel a { color: var(--fn-header-text); text-decoration-color: var(--fn-header-current); }
+.fn-header .fn-account-signout {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fn-header-text);
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: var(--fn-header-current);
+  text-underline-offset: 4px;
+}
+.fn-header .fn-account-confirm { display: grid; gap: 10px; width: 100%; }
+.fn-header .fn-account-confirm p:focus { outline: none; }
+.fn-header .fn-account-confirm-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.fn-header :is(.fn-account-keep, .fn-account-danger) {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--fn-header-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fn-header-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+.fn-header .fn-account-danger { border-color: transparent; background: #ff9aa9; color: var(--fn-header-bg); }
+.fn-header .fn-account-error { color: #ffb4bf; }
+
+/* Phones keep a 44px circle: the name stays in the accessible name and in the menu. */
+@media (max-width: 640px) {
+  .fn-header .fn-account { width: 44px; }
+  .fn-header .fn-account-signin { width: 44px; padding: 0; }
+  .fn-header .fn-account-menu > summary { justify-content: center; width: 44px; padding: 0; }
+  .fn-header .fn-account-text { position: absolute; }
+  .fn-header :is(.fn-account-signin-label, .fn-account-name) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .fn-header :is(.fn-account-eyebrow, .fn-account-chevron) { display: none; }
+  .fn-header .fn-account-avatar { width: 32px; height: 32px; }
+  /* Without the "Signed in" eyebrow, a demo persona's portrait beside the chip's avatar would read as a second account. */
+  .fn-header .fn-header-actions .social-user .social-avatar { display: none; }
+}
+/* Beside the chip, the agents page's "Open the room" becomes a 44px arrow circle on phones; its words stay for screen
+   readers. Above 420px it looks as it always has. */
+.fn-header .ag-header-room > svg { display: none; }
+@media (max-width: 420px) {
+  .fn-header .fn-header-actions > .ag-button { width: 44px; min-height: 44px; height: 44px; padding: 0; border-radius: 999px; }
+  .fn-header .ag-header-room > svg { display: block; }
+  .fn-header .ag-header-room-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+/* Below 310px even the circle would push the header's actions onto a row of their own; the hero links to the room too. */
+@media (max-width: 309px) { .fn-header .fn-header-actions > .ag-button { display: none; } }
+/* On the narrowest phones the social pages' preview switcher and the chip still share the brand's row.
+   .social-app is in the server's HTML, so the smaller brand is there from the first paint. */
+@media (max-width: 340px) {
+  .social-app .fn-header { column-gap: 8px; }
+  .social-app .fn-header .fn-brand { font-size: 26px; }
+  .social-app .fn-header .fn-header-actions { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fn-header :is(.fn-account-signin, .fn-account-menu > summary, .fn-account-chevron) { transition: none; }
+}

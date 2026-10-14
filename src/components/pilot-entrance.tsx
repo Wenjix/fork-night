@@ -39,6 +39,25 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
   const locked = useRef(false);
   const lastActor = useRef<string | undefined>(undefined);
   const nameField = useRef<HTMLInputElement>(null);
+  const page = useRef<HTMLDivElement>(null);
+  const accountNotice = useRef<HTMLDivElement>(null);
+  // The account's message (such as a sign-out that failed) sits under the account bar; on a short phone, bring it into view.
+  useEffect(() => { if (account?.error) accountNotice.current?.scrollIntoView({ block: "nearest" }); }, [account?.error, account?.signingOut]);
+  // While the header's sign-out runs, only the account bar stays live, so a click cannot leave halfway
+  // through. Parts that appear meanwhile (joined rooms, an alert) are held too.
+  useEffect(() => {
+    const root = page.current, bar = root?.querySelector(".pilot-entrance-account"), main = bar?.parentElement;
+    if (!account?.signingOut || !root || !bar || !main) return;
+    const held = new Set<HTMLElement>();
+    const hold = () => {
+      for (const element of [...root.children, ...main.children])
+        if (element instanceof HTMLElement && !element.contains(bar) && !element.inert) { element.inert = true; held.add(element); }
+    };
+    hold();
+    const observer = new MutationObserver(hold);
+    for (const parent of [root, main]) observer.observe(parent, { childList: true });
+    return () => { observer.disconnect(); for (const element of held) element.inert = false; };
+  }, [account?.signingOut]);
 
   useEffect(() => {
     try {
@@ -123,12 +142,18 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     finally { locked.current = false; setBusy(false); }
   }
   const available = !!policy?.enabled && policy.remainingRooms > 0 && !policy.ownRoomId;
+  // Why sign-out waits, in the order of the identity's disabled condition. Plain /pilot shows no Check room button.
+  const signOutBlock = pending ? (creating ? "Check your saved room request before signing out." : "Open Create a room and check your saved room request before signing out.")
+    : busy ? "Wait for your storyteller name to finish saving before signing out."
+    : account?.loading ? "Checking your storyteller account. You can sign out when it finishes." : "";
   const cards = (items: Room[]) => <div className="pilot-room-cards">{items.map(room => <a className="pilot-room-card" key={room.id} href={`/pilot?room=${encodeURIComponent(room.id)}`}><Users size={22} aria-hidden="true" /><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={17} aria-hidden="true" /></span></a>)}</div>;
-  return <div className="pilot-page">
+  return <div className="pilot-page" ref={page}>
     <a className="skip-link" href="#shared-stories">Skip to shared stories</a>
-    <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} />} />
+    <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} />} account={false} />
     <main className="pilot-shell pilot-entrance" id="shared-stories" tabIndex={-1}>
-    <div className="pilot-entrance-account"><span>Shared rooms · public stories, private previews</span><div className="pilot-header-actions"><PilotIdentity profile={profile} disabled={busy || !!pending || !!account?.loading} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" /></div></div>
+    <div className="pilot-entrance-account"><span>Shared rooms · public stories, private previews</span><div className="pilot-header-actions">{account?.signingOut ? <p className="pilot-signout-status" role="status">Signing out of this browser…</p> : <PilotIdentity profile={profile} disabled={!!pending || busy || !!account?.loading} signOutBlockedReason={signOutBlock} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" />}</div></div>
+    {/* Hidden while the sign-out runs: an earlier "could not be verified, refresh" must not invite a reload that stops it. */}
+    {account?.error && !account.signingOut && <div ref={accountNotice} className="pilot-notice" role="alert"><p>{account.error}</p></div>}
     {creating ? <>
       <a className="text-button" href="/pilot"><ArrowLeft size={16} aria-hidden="true" />Shared stories</a>
       <div className="pilot-intro"><h1>A beginning for your story.</h1><p>Choose a prepared opening, then invite two or three storytellers to see where it goes.</p></div>
@@ -149,7 +174,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
       <FirstNightInvitation variant="rooms" />
       <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={18} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={17} aria-hidden="true" /></a></div>
     </>}
-    {(error || account?.error) && <div className="pilot-notice" role="alert"><p>{error || account?.error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
+    {error && <div className="pilot-notice" role="alert"><p>{error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
     {account?.notice && <div className="pilot-notice" role="alert"><p>{account.notice}</p><button type="button" className="text-button" onClick={account.dismissNotice}>Dismiss</button></div>}
     {!!joined.length && <section aria-label="Your joined rooms"><h2>Your joined stories</h2>{cards(joined)}</section>}
     <section id="shared-directory" aria-label="Open shared stories" aria-busy={!policy && !error}><h2>Stories to pick up</h2>{rooms.length ? cards(rooms) : <div role="status">{!policy && !error ? <p>Opening the shared stories…</p> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <p>No stories in the directory yet. If someone invited you, open their room link.</p>}</div>}</section>

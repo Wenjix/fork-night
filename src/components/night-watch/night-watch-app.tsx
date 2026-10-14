@@ -9,6 +9,7 @@ import { pollWhileVisible } from "../../lib/visible-interval.ts";
 import { usePilotAccount } from "../pilot-account.tsx";
 import { PilotIdentity } from "../pilot-identity.tsx";
 import { AgentRoomHeader } from "../agents/agent-room-header";
+import { HeaderAccountVisibility } from "../app-header";
 import { NightWatchIntro } from "./night-watch-intro";
 import { NightWatchAccountProvider } from "./night-watch-account.tsx";
 import { ActHeading, WorldPanel } from "./world-panel.tsx";
@@ -63,7 +64,8 @@ function AgentRoles() {
 function Frame({ account, children, privyDemo = false }: { account: ReactNode; children: ReactNode; privyDemo?: boolean }) {
   return <div className={`night-watch${privyDemo ? " nw-privy-demo" : ""}`}>
     <a className="nw-skip" href={privyDemo ? "#desk" : "#world"}>{privyDemo ? "Skip to your desk" : "Skip to the story"}</a>
-    <AgentRoomHeader current={privyDemo ? "privy" : "night-watch"}>{account}</AgentRoomHeader>
+    {/* AccountMenu is portalled into this header slot, so the shared account chip stays hidden. */}
+    <HeaderAccountVisibility.Provider value={false}><AgentRoomHeader current={privyDemo ? "privy" : "night-watch"}>{account}</AgentRoomHeader></HeaderAccountVisibility.Provider>
     <main className="nw-main">
       <section className="nw-hero" aria-labelledby="nw-title">
         <NightWatchIntro privyDemo={privyDemo} />

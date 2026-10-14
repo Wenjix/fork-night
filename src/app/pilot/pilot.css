@@ -1675,6 +1675,8 @@
 .pilot-guest-identity > summary > svg { flex-shrink: 0; color: var(--violet); }
 .pilot-guest-identity > summary > span { overflow-wrap: anywhere; line-height: 1.4; }
 .pilot-guest-identity > summary strong { color: var(--ink); }
+/* Stands in for the name while the header's sign-out runs, in the same box, so the bar keeps its height. */
+.pilot-signout-status { display: flex; align-items: center; min-height: 44px; max-width: 22ch; color: var(--muted); font-size: 14px; line-height: 1.4; }
 .pilot-guest-context { position: absolute; z-index: 10; right: 0; top: calc(100% + 8px); width: min(300px, calc(100vw - 40px)); padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--pilot-shadow); color: var(--muted); font-size: 15px; line-height: 1.6; }
 .pilot-guest-context > strong { color: var(--ink); }
 .pilot-guest-context > p { margin-top: 10px; }
@@ -1693,6 +1695,7 @@
 .pilot-returning { display: flex; align-items: center; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
 .pilot-header-actions .pilot-join { min-height: 44px; white-space: nowrap; }
 .pilot-account-entry { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pilot-account-entry > .pilot-signout-button { margin-top: 0; }
 .pilot-wallet-signin > .button { min-height: 44px; }
 .pilot-wallet-dialog { max-width: 520px; }
 .pilot-wallet-dialog > p { margin: 0 0 22px; }
@@ -1752,7 +1755,10 @@
 }
 @media (max-width: 760px) {
   .pilot-header-actions { gap: 10px; }
-  .pilot-guest-identity { position: static; }
-  .pilot-guest-context { right: 20px; }
+  /* The menu opens under the name. The room toolbar puts the name at its left edge. */
+  .pilot-room-toolbar .pilot-guest-context { right: auto; left: 0; }
   .pilot-guest-identity > summary { max-width: 16ch; font-size: 14px; }
+  .pilot-signout-status { max-width: 16ch; }
 }
+/* When the entrance's account bar wraps, its controls stay at the right edge, as on one row. */
+.pilot-entrance-account > .pilot-header-actions { margin-left: auto; }

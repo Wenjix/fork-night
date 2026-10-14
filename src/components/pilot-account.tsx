@@ -9,6 +9,7 @@ import { checkGoogleLink, googleCallbackError, isSavedAccount, signOutPilotAccou
 import { accountWalletMode, startWalletLogin, type WalletChoice } from "../lib/supabase/wallet-login.ts";
 import { discoverBrowserWallets, type BrowserSignInWallet } from "../lib/wallets/browser-wallets.ts";
 import { clearVisitorIdeas, moveVisitorIdeas } from "../lib/pilot-rooms.ts";
+import { consumeSignOutRequest, expireCookie, forgetPrivySession, hasSignOutRequest, markSignedOut, sessionKey, withoutSignOutRequest } from "../lib/supabase/signout-request.ts";
 
 export type EmbeddedWalletState = { owner: string; address: string; provider?: WalletProvider; loading: boolean; error: string; prepare?: () => void };
 const emptyWallet: EmbeddedWalletState = { owner: "", address: "", loading: false, error: "" };
@@ -21,6 +22,8 @@ export type PilotAccount = {
   browserWallets?: BrowserSignInWallet[]; externalProvider?: WalletProvider;
   selectBrowserWallet?: (wallet: Extract<BrowserSignInWallet, { chain: "ethereum" }>) => void;
   signOut: () => Promise<void>;
+  /** True from when the header chip's sign-out request is read on this page until it fails or ends here, and while the page then leaves for the chip's page (until the next press or key). */
+  signingOut?: boolean;
   wallet: EmbeddedWalletState; walletMode: "embedded" | "external";
   chooseWallet: (mode: "embedded" | "external") => void;
 };
@@ -33,6 +36,14 @@ const privySessionStored = () => {
   try { return !!(localStorage.getItem("privy:token") || localStorage.getItem("privy:refresh_token")); }
   catch { return false; }
 };
+// Leaving /pilot (Back, a reload, closing the tab) while the header's sign-out runs: remove this
+// browser's Supabase and Privy sessions now, as a failed logout call would. Never throws.
+function forgetStoredSessions() {
+  try { const key = sessionKey(); if (key) localStorage.removeItem(key); }
+  catch { /* Blocked storage holds no session. */ }
+  try { forgetPrivySession(localStorage, expireCookie); }
+  catch { /* As above. */ }
+}
 
 class WalletBoundary extends Component<{ children: ReactNode; owner: string; onWallet: (wallet: EmbeddedWalletState) => void }, { failed: boolean }> {
   state = { failed: false };
@@ -59,6 +70,8 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
   const privySignOut = useRef<(() => Promise<void>) | undefined>(undefined);
   const [bridgeRestarts, setBridgeRestarts] = useState(0);
   const [retiring, setRetiring] = useState(false);
+  // The header chip's sign-out, kept apart from `loading` so the Privy bridge stays mounted through its logout.
+  const [tripping, setTripping] = useState(false);
   // True once this page has settled signed out, so a later account arrived in-page.
   const settledAsVisitor = useRef(false);
   const version = useRef(0);
@@ -151,8 +164,9 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
     if (!client) return;
     let endPrivy = privySignOut.current;
     // Switching to a browser wallet unmounts the bridge but can leave its Privy session
-    // stored. Mount the bridge just to end that session, waiting up to 3 seconds for it.
-    if (!endPrivy && enabled && isSavedAccount(user) && privySessionStored()) {
+    // stored, and so can a session the server ended. Mount the bridge just to end that
+    // session, waiting up to 3 seconds for it.
+    if (!endPrivy && enabled && (!user || isSavedAccount(user)) && privySessionStored()) {
       setRetiring(true);
       const until = Date.now() + 3000;
       while (!privySignOut.current && Date.now() < until) await new Promise(resolve => setTimeout(resolve, 50));
@@ -176,6 +190,51 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
     catch { /* Sign-out succeeds even if idea storage is unavailable. */ }
     setUser(undefined); setWallet(emptyWallet); setWalletChoice(undefined); setExternalWallet(undefined); setError(""); setNotice(""); setLoading(false);
   }
+  // The header chip's sign-out, handed to /pilot in this tab (contract: lib/supabase/signout-request.ts).
+  const signOutRequestRead = useRef(false);
+  const signOutRequest = useRef<{ returnTo: string | null } | null>(null);
+  useEffect(() => {
+    if (signOutRequestRead.current) return;
+    signOutRequestRead.current = true;
+    const href = window.location.href;
+    try { signOutRequest.current = consumeSignOutRequest(window.sessionStorage, href); }
+    catch { /* Without sessionStorage there is no request from this tab. */ }
+    // The status, and the inert page, show from here: through the account check and the sign-out.
+    if (signOutRequest.current) setTripping(true);
+    if (hasSignOutRequest(href)) window.history.replaceState(window.history.state, "", withoutSignOutRequest(href));
+  }, []);
+  useEffect(() => {
+    const request = signOutRequest.current;
+    if (!request || loading) return;
+    signOutRequest.current = null;
+    void (async () => {
+      // The chip has already confirmed with a guest. A failed account check can still hold the
+      // stored session, and a session the server ended can leave Privy's behind: sign those out too.
+      try { if (currentUser.current || error || privySessionStored()) await signOut(); }
+      catch (reason) { setTripping(false); setError(reason instanceof Error ? reason.message : "Sign-out could not finish. Try again."); return; }
+      // An unreachable Privy clears its own keys only after this page has left.
+      try { forgetPrivySession(window.localStorage, expireCookie); }
+      catch { /* Blocked storage holds no Privy session. */ }
+      if (!request.returnTo) { setTripping(false); return; }
+      markSignedOut(window.sessionStorage, request.returnTo);
+      window.location.replace(request.returnTo);
+      // The status stays while the chip's page replaces this one. A stopped navigation (Esc or
+      // Stop) fires no event, so the next press or key (not a held key's repeat) gives the page back.
+      const release = (event: Event) => {
+        if ((event as KeyboardEvent).repeat) return;
+        setTripping(false);
+        for (const type of ["pointerdown", "keydown"]) window.removeEventListener(type, release, true);
+      };
+      for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, release, true);
+    })();
+  }, [loading]);
+  // Until the sign-out settles, leaving the page (Back, a reload, closing the tab) still signs this
+  // browser out. Keyed on the status, so StrictMode and an unmount remove it too.
+  useEffect(() => {
+    if (!tripping) return;
+    window.addEventListener("pagehide", forgetStoredSessions);
+    return () => window.removeEventListener("pagehide", forgetStoredSessions);
+  }, [tripping]);
   const ethereumWallets = browserWallets.filter(wallet => wallet.chain === "ethereum");
   const externalProvider = externalWallet?.owner === subject ? externalWallet.provider : ethereumWallets.length === 1 ? ethereumWallets[0].provider : undefined;
   function selectBrowserWallet(choice: Extract<BrowserSignInWallet, { chain: "ethereum" }>) {
@@ -183,7 +242,7 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
     chooseWallet("external");
   }
   const provisionEmbedded = !loading && !authenticatingWallet && isSavedAccount(user) && walletMode === "embedded";
-  return <PilotAccountContext.Provider value={{ client, user, loading: loading || authenticatingWallet, error, notice, dismissNotice: () => setNotice(""), enabled, signIn, signInWallet, authenticatingWallet, signOut, wallet: currentWallet, walletMode, chooseWallet, browserWallets, externalProvider, selectBrowserWallet }}>
+  return <PilotAccountContext.Provider value={{ client, user, loading: loading || authenticatingWallet, error, notice, dismissNotice: () => setNotice(""), enabled, signIn, signInWallet, authenticatingWallet, signOut, signingOut: tripping, wallet: currentWallet, walletMode, chooseWallet, browserWallets, externalProvider, selectBrowserWallet }}>
     {children}
     {enabled && client && (provisionEmbedded || retiring) && <WalletBoundary key={`${subject}:${bridgeRestarts}`} owner={subject} onWallet={provisionEmbedded ? updateWallet : ignoreWallet}><Suspense fallback={null}><PrivyBridge client={client} user={user} loading={loading} onWallet={provisionEmbedded ? updateWallet : ignoreWallet} signOut={privySignOut} logoutOnly={!provisionEmbedded} /></Suspense></WalletBoundary>}
   </PilotAccountContext.Provider>;

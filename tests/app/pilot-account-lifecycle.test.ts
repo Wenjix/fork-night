@@ -198,9 +198,9 @@ test("Google callback errors are removed from the query and the hash, and nothin
 
 // bridge: "mounted" has a registered handle; "on request" registers one only once mounted for sign-out; "never" fails to load.
 function signingOut({ bridge = "mounted", failure, privy, privyFails = false, stored = true, user = alice }:
-  { bridge?: "mounted" | "on request" | "never"; failure?: Error; privy?: Promise<void>; privyFails?: boolean; stored?: boolean; user?: User }) {
+  { bridge?: "mounted" | "on request" | "never"; failure?: Error; privy?: Promise<void>; privyFails?: boolean; stored?: boolean; user?: User | null }) {
   const order: string[] = [];
-  const state = { restarts: 0, user: user as User | undefined, retiring: [] as boolean[], settledAsVisitor: { current: false } };
+  const state = { restarts: 0, user: user ?? undefined as User | undefined, retiring: [] as boolean[], settledAsVisitor: { current: false } };
   const end = () => { order.push("privy"); return privyFails ? Promise.reject(new Error("Privy is unreachable")) : privy ?? Promise.resolve(); };
   const privySignOut: { current?: () => Promise<void> } = { current: bridge === "mounted" ? end : undefined };
   const env: Record<string, unknown> = {
@@ -237,6 +237,10 @@ test("a browser-wallet user's stored Privy session is ended by mounting the brid
     await quiet.signOut();
     assert.deepEqual(quiet.order, ["supabase", "visitor ideas cleared", "cleared"], "no stored session, or a guest, mounts nothing");
   }
+  // The header trip with nobody loaded: a failed account check, or a session the server ended, can leave Privy's.
+  const nobody = signingOut({ bridge: "on request", user: null });
+  await nobody.signOut();
+  assert.deepEqual(nobody.order, ["mounted for sign-out", "privy", "supabase", "visitor ideas cleared", "cleared"]);
 });
 
 test("a temporary bridge that never registers holds sign-out for at most three seconds", async t => {

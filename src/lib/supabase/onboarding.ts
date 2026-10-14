@@ -8,7 +8,12 @@ export const isSavedAccount = (user: User | null | undefined) => !!user && user.
 
 export async function signOutPilotAccount(client: Client, storage: StoragePort) {
   const result = await client.auth.signOut({ scope: "local" });
-  if (result.error) throw new Error("Your account could not be signed out. Refresh and try again.");
+  // auth-js 2.117.2 (GoTrueClient._signOut) removes this browser's session before it reports a
+  // failed logout call (a 5xx or no connection), so only a session that is still stored is a failure.
+  if (result.error) {
+    const after = await client.auth.getSession();
+    if (after.error || after.data.session) throw new Error("Your account could not be signed out. Refresh and try again.");
+  }
   try { storage.removeItem(GOOGLE_LINK_KEY); }
   catch { /* Sign-out succeeds even if optional callback storage is unavailable. */ }
 }

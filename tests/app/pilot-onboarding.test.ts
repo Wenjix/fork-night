@@ -9,15 +9,20 @@ const maker = "6affb211-2319-4aab-a0b2-cc3bb7fe636a";
 function fixture() {
   const values = new Map<string, string>();
   const storage: StoragePort = { getItem: key => values.get(key) ?? null, setItem: (key, value) => { values.set(key, value); }, removeItem: key => { values.delete(key); } };
-  const state = { user: { id: maker, is_anonymous: true } as User | null, verificationError: false, linkError: false, signOutError: false, profile: true, token: `${btoa(JSON.stringify({ alg: "ES256" }))}.payload.signature` };
+  // signOutClears: like auth-js, the failed logout call removes this browser's session first.
+  const state = { user: { id: maker, is_anonymous: true } as User | null, verificationError: false, linkError: false, signOutError: false, signOutClears: false, sessionError: false, profile: true, token: `${btoa(JSON.stringify({ alg: "ES256" }))}.payload.signature` };
   const calls: { action: string; options?: unknown }[] = [];
   const client = {
     auth: {
-      getSession: async () => ({ data: { session: state.user ? { user: state.user, access_token: state.token } : null }, error: null }),
+      getSession: async () => ({ data: { session: state.user && !state.sessionError ? { user: state.user, access_token: state.token } : null }, error: state.sessionError ? new Error("storage unavailable") : null }),
       getUser: async () => ({ data: { user: state.user }, error: state.verificationError ? new Error("not verified") : null }),
       linkIdentity: async (options: unknown) => { calls.push({ action: "link", options }); return { error: state.linkError ? new Error("provider disabled") : null }; },
       signInWithOAuth: async (options: unknown) => { calls.push({ action: "signIn", options }); return { error: null }; },
-      signOut: async (options: unknown) => { calls.push({ action: "signOut", options }); if (state.signOutError) return { error: new Error("logout failed") }; state.user = null; return { error: null }; },
+      signOut: async (options: unknown) => {
+        calls.push({ action: "signOut", options });
+        if (state.signOutError) { if (state.signOutClears) state.user = null; return { error: new Error("logout failed") }; }
+        state.user = null; return { error: null };
+      },
     },
     from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: state.profile ? { id: maker } : null, error: null }) }) }) }),
   } as unknown as SupabaseClient<Database>;
@@ -42,6 +47,15 @@ test("failed sign-out preserves the account and unfinished identity-link check",
   await assert.rejects(signOutPilotAccount(h.client, h.storage), /could not be signed out/);
   assert.equal(h.state.user!.id, maker);
   assert.equal(h.storage.getItem(GOOGLE_LINK_KEY), maker);
+});
+
+test("a failed logout call after the session was removed here still signs out; a session that cannot be read does not", async () => {
+  const h = fixture(); h.state.signOutError = true; h.state.signOutClears = true; h.storage.setItem(GOOGLE_LINK_KEY, maker);
+  await signOutPilotAccount(h.client, h.storage);
+  assert.equal(h.state.user, null);
+  assert.equal(h.storage.getItem(GOOGLE_LINK_KEY), null);
+  const unread = fixture(); unread.state.signOutError = true; unread.state.signOutClears = true; unread.state.sessionError = true;
+  await assert.rejects(signOutPilotAccount(unread.client, unread.storage), /could not be signed out/);
 });
 
 test("a pending JWT check cannot create a wallet after sign-out or a wallet-mode change", async () => {
