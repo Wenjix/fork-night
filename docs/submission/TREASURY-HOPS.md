@@ -6,6 +6,12 @@ What this proves: **a guild allowance funded the payer wallet that paid through 
 
 All keys are throwaway testnet keys held by the founder. That covers the three Squads stewards, the three Safe owners, the two patron wallets that seeded the treasuries (one per network), and both payer wallets, so the approvals show the treasury rules working, not independent people agreeing. The Squads program used is the public devnet deployment of Squads v4 (`SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf`). That deployment is upgradeable, and its bytecode differs from the audited mainnet program.
 
+## Read the recorded funding in the room
+
+This build includes a read-only history at `/pilot?room=paper-moon&view=treasury`. Paper Moon’s compact funding summary opens the five recorded steps: deposit, steward approval, withdrawal to the authorized payer, the payer’s x402 payment, and the app’s +5-credit entry. The inspector also shows the later allowance removal and its receipts. Current room credits and generation activity remain separate from these historical amounts. Earlier ordinary Solana and Base receipts remain under “Other recorded funding.”
+
+The local Paper Lantern hall links to this shared pilot in a new tab. Its sample people do not represent the actual steward keys, and its local account and project membership are not transferred. Reading the history requires no wallet signature. Treasury proposal, approval and withdrawal scripts still run outside the app; the hosted x402 funding endpoint remains disabled.
+
 ## Squads on Solana devnet
 
 A 2-of-3 multisig approves a one-time spending limit for one spender. That spender is the payer wallet, which is not a multisig member, and its only allowed destination is the payer's own wallet. The payer draws within the limit and pays the room.
@@ -24,7 +30,7 @@ A 2-of-3 multisig approves a one-time spending limit for one spender. That spend
 Accounts:
 - Multisig [`9Hwpbq8g…cReA`](https://explorer.solana.com/address/9Hwpbq8gkoCGSb5wBog9QwczeiCc1d1cXp78m8UfcReA?cluster=devnet)
 - Vault `6LGvFZbMoWyWsNjayMi4FeAQMLNAXEVFJbGzeSPE52RW`
-- Spending limit [`6ygdeiwJ…CKnaM`](https://explorer.solana.com/address/6ygdeiwJEvAfBNMVgSX5NPTQ7XfjLUPk8UqdahDCKnaM?cluster=devnet), with 2 USDC left; it will be removed by a second 2-of-3 vote after the demo
+- Spending limit [`6ygdeiwJ…CKnaM`](https://explorer.solana.com/address/6ygdeiwJEvAfBNMVgSX5NPTQ7XfjLUPk8UqdahDCKnaM?cluster=devnet), removed after the demo by a second 2-of-3 vote with 2 USDC unused. The vote: propose [2wPP9GYY…](https://explorer.solana.com/tx/2wPP9GYYjWvPKNRJij5ut7U2nd7eT7zdtxyYdKJJEYdc2i69YLummuXiXeDDU1a9r24kqmTYMAVLBWt6g8y1XeJG?cluster=devnet); approve [in2M2gHF…](https://explorer.solana.com/tx/in2M2gHFBa8caXUErp5BxMcWydtVothfHuJnHTAQJ7DMKdhotMcMA4CZnDmE3wCz3dD86UsntLCGyffpg5untDW?cluster=devnet) and [3CgxgHUf…](https://explorer.solana.com/tx/3CgxgHUfMXuDhkMUvSiDBFADkFyzAS9QPejVdm9jwAzQsouBYZcPQwMh2VgBKvfTEV9ABekpQqeqYVisMzj4NC7p?cluster=devnet); execute [39QCnEAZ…](https://explorer.solana.com/tx/39QCnEAZNp3NiSx3PtCs9uSXavasaUax4L2pg2uuYLG7iqXkD1FZtY3YjxenrVPSizSgKWVaGxcJ5k4HthvmHuSg?cluster=devnet), on Oct 13. A draw simulated afterwards fails with `AccountNotInitialized`, and the vault's remaining 4 USDC stays under 2-of-3 control.
 - Payer `EFpvKAoQ6tAFDyNFtdfrF3i3nHRwZdrYtKFR1q3j7MXL`
 
 Right after the draw, four refusals were simulated against the live multisig (2 USDC left on the limit), and none was broadcast:
@@ -69,4 +75,4 @@ The treasury steps are standalone scripts and are not part of this repository; e
 
 ## Not included
 
-A treasury paying the x402 route directly is later work. That means a Squads vault paying through `spending_limit_use` with a custom x402 client, or a Safe acting as the x402 payer, which the default x402 client cannot sign for. Also later work: guild screens in the app, treasury-funded budgets with refunds, independent stewards, and mainnet custody. Each needs its own decisions about real funds, refunds and accounting.
+A treasury paying the x402 route directly is later work. That means a Squads vault paying through `spending_limit_use` with a custom x402 client, or a Safe acting as the x402 payer, which the default x402 client cannot sign for. Also later work: proposing or approving treasury spending in the app, treasury-funded budgets with refunds, independent stewards, and mainnet custody. Each needs its own decisions about real funds, refunds and accounting.

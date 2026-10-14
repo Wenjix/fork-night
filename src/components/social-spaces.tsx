@@ -73,6 +73,7 @@ import { fandomImageInStyle, type ArtDirections } from "@/lib/fandom-art-directi
 import { FandomArtDirection } from "./fandom-art-direction";
 import { RoomPeek } from "./room-peek";
 import { PersonalDesk } from "./personal-desk";
+import { GuildFundingHallEntry } from "./guild-funding";
 import { ContextPlate, SectionPlate } from "./visual-plates";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -1206,6 +1207,7 @@ function GuildHall(props: ViewProps & { guildId: string }) {
             </div>
           </section>
         )}
+        {guildId === "paper-lantern" && tab === "hall" && <GuildFundingHallEntry />}
         {tab === "people" && (
           <section className="hall-people">
             <h2>The people at this table</h2>

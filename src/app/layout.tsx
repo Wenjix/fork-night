@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./room-networks.css";
+import "./guild-funding.css";
 
 const interfaceFont = localFont({
   src: "../../public/fonts/inter-latin.woff2",
