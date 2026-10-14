@@ -1,12 +1,14 @@
 "use client";
 
-import { ArrowRight, Bird, ChevronDown } from "lucide-react";
+import { ArrowRight, Bird, ChevronDown, MoonStar } from "lucide-react";
 import { WREN } from "@/lib/agents/wren";
 import { useWrenRoom, type WrenRoomState } from "./use-wren-room";
 import { VerifiedPanelImage } from "./verified-panel-image";
 import { WrenProfile } from "./wren-profile";
 import { TurnSteps } from "./turn-steps";
 import { WrenAllowance } from "./wren-allowance";
+import { AgentRoomHeader } from "./agent-room-header";
+import { StoryArt } from "../story-art";
 import { AgentConcepts } from "./agent-concepts";
 import {
   AgentBadge,
@@ -24,7 +26,7 @@ function LatestFromWren({ room }: { room: WrenRoomState }) {
   return (
     <figure className="ag-hero-frame">
       <div className="ag-hero-frame-top">
-        <LiveTag label="Wren’s newest panel" />
+        {scene && panel ? <LiveTag label="Wren’s newest panel" /> : <span className="ag-panel-status">The Night Shift</span>}
         <AgentBadge size="sm" />
       </div>
       {scene && panel && room.client ? (
@@ -52,13 +54,19 @@ function LatestFromWren({ room }: { room: WrenRoomState }) {
         </>
       ) : (
         <>
-          <span className="ag-panel-frame ag-panel-placeholder" role="status">
+          <div className="ag-room-illustration">
+            <StoryArt src="/art/midnight-story.webp#frame=5" description="A lighthouse casting its beam across a quiet, star-filled harbour." />
+            <span>Fork Night story illustration</span>
+          </div>
+          <p className="ag-panel-status" role="status">
             {room.status === "unconfigured"
               ? "Room not connected"
-              : room.data
-                ? "Wren has not published yet"
-                : "Reading the room…"}
-          </span>
+              : room.status === "error"
+                ? "The room could not be read. Open The Night Shift to try again."
+                : room.data
+                  ? "Wren has not published yet"
+                  : "Reading the room…"}
+          </p>
           <figcaption>
             <a href={ROOM_HREF}>
               Open The Night Shift <ArrowRight size={15} aria-hidden="true" />
@@ -77,28 +85,13 @@ export function AgentsShowcase() {
       <a className="ag-skip" href="#wren">
         Skip to Wren
       </a>
-      <header className="ag-header">
-        <a className="ag-brand" href="/">
-          Fork <span>Night</span>
-        </a>
-        <nav aria-label="Agents page">
-          <a href="#wren">Wren</a>
-          <a href="#turn">A turn</a>
-          <a href="#allowance">Allowance</a>
-          <a href="#concept">Concept</a>
-        </nav>
-        <a className="ag-button ag-button-yellow ag-header-cta" href={ROOM_HREF}>
-          Open the room
-        </a>
-      </header>
+      <AgentRoomHeader current="agents">
+        <a className="ag-button ag-button-yellow ag-header-cta" href={ROOM_HREF}>Open the room <ArrowRight size={16} aria-hidden="true" /></a>
+      </AgentRoomHeader>
 
       <main>
         <section className="ag-hero" aria-labelledby="agents-title">
-          <div className="ag-stars" aria-hidden="true" />
           <div className="ag-hero-copy">
-            <p className="ag-eyebrow ag-eyebrow-chip">
-              <Bird size={15} aria-hidden="true" /> Agents in the room
-            </p>
             <h1 id="agents-title">
               In The Night Shift, one of the makers is an{" "}
               <em>AI&nbsp;agent</em>.
@@ -120,6 +113,7 @@ export function AgentsShowcase() {
                 How Wren takes a turn <ChevronDown size={16} aria-hidden="true" />
               </a>
             </div>
+            <a className="ag-night-watch-link" href="/night-watch"><MoonStar size={19} aria-hidden="true" /><span>Looking for your own agent? <strong>Meet Night Watch</strong></span><ArrowRight size={17} aria-hidden="true" /></a>
             <ul className="ag-legend" aria-label="How to read this page">
               <li>
                 <LiveTag label="Live" /> read from the room as you watch

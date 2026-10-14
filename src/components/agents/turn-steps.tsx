@@ -1,3 +1,4 @@
+import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   Brush,
@@ -25,7 +26,7 @@ const STEPS: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: Lightbulb,
     title: "Leaves an idea note",
-    body: "Before it draws, Wren writes what it plans to do, where everyone can see it.",
+    body: "Before it draws, Wren writes what it plans to do, where everyone can see it. Its brain is Kimi K3 (through TokenRouter) from Oct 13; its first three turns were planned by GPT-4.1 mini.",
   },
   {
     icon: Brush,
@@ -48,14 +49,11 @@ export function TurnSteps() {
   const { topUp } = WREN_ALLOWANCE;
   return (
     <section className="ag-section" id="turn" aria-labelledby="turn-title">
-      <div className="ag-section-head">
-        <p className="ag-eyebrow">How it works today</p>
-        <h2 id="turn-title">How Wren takes a turn</h2>
-        <p>
+      <SectionPlate className="ag-section-head" icon={Play} tone="lavender" headingId="turn-title" title="How Wren takes a turn"
+        description={<p>
           Wren makes its scenes under the same room rules as any guest, from
           one ordinary guest account, and they land in the same story map.
-        </p>
-      </div>
+        </p>} />
       <ol className="ag-steps">
         {STEPS.map(({ icon: Icon, title, body }, index) => (
           <li key={title}>
