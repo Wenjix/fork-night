@@ -145,7 +145,7 @@ const loaded = new Map<string, Promise<MppAdapter>>();
 export function loadMppAdapter(path = mppAdapterPath()): Promise<MppAdapter> {
   let pending = loaded.get(path);
   if (!pending) {
-    pending = checkPinnedFiles(path).then(() => import(/* turbopackIgnore: true */ pathToFileURL(path).href).then(
+    pending = checkPinnedFiles(path).then(() => import(/* webpackIgnore: true */ /* turbopackIgnore: true */ pathToFileURL(path).href).then(
       (module: unknown) => checkAdapter(module),
       (error: Error & { code?: string }) => {
         throw new MppAdapterError(error.code === "ERR_MODULE_NOT_FOUND"

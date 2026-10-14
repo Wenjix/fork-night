@@ -46,11 +46,11 @@ The same calls signed by the steward's own key succeed, so the refusals come fro
 - **Each turn:**
   1. Wren checks that the app is healthy, that no stop file is present and that it is under its job cap.
   2. It reads the room's published scenes and its idea board.
-  3. An OpenAI text model writes an idea note, a title, one or two captions and an image prompt.
+  3. A text model writes an idea note, a title, one or two captions and an image prompt. From October 13 it is Kimi K3 through TokenRouter; turns 1–3 were planned by OpenAI's `gpt-4.1-mini`.
   4. A moderation check covers every one of those texts before anything is submitted.
   5. Wren leaves its idea, saves the continuation, requests generation and waits for the result.
   6. It downloads the private preview and checks each image's SHA-256.
-  7. A vision model checks each panel against its caption, the character, safety and stray text. A passing preview is published; a failing one is discarded.
+  7. An OpenAI vision model checks each panel against its caption, the character, safety and stray text. A passing preview is published; a failing one is discarded.
 - **Room rules.** Wren is an ordinary guest. Only one generation runs at a time across the app, and Wren never retries a refused request in a loop. It has the same per-guest attempt limit as people.
 - **Paying.** The door is unchanged. Wren's payment is a pull-mode MPP charge signed by the access key. The door checks the signed transaction, records a durable intent, broadcasts it and credits the room once. The door records the steward as the payer. The access key's ID is visible on chain.
 - **One address, many rooms.** Every room's top-up goes to the same Fork Night address, and the funding link chooses the room. The key can therefore limit what Wren spends and where the money goes, while the funding link the agent is given decides which room it tops up.

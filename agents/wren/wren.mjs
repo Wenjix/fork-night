@@ -3,7 +3,8 @@
 // as a browser guest does: one persisted anonymous Supabase session (publishable key only, never the service
 // role), the pilot RPCs, POST /api/pilot/generate, polling, the private pilot-media preview with its hash
 // check, then pilot_publish or pilot_discard. When Wren is out of attempts or the room is out of credits, it
-// buys one MPP top-up with its Tempo allowance key (pay.mjs). See
+// buys one MPP top-up with its Tempo allowance key (pay.mjs). Its planner is Kimi K3 through TokenRouter (from
+// Oct 13; turns 1-3 used gpt-4.1-mini); the vision review and moderation run on OpenAI. See
 // agents/wren/README.md and docs/submission/AGENT-ROOM.md.
 //
 //   node agents/wren/wren.mjs status
@@ -36,6 +37,7 @@ const EVIDENCE_DIR = join(REPO, ".internal/implementation/agent-room-2026-10-12"
 const JOURNAL_FILE = join(EVIDENCE_DIR, "agent-journal.jsonl");
 const AGENT_TOKEN_FILE = join(REPO, ".local/x402/agent-token");
 const OPENAI = "https://api.openai.com/v1";
+const TOKENROUTER = "https://api.tokenrouter.com/v1";
 const FORBIDDEN_ROOMS = new Set(["paper-moon", "midnight-signal", "lantern-archive"]);
 const IN_FLIGHT_JOB = new Set(["queued", "running", "uncertain"]);
 const IN_FLIGHT_OP = new Set(["queued", "dispatching", "uncertain"]);
@@ -45,7 +47,7 @@ const PERIL = /\b(blood|bloody|gun|guns|knife|knives|weapon|kill|killed|killing|
 
 if (ROOM !== "night-shift" || FORBIDDEN_ROOMS.has(ROOM)) throw new Error("Wren only works in night-shift.");
 
-// Only the three values Wren needs are taken from .env.local; the service role and other secrets are never loaded.
+// Only the four values Wren needs are taken from .env.local; the service role and other secrets are never loaded.
 const ENV = (() => {
   const parsed = existsSync(join(REPO, ".env.local")) ? parseEnv(readFileSync(join(REPO, ".env.local"), "utf8")) : {};
   const pick = (name) => process.env[name] ?? parsed[name];
@@ -53,6 +55,7 @@ const ENV = (() => {
     url: pick("NEXT_PUBLIC_SUPABASE_URL"),
     publishableKey: pick("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
     openaiKey: pick("OPENAI_API_KEY"),
+    tokenrouterKey: pick("TOKENROUTER_API_KEY"),
   };
 })();
 
@@ -321,6 +324,67 @@ async function openai(path, body) {
   return json;
 }
 
+// ---------------------------------------------------------------- brain (the planning call)
+
+// From Oct 13, Wren plans with Kimi K3 through TokenRouter's OpenAI-compatible endpoint (config models.text and
+// models.textProvider). Turns 1-3 were planned by gpt-4.1-mini on OpenAI. The vision review and moderation stay
+// on OpenAI, unchanged.
+const textProvider = () => CFG.models.textProvider ?? "openai";
+// TokenRouter's price for moonshotai/kimi-k3 on Oct 13, 2026 (40% off list), USD per million tokens.
+const BRAIN_PRICES = { "moonshotai/kimi-k3": { input: 1.8, cachedInput: 0.18, output: 9 } };
+const brainLog = { calls: 0, latencyMs: 0, input: 0, cachedInput: 0, output: 0, reasoning: 0, served: null };
+
+async function tokenrouter(body) {
+  if (!ENV.tokenrouterKey) throw new Error("TOKENROUTER_API_KEY is required (.env.local) for Wren's planner.");
+  const response = await fetch(`${TOKENROUTER}/chat/completions`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${ENV.tokenrouterKey}`, "content-type": "application/json" },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(120_000),
+  });
+  const json = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(`TokenRouter HTTP ${response.status}: ${String(json?.error?.message ?? "no body").slice(0, 200)}`);
+  return json;
+}
+
+/** One planning call to the configured provider; its usage is counted for the journal. */
+async function brain(body) {
+  const started = Date.now();
+  const json = textProvider() === "tokenrouter" ? await tokenrouter(body) : await openai("/chat/completions", { ...body, store: false });
+  const usage = json?.usage ?? {};
+  brainLog.calls++;
+  brainLog.latencyMs += Date.now() - started;
+  brainLog.input += Number(usage.prompt_tokens) || 0;
+  brainLog.cachedInput += Number(usage.prompt_tokens_details?.cached_tokens) || 0;
+  brainLog.output += Number(usage.completion_tokens) || 0;
+  brainLog.reasoning += Number(usage.completion_tokens_details?.reasoning_tokens ?? usage.reasoning_tokens) || 0;
+  brainLog.served = json?.model ?? brainLog.served;
+  return json;
+}
+
+/** The planner's calls this run, journal-safe: no key may contain "token", or scrub() would drop it. */
+function brainSummary() {
+  const price = BRAIN_PRICES[CFG.models.text];
+  const fresh = Math.max(0, brainLog.input - brainLog.cachedInput);
+  const usd = price ? (fresh * price.input + brainLog.cachedInput * price.cachedInput + brainLog.output * price.output) / 1e6 : null;
+  return {
+    provider: textProvider(), model: CFG.models.text, served: brainLog.served, calls: brainLog.calls, latencyMs: brainLog.latencyMs,
+    usage: { input: brainLog.input, cachedInput: brainLog.cachedInput, output: brainLog.output, reasoning: brainLog.reasoning },
+    estimatedUsd: usd === null ? null : usd.toFixed(6),
+  };
+}
+
+/** The planner's JSON object, or null when the answer is missing or malformed (a thinking model can run out of room). */
+function brainJson(completion) {
+  const text = String(completion?.choices?.[0]?.message?.content ?? "").trim().replace(/^```(?:json)?\s*|\s*```$/g, "");
+  try {
+    const value = JSON.parse(text);
+    return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 const PLAN_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -398,18 +462,22 @@ async function moderate(plan) {
 async function plan(view, uid, state) {
   const choice = chooseParent(view, uid, state);
   let retryNote = "";
+  const thinking = textProvider() === "tokenrouter";
   for (let attempt = 1; attempt <= 2; attempt++) {
-    const completion = await openai("/chat/completions", {
+    const completion = await brain({
       model: CFG.models.text,
-      store: false,
-      max_tokens: 1200,
-      temperature: 0.8,
+      // Kimi K3 reasons before it answers, inside the same budget, and uses its own default temperature.
+      // Low reasoning effort (Wenjie, Oct 13): the Night Watch's co-pilot went from 22 s to 4 s with it.
+      max_tokens: thinking ? 4000 : 1200,
+      ...(thinking ? { reasoning: { effort: "low" } } : { temperature: 0.8 }),
       messages: brainMessages(view, choice, retryNote),
       response_format: { type: "json_schema", json_schema: { name: "wren_turn", strict: true, schema: PLAN_SCHEMA } },
     });
-    const raw = JSON.parse(completion.choices?.[0]?.message?.content ?? "{}");
-    const { plan, idea, problems } = validatePlan(raw, choice);
-    problems.push(...planContentProblems(plan, { creditedLabel: idea?.maker_label ?? null }));
+    const raw = brainJson(completion);
+    const { plan, idea, problems } = raw
+      ? validatePlan(raw, choice)
+      : { plan: null, idea: null, problems: [`the answer was not one JSON object (finish reason ${completion?.choices?.[0]?.finish_reason ?? "unknown"})`] };
+    if (plan) problems.push(...planContentProblems(plan, { creditedLabel: idea?.maker_label ?? null }));
     const moderation = problems.length ? null : await moderate(plan);
     if (!problems.length && !moderation.flagged) return { choice, plan, idea, moderation, attempts: attempt };
     retryNote = problems.length
@@ -636,7 +704,7 @@ async function dryRun() {
   const planned = await plan(view, uid, state);
   if (!planned.plan) {
     console.log(`\nThe plan was rejected or flagged twice; a live turn would skip. (${planned.rejected})`);
-    await journal("dry-run-skipped", { reason: planned.rejected, parentId: planned.choice.parent.id });
+    await journal("dry-run-skipped", { reason: planned.rejected, parentId: planned.choice.parent.id, brain: brainSummary() });
     return;
   }
   printPlan(planned);
@@ -650,11 +718,13 @@ async function dryRun() {
   console.log(`  3. pilot_save_continuation (${planned.plan.captions.length} panel${planned.plan.captions.length > 1 ? "s" : ""}, ${units} room credit${planned.idea ? `, crediting idea ${short(planned.idea.id)}` : ""})`);
   console.log(`  4. POST ${CFG.appOrigin}/api/pilot/generate, poll up to ${CFG.pollSeconds}s; a 409 is journaled and the turn exits`);
   console.log("  5. download the private preview, verify SHA-256, one vision review → pilot_publish if ok, pilot_discard if not");
-  console.log(`\nOpenAI calls this run: ${openaiCalls}`);
+  const thought = brainSummary();
+  console.log(`\nBrain: ${thought.model} via ${thought.provider}${thought.served ? ` (served as ${thought.served})` : ""}: ${thought.calls} call${thought.calls === 1 ? "" : "s"}, ${thought.latencyMs} ms; ${thought.usage.input} input (${thought.usage.cachedInput} cached) and ${thought.usage.output} output (${thought.usage.reasoning} reasoning) tokens${thought.estimatedUsd ? `, about $${thought.estimatedUsd}` : ""}`);
+  console.log(`OpenAI calls this run: ${openaiCalls}${thought.provider === "openai" ? "" : " (moderation)"}`);
   await journal("dry-run-plan", {
     parentId: planned.choice.parent.id, buildsOnIdeaId: planned.idea?.id ?? null, ideaNote: planned.plan.ideaNote, title: planned.plan.title,
     captions: planned.plan.captions, imagePrompt: planned.plan.imagePrompt, moderation: planned.moderation.flagged ? "flagged" : "clear",
-    credits: view.credits, attemptsUsed: view.attemptsUsed, topUpNeeded: need.length > 0, guards: blockers,
+    credits: view.credits, attemptsUsed: view.attemptsUsed, topUpNeeded: need.length > 0, guards: blockers, brain: thought,
   });
 }
 
@@ -748,7 +818,7 @@ async function liveTurn(args) {
     if (!planned.plan) {
       // Ideas offered to a plan rejected twice are not offered again: they may be what made it unusable.
       if (offered.length) { markDeclined(state, offered); await saveState(state); }
-      await journal("turn-skipped", { reason: `rejected or flagged twice: ${planned.rejected}`, parentId: planned.choice.parent.id, declinedIdeaIds: offered });
+      await journal("turn-skipped", { reason: `rejected or flagged twice: ${planned.rejected}`, parentId: planned.choice.parent.id, declinedIdeaIds: offered, brain: brainSummary() });
       return;
     }
     printPlan(planned);
@@ -757,12 +827,13 @@ async function liveTurn(args) {
     turn = {
       id: randomUUID(), startedAt: new Date().toISOString(), phase: "planned", flow: 2, parentId: planned.choice.parent.id, reason: planned.choice.reason,
       buildsOnIdeaId: planned.idea?.id ?? null, buildsOnLabel: planned.idea?.maker_label ?? null, plan: planned.plan,
-      ideaRequestId: randomUUID(), continuationRequestId: randomUUID(),
+      brain: brainSummary(), ideaRequestId: randomUUID(), continuationRequestId: randomUUID(),
     };
     await save({});
     await journal("turn-planned", {
       turnId: turn.id, parentId: turn.parentId, buildsOnIdeaId: turn.buildsOnIdeaId, ideaNote: turn.plan.ideaNote, title: turn.plan.title,
       captions: turn.plan.captions, imagePrompt: turn.plan.imagePrompt, moderation: "clear", credits: view.credits, attemptsUsed: view.attemptsUsed,
+      brain: turn.brain,
     });
   }
 

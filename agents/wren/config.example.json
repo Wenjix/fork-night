@@ -9,7 +9,8 @@
   "character": "a curly-haired girl in a yellow scarf and a blue coat",
   "setting": "a lighthouse harbor at night on a quiet coast",
   "models": {
-    "text": "gpt-4.1-mini-2025-04-14",
+    "text": "moonshotai/kimi-k3",
+    "textProvider": "tokenrouter",
     "vision": "gpt-4.1-mini-2025-04-14",
     "moderation": "omni-moderation-latest"
   },

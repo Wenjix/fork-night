@@ -190,7 +190,8 @@ test("src/mpp reaches mppx, viem, ox and Tempo only through the isolated adapter
     assert(!/(?:from\s+|import\s*\(\s*(?:\/\*[^*]*\*\/\s*)?)["'](?:mppx|viem|ox)(?:\/[^"']*)?["']/.test(text), `${file} imports mppx, viem or ox directly`);
   }
   const loader = await readFile(join(root, "src/mpp/adapter.ts"), "utf8");
-  assert.match(loader, /import\(\/\* turbopackIgnore: true \*\/ pathToFileURL\(path\)\.href\)/);
+  // Both bundlers must leave the runtime import alone: production builds with webpack, dev with Turbopack.
+  assert.match(loader, /import\(\/\* webpackIgnore: true \*\/ \/\* turbopackIgnore: true \*\/ pathToFileURL\(path\)\.href\)/);
   assert.match(loader, /resolve\(\/\*turbopackIgnore: true\*\/ \(process\.env\.NODE_ENV === "test" && process\.env\.MPP_ADAPTER\) \|\| "vendor\/mpp-adapter\/index\.mjs"\)/);
 });
 
