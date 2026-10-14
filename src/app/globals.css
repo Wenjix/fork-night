@@ -1187,6 +1187,9 @@ form .fine-print {
     max-width: 1800px;
     margin-inline: auto;
   }
+  .app-shell:has(> #story-workspace) {
+    max-width: none;
+  }
   .workspace {
     grid-template-columns: minmax(0, 1fr) 405px;
   }

@@ -39,10 +39,36 @@
 }
 .map-scroller {
   overflow: auto;
-  min-height: 630px;
-  max-height: 820px;
+  height: clamp(240px, calc(100svh - 200px), 760px);
   padding: 0 10px 10px;
-  overscroll-behavior: contain;
+}
+.story-canvas-viewport {
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-x pan-y pinch-zoom;
+  overscroll-behavior: auto;
+  overflow-anchor: none;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.story-canvas-viewport:focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: -3px;
+}
+.story-canvas-viewport[data-panning="true"],
+.story-canvas-viewport[data-panning="true"] * {
+  cursor: grabbing;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.story-canvas-viewport img {
+  -webkit-user-drag: none;
+}
+.map-navigation-help {
+  margin: 8px 25px 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
 }
 .map-world {
   position: relative;
@@ -137,8 +163,9 @@
 .map-controls {
   border-top: 1px solid var(--line);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 20px;
+  gap: 8px 20px;
   padding: 10px 25px;
   margin-top: 8px;
 }
@@ -227,6 +254,9 @@
     padding: 3px 22px 14px;
   }
   .map-scroller {
+    display: none;
+  }
+  .map-navigation-help {
     display: none;
   }
   .mobile-map {
@@ -326,10 +356,10 @@
   }
 }
 
-/* Desktop: the map fills its column, as tall as the inspector beside it, so a deep path leaves no empty band
-   and the tree isn't clipped by a fixed-height box. It still scrolls inside when the tree is taller. */
 @media (min-width: 820px) {
-  .main-pane { display: flex; flex-direction: column; }
-  .main-pane > .map-region { flex: 1 1 auto; display: flex; flex-direction: column; }
-  .map-region > .map-scroller { flex: 1 1 0; min-height: 630px; max-height: none; }
+  .main-pane:has(> .map-region) {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+  }
 }

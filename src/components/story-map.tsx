@@ -5,7 +5,7 @@ import type { DemoState, Moment, Project } from "@/domain/types";
 import { DEMO_UNIT, demoReuseFee, formatCredits, getPath } from "@/domain";
 import { layoutMoments } from "@/lib/map-layout";
 import { StoryArt } from "./story-art";
-import { useRef } from "react";
+import { useCanvasNavigation } from "./use-canvas-navigation";
 
 interface Props {
   state: DemoState;
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function StoryMap({ state, project, selected, onSelect }: Props) {
-  const scroller = useRef<HTMLDivElement>(null);
+  const { viewportRef, helpId, centerOn } = useCanvasNavigation(project.id, selected.id);
   const moments = state.moments.filter((item) => item.projectId === project.id);
   const { nodes, width, height } = layoutMoments(moments, project.seedId);
   const path = getPath(state, project.id, selected.id);
@@ -79,7 +79,17 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
         </span>
         <span>Selected path highlighted</span>
       </div>
-      <div className="map-scroller" ref={scroller}>
+      <p className="map-navigation-help desktop-only" id={helpId}>
+        Drag to move · Scroll or swipe to explore · Focus the canvas and use arrow keys or Page Up / Down
+      </p>
+      <div
+        className="map-scroller story-canvas-viewport"
+        ref={viewportRef}
+        role="region"
+        aria-label="Story map canvas"
+        aria-describedby={helpId}
+        tabIndex={0}
+      >
         <div className="map-world" style={{ width, height }}>
           <svg
             className="map-lines"
@@ -148,6 +158,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
               key={node.moment.id}
               className="map-node"
               id={`moment-${node.moment.id}`}
+              data-canvas-node={node.moment.id}
               style={{ left: node.x - 90, top: node.y }}
             >
               {card(node.moment)}
@@ -196,23 +207,16 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
       <div className="map-controls">
         <button
           className="text-button"
-          onClick={() => onSelect(project.seedId)}
+          onClick={() => {
+            onSelect(project.seedId);
+            centerOn(project.seedId);
+          }}
         >
           <ArrowDown size={16} /> Back to the seed
         </button>
         <button
           className="text-button desktop-only"
-          onClick={() =>
-            scroller.current
-              ?.querySelector(`#moment-${selected.id}`)
-              ?.scrollIntoView({
-                block: "nearest",
-                inline: "center",
-                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                  ? "instant"
-                  : "smooth",
-              })
-          }
+          onClick={() => centerOn(selected.id)}
         >
           <LocateFixed size={16} /> Find selected
         </button>

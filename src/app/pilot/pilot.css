@@ -1,6 +1,5 @@
 .pilot-shell {
-  max-width: 1600px;
-  margin: auto;
+  width: 100%;
   --pilot-shadow: 0 3px 18px #1a153609;
   font-family: var(--font-interface), sans-serif;
   font-size: 15px;
@@ -100,6 +99,8 @@
 }
 .pilot-table {
   display: grid;
+  max-width: 1600px;
+  margin-inline: auto;
   grid-template-columns: clamp(240px, 21vw, 320px) minmax(0, 1fr) clamp(
       230px,
       19vw,
@@ -950,10 +951,24 @@
 }
 .pilot-map-scroll {
   width: 100%;
-  height: max(480px, calc(100svh - 360px));
+  height: clamp(280px, calc(100svh - 240px), 760px);
   overflow: auto;
-  overscroll-behavior: contain;
   scrollbar-color: var(--line-strong) transparent;
+}
+.pilot-map-navigation {
+  padding: 0 28px 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.pilot-map-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-top: 10px;
+}
+.pilot-map-tools .text-button {
+  min-height: 44px;
 }
 .pilot-map-world {
   position: relative;
@@ -1614,7 +1629,10 @@
     font-size: 14px;
   }
   .pilot-map-scroll {
-    height: 560px;
+    height: clamp(280px, calc(100svh - 200px), 560px);
+  }
+  .pilot-map-navigation {
+    padding-inline: 20px;
   }
   .pilot-notice {
     margin-inline: 20px;

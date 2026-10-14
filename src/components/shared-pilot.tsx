@@ -35,6 +35,7 @@ import { whileVisible, pollWhileVisible } from "@/lib/visible-interval";
 import { pilotCreditCost, validPilotCaptions } from "@/lib/pilot-format";
 import { PilotImage } from "./pilot-panels";
 import { PilotRecap } from "./pilot-recap";
+import { useCanvasNavigation } from "./use-canvas-navigation";
 import { PilotArtwork } from "./pilot-artwork";
 import { PilotIdeas } from "./pilot-ideas";
 import { PilotContinuation } from "./pilot-continuation";
@@ -1284,66 +1285,78 @@ function PilotMap({
     right = Math.max(...nodes.map((node) => node.x));
   const width = Math.max(280, right - left + 240),
     center = (left + right) / 2;
-  const scroller = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    scroller.current
-      ?.querySelector(`[data-moment="${selectedId}"]`)
-      ?.scrollIntoView({ block: "nearest", inline: "center" });
-  }, [selectedId, visible]);
+  const { viewportRef, helpId, centerOn } = useCanvasNavigation(`${seed.room_id}:${visible}`, selectedId);
   return (
-    <div className="pilot-map-scroll" ref={scroller}>
-      <div className="pilot-map-world" style={{ width, height }}>
-        <svg
-          width={width}
-          height={height}
-          className="pilot-map-lines"
-          aria-hidden="true"
-        >
-          {nodes
-            .filter((node) => node.moment.parentId)
-            .map((node) => {
-              const parent = nodes.find(
-                (item) => item.moment.id === node.moment.parentId,
-              )!;
-              const from = parent.x - center + width / 2,
-                to = node.x - center + width / 2;
-              return (
-                <path
-                  key={node.moment.id}
-                  d={`M${from},${parent.y} C${from},${parent.y - 20} ${to},${node.y + 160} ${to},${node.y + 140}`}
-                  fill="none"
-                  stroke={
-                    selectedPath.includes(node.moment.id)
-                      ? "var(--violet)"
-                      : "var(--line-strong)"
-                  }
-                  strokeWidth={2}
-                />
-              );
-            })}
-        </svg>
-        {nodes.map(({ moment, x, y }) => (
-          <button
-            key={moment.id}
-            type="button"
-            className={`pilot-node ${selectedId === moment.id ? "selected" : ""}`}
-            style={{ left: `calc(50% + ${x - center - 90}px)`, top: y }}
-            data-moment={moment.id}
-            aria-pressed={selectedId === moment.id}
-            onClick={() => onSelect(moment.id)}
-          >
-            <span aria-hidden="true" style={{ display: "block" }}>
-              <PilotImage
-                client={client}
-                panel={pilotPanels(moment.panels)[0]}
-                allowRetry={false}
-              />
-            </span>
-            <strong>{moment.title}</strong>
-            <span>{moment.maker_label}</span>
-          </button>
-        ))}
+    <>
+      <div className="pilot-map-navigation">
+        <p id={helpId}>Drag to move · Scroll or swipe to explore · Focus the canvas and use arrow keys or Page Up / Down</p>
+        <div className="pilot-map-tools" role="group" aria-label="Map navigation">
+          <button className="text-button" type="button" onClick={() => centerOn(selectedId)}>Find selected</button>
+          <button className="text-button" type="button" onClick={() => centerOn(seed.id)}>Back to the seed</button>
+        </div>
       </div>
-    </div>
+      <div
+        className="pilot-map-scroll story-canvas-viewport"
+        ref={viewportRef}
+        role="region"
+        aria-label="Story map canvas"
+        aria-describedby={helpId}
+        tabIndex={0}
+      >
+        <div className="pilot-map-world" style={{ width, height }}>
+          <svg
+            width={width}
+            height={height}
+            className="pilot-map-lines"
+            aria-hidden="true"
+          >
+            {nodes
+              .filter((node) => node.moment.parentId)
+              .map((node) => {
+                const parent = nodes.find(
+                  (item) => item.moment.id === node.moment.parentId,
+                )!;
+                const from = parent.x - center + width / 2,
+                  to = node.x - center + width / 2;
+                return (
+                  <path
+                    key={node.moment.id}
+                    d={`M${from},${parent.y} C${from},${parent.y - 20} ${to},${node.y + 160} ${to},${node.y + 140}`}
+                    fill="none"
+                    stroke={
+                      selectedPath.includes(node.moment.id)
+                        ? "var(--violet)"
+                        : "var(--line-strong)"
+                    }
+                    strokeWidth={2}
+                  />
+                );
+              })}
+          </svg>
+          {nodes.map(({ moment, x, y }) => (
+            <button
+              key={moment.id}
+              type="button"
+              className={`pilot-node ${selectedId === moment.id ? "selected" : ""}`}
+              style={{ left: `calc(50% + ${x - center - 90}px)`, top: y }}
+              data-moment={moment.id}
+              data-canvas-node={moment.id}
+              aria-pressed={selectedId === moment.id}
+              onClick={() => onSelect(moment.id)}
+            >
+              <span aria-hidden="true" style={{ display: "block" }}>
+                <PilotImage
+                  client={client}
+                  panel={pilotPanels(moment.panels)[0]}
+                  allowRetry={false}
+                />
+              </span>
+              <strong>{moment.title}</strong>
+              <span>{moment.maker_label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
