@@ -11,6 +11,7 @@ import type { ReleaseConfig } from "../lib/onchain/config.ts";
 import { sameAddress, type PreparedRelease } from "../lib/onchain/model.ts";
 import { shortAddress } from "../lib/onchain/journey.ts";
 import { denialMessage, requestMessage, signWalletMessage, walletRequestApi, type WalletRequest, type WalletRequestProof } from "../lib/onchain/wallet-requests.ts";
+import { whileVisible } from "../lib/visible-interval.ts";
 import { PilotDialog } from "./pilot-dialog.tsx";
 
 export function WalletReviewDialog({ request, action, config, busy, disabled = false, error, motion, onClose, onConfirm, returnFocus }: {
@@ -82,8 +83,8 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
   }
   useEffect(() => {
     active.current = true; void refresh();
-    const timer = setInterval(() => void refresh(), 8000);
-    return () => { active.current = false; sequence.current++; clearInterval(timer); };
+    const stop = whileVisible(() => void refresh(), 8000);
+    return () => { active.current = false; sequence.current++; stop(); };
   }, [prepared.projectId]);
   useEffect(() => { onWorking(working); return () => onWorking(false); }, [working, onWorking]);
   useEffect(() => { setReview(undefined); savedSubmission.current = undefined; }, [account, makerId, provider]);

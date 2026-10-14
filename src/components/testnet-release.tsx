@@ -11,6 +11,7 @@ import { DEFAULT_SUPPORT_MON, ORIGINAL_ROOM, prepareRelease, RELEASE_TERMS, type
 import { ReleaseClient, type WalletProvider, type Operation } from "../lib/onchain/client.ts";
 import { releaseJourney, shortAddress, walletBylines } from "../lib/onchain/journey.ts";
 import { ReleaseSession } from "../lib/onchain/session.ts";
+import { whileVisible } from "../lib/visible-interval.ts";
 import { ReleaseScenes } from "./release-scenes.tsx";
 import { browserWallet, usePilotAccount } from "./pilot-account.tsx";
 import { WalletRequests } from "./wallet-requests.tsx";
@@ -44,7 +45,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   onChoosePath: (id: string) => void;
 }) {
   const identity = usePilotAccount();
-  const selectedProvider = identity?.walletMode === "embedded" ? identity.wallet.provider : browserWallet();
+  const selectedProvider = identity?.walletMode === "embedded" ? identity.wallet.provider : identity ? identity.externalProvider : browserWallet();
   const walletRef = useRef<WalletProvider | undefined>(selectedProvider);
   walletRef.current = selectedProvider;
   const session = useMemo(() => new ReleaseSession(prepared, config, new ReleaseClient(config), { wallet: () => walletRef.current, storage: () => window.localStorage }), [config, prepared.projectId]);
@@ -63,8 +64,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   useEffect(() => {
     if (!open) return;
     void session.refresh();
-    const interval = setInterval(() => void session.refresh(), 8000);
-    return () => clearInterval(interval);
+    return whileVisible(() => void session.refresh(), 8000);
   }, [session, open]);
   useEffect(() => { onBusyChange?.(walletBusy); return () => onBusyChange?.(false); }, [walletBusy, onBusyChange]);
   const perform = (operation: Operation, index = 0, address = "") => { void session.perform(operation, index, address, amount); };
@@ -92,6 +92,12 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
           <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "embedded"} onClick={() => identity.chooseWallet("embedded")}>In-app wallet <PrivyMark /></button>
           <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "external"} onClick={() => identity.chooseWallet("external")}>Use a browser wallet</button>
         </div>}
+        {identity?.walletMode === "external" && !!identity.browserWallets?.some(wallet => wallet.chain === "ethereum") && <label className="pilot-release-provider">Browser wallet
+          <select disabled={walletBusy || pending} value={identity.browserWallets.find(wallet => wallet.chain === "ethereum" && wallet.provider === selectedProvider)?.id ?? ""} onChange={event => {
+            const choice = identity.browserWallets?.find(wallet => wallet.id === event.target.value);
+            if (choice?.chain === "ethereum") identity.selectBrowserWallet?.(choice);
+          }}><option value="" disabled>Choose an EVM wallet</option>{identity.browserWallets.filter(wallet => wallet.chain === "ethereum").map(wallet => <option value={wallet.id} key={wallet.id}>{wallet.name}</option>)}</select>
+        </label>}
         <button className={`button ${account ? "secondary" : "primary"}`} type="button" disabled={walletBusy || identity?.walletMode === "embedded" && !selectedProvider} onClick={() => void session.connect()}>{busy === "connect" ? "Connecting…" : account ? "Reconnect wallet" : identity?.walletMode === "embedded" ? "Use my in-app wallet" : "Connect testnet wallet"}</button>
         {identity?.walletMode === "embedded" && !selectedProvider && <small role="status">{identity.wallet.error || "Preparing your in-app wallet…"}</small>}
         </div>

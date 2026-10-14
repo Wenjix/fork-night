@@ -6,7 +6,7 @@ import type { Tables } from "../lib/supabase/database.types.ts";
 import { isSavedAccount } from "../lib/supabase/onboarding.ts";
 import { usePilotAccount } from "./pilot-account.tsx";
 import { GoogleButton, PrivyMark, WalletProviderNote } from "./auth-branding.tsx";
-import { useEmbeddedWalletByDefault, walletAccountAddress } from "../lib/supabase/wallet-login.ts";
+import { useEmbeddedWalletByDefault, walletAccountIdentity } from "../lib/supabase/wallet-login.ts";
 import { shortAddress } from "../lib/onchain/journey.ts";
 import { WalletSignInButton } from "./pilot-wallet-signin.tsx";
 import { PilotDialog } from "./pilot-dialog.tsx";
@@ -23,14 +23,33 @@ export function GuestSignOutDialog({ name, busy, disabled, error, blockedReason,
   </PilotDialog>;
 }
 
-export function PilotIdentity({ profile, disabled, onJoin, signOutBlockedReason = "" }: { profile?: Tables<"pilot_profiles">; disabled: boolean; onJoin: () => void; signOutBlockedReason?: string }) {
+/** Returning sign-in from the header; an in-app wallet is prepared after Google returns. */
+function GoogleSignInButton({ disabled }: { disabled: boolean }) {
+  const account = usePilotAccount();
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState("");
+  async function start() {
+    if (!account || working) return;
+    setWorking(true); setError("");
+    // Success leaves the page for Google, so the button stays busy.
+    try { await account.signIn("return"); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Google sign-in could not start. Try again."); setWorking(false); }
+  }
+  return <div className="pilot-google-signin">
+    <GoogleButton type="button" disabled={disabled || working} onClick={() => void start()}>{working ? "Opening Google…" : "Sign in with Google"}</GoogleButton>
+    {error && <p role="alert">{error}</p>}
+  </div>;
+}
+
+export function PilotIdentity({ profile, disabled, onJoin, signOutBlockedReason = "", joinLabel = "Join this room" }: { profile?: Tables<"pilot_profiles">; disabled: boolean; onJoin: () => void; signOutBlockedReason?: string; joinLabel?: string }) {
   const account = usePilotAccount();
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [confirmGuestSignOut, setConfirmGuestSignOut] = useState(false);
   const saved = isSavedAccount(account?.user);
-  const walletAddress = walletAccountAddress(account?.user);
+  const signInWallet = walletAccountIdentity(account?.user);
+  const walletAddress = signInWallet?.address;
   const googleAccount = useEmbeddedWalletByDefault(account?.user);
   async function save() {
     if (!account || working) return;
@@ -62,7 +81,7 @@ export function PilotIdentity({ profile, disabled, onJoin, signOutBlockedReason 
       {!profile && <><p>Choose your public storyteller name when you start making. You can read or use the release controls now.</p><button type="button" className="button secondary" disabled={disabled} onClick={onJoin}>Choose my storyteller name</button></>}
       <p>Connecting another wallet changes your testnet role. It keeps this storyteller name.</p>
       {account?.enabled && !saved && <><GoogleButton type="button" disabled={disabled || working} onClick={() => void save()}>{working ? "Opening Google…" : "Save my byline with Google"}</GoogleButton><small>Keep this storyteller identity. An in-app wallet is prepared after sign-in.</small><WalletProviderNote /></>}
-      {walletAddress && <div className="pilot-account-wallet"><strong>Your sign-in wallet</strong><code>{walletAddress}</code><small>Choose its account in your browser wallet. Connect it in the release panel for Monad testnet actions.</small></div>}
+      {walletAddress && <div className="pilot-account-wallet"><strong>Your sign-in wallet · {signInWallet?.chain === "solana" ? "Solana" : "EVM"}</strong><code>{walletAddress}</code><small>{signInWallet?.chain === "solana" ? "Signed in with Solana. For this demo's releases and payouts, connect an EVM or in-app wallet on Monad testnet. Your storyteller stays the same." : "Choose its account in your browser wallet. Connect it in the release panel for Monad testnet actions."}</small></div>}
       {saved && (account?.walletMode === "embedded" || googleAccount && !!account?.wallet.address) && <div className="pilot-account-wallet" aria-live="polite">
         {account?.wallet.address ? <><div className="pilot-account-wallet-heading"><strong>Your in-app wallet</strong><PrivyMark /></div><div><code>{account.wallet.address}</code><button type="button" className="text-button" aria-label="Copy in-app wallet address" onClick={() => void copy()}><Copy size={15} aria-hidden="true" />{copied ? "Copied" : "Copy"}</button></div><small>Monad testnet. Add test MON before registering or claiming.</small></> : <p>{account?.wallet.error || "Preparing your in-app wallet…"}</p>}
         {account?.wallet.error && <button type="button" className="text-button" disabled={disabled} onClick={account.wallet.prepare}>Check wallet again</button>}
@@ -71,5 +90,5 @@ export function PilotIdentity({ profile, disabled, onJoin, signOutBlockedReason 
       {account?.user && <button type="button" className="text-button pilot-signout-button" disabled={disabled || working} onClick={() => { setError(""); if (saved) void signOut(); else setConfirmGuestSignOut(true); }}>{working ? "Signing out…" : "Sign out of this browser"}</button>}
       {disabled && signOutBlockedReason && <small>{signOutBlockedReason}</small>}
     </div>
-  </details>{confirmGuestSignOut && !saved && <GuestSignOutDialog name={profile!.display_name} busy={working} disabled={disabled} error={error} blockedReason={signOutBlockedReason} onClose={() => { if (!working) setConfirmGuestSignOut(false); }} onConfirm={() => void signOut()} />}</> : <div className="pilot-account-entry"><WalletSignInButton disabled={disabled} /><button className="button secondary pilot-join" type="button" disabled={disabled} onClick={onJoin}><UserRound size={17} aria-hidden="true" />Join this room</button></div>;
+  </details>{confirmGuestSignOut && !saved && <GuestSignOutDialog name={profile!.display_name} busy={working} disabled={disabled} error={error} blockedReason={signOutBlockedReason} onClose={() => { if (!working) setConfirmGuestSignOut(false); }} onConfirm={() => void signOut()} />}</> : <div className="pilot-account-entry">{account?.enabled && <GoogleSignInButton disabled={disabled} />}<WalletSignInButton disabled={disabled} /><button className="button secondary pilot-join" type="button" disabled={disabled} onClick={onJoin}><UserRound size={17} aria-hidden="true" />{joinLabel}</button></div>;
 }

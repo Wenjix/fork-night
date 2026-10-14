@@ -7,13 +7,16 @@ import type { WalletProvider } from "../lib/onchain/client.ts";
 import { pilotBrowserClient } from "../lib/supabase/pilot-client.ts";
 import { checkGoogleLink, googleCallbackError, isSavedAccount, signOutPilotAccount, startGoogleLogin } from "../lib/supabase/onboarding.ts";
 import { accountWalletMode, startWalletLogin, type WalletChoice } from "../lib/supabase/wallet-login.ts";
+import { discoverBrowserWallets, type BrowserSignInWallet } from "../lib/wallets/browser-wallets.ts";
 
 export type EmbeddedWalletState = { owner: string; address: string; provider?: WalletProvider; loading: boolean; error: string; prepare?: () => void };
 const emptyWallet: EmbeddedWalletState = { owner: "", address: "", loading: false, error: "" };
 export type PilotAccount = {
   client?: SupabaseClient<Database>; user?: User; loading: boolean; error: string; enabled: boolean;
   signIn: (mode: "link" | "return") => Promise<void>;
-  signInWallet: () => Promise<void>; authenticatingWallet: boolean;
+  signInWallet: (wallet: BrowserSignInWallet) => Promise<void>; authenticatingWallet: boolean;
+  browserWallets?: BrowserSignInWallet[]; externalProvider?: WalletProvider;
+  selectBrowserWallet?: (wallet: Extract<BrowserSignInWallet, { chain: "ethereum" }>) => void;
   signOut: () => Promise<void>;
   wallet: EmbeddedWalletState; walletMode: "embedded" | "external";
   chooseWallet: (mode: "embedded" | "external") => void;
@@ -42,6 +45,8 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
   const walletLoginActive = useRef(false);
   const [wallet, setWallet] = useState(emptyWallet);
   const [walletChoice, setWalletChoice] = useState<WalletChoice>();
+  const [browserWallets, setBrowserWallets] = useState<BrowserSignInWallet[]>([]);
+  const [externalWallet, setExternalWallet] = useState<{ owner: string; provider: WalletProvider }>();
   const version = useRef(0);
   const currentUser = useRef(user);
   currentUser.current = user;
@@ -49,6 +54,7 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
     if (isSavedAccount(currentUser.current) && next.owner === currentUser.current!.id) setWallet(next);
   }, []);
   const subject = user?.id ?? "";
+  useEffect(() => discoverBrowserWallets(window, setBrowserWallets), []);
   useEffect(() => {
     const connected = pilotBrowserClient();
     if (!connected) { setLoading(false); return; }
@@ -90,21 +96,33 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
     await startGoogleLogin(client, window.location.href, window.sessionStorage, mode);
   }, [client, enabled, error]);
   const currentWallet = wallet.owner === subject && isSavedAccount(user) ? wallet : emptyWallet;
-  const signInWallet = useCallback(async () => {
+  const signInWallet = useCallback(async (choice: BrowserSignInWallet) => {
     if (!client) throw new Error("Account sign-in is awaiting room setup. You can keep reading.");
-    if (walletLoginActive.current) return;
+    if (walletLoginActive.current) throw new Error("A wallet sign-in is already in progress. Finish its wallet prompts before trying again.");
     walletLoginActive.current = true; setAuthenticatingWallet(true); setError("");
-    try { await startWalletLogin(client, browserWallet(), window.location.href); }
+    try {
+      const signedIn = choice.chain === "solana"
+        ? await startWalletLogin(client, choice.provider, window.location.href, "solana")
+        : await startWalletLogin(client, choice.provider, window.location.href);
+      if (choice.chain === "ethereum") setExternalWallet({ owner: signedIn.id, provider: choice.provider });
+      else setExternalWallet(undefined);
+    }
     finally { walletLoginActive.current = false; setAuthenticatingWallet(false); }
   }, [client]);
   async function signOut() {
     if (!client) return;
     await signOutPilotAccount(client, window.sessionStorage);
     version.current++;
-    setUser(undefined); setWallet(emptyWallet); setWalletChoice(undefined); setError(""); setLoading(false);
+    setUser(undefined); setWallet(emptyWallet); setWalletChoice(undefined); setExternalWallet(undefined); setError(""); setLoading(false);
+  }
+  const ethereumWallets = browserWallets.filter(wallet => wallet.chain === "ethereum");
+  const externalProvider = externalWallet?.owner === subject ? externalWallet.provider : ethereumWallets.length === 1 ? ethereumWallets[0].provider : undefined;
+  function selectBrowserWallet(choice: Extract<BrowserSignInWallet, { chain: "ethereum" }>) {
+    setExternalWallet({ owner: subject, provider: choice.provider });
+    chooseWallet("external");
   }
   const provisionEmbedded = !loading && !authenticatingWallet && isSavedAccount(user) && walletMode === "embedded";
-  return <PilotAccountContext.Provider value={{ client, user, loading: loading || authenticatingWallet, error, enabled, signIn, signInWallet, authenticatingWallet, signOut, wallet: currentWallet, walletMode, chooseWallet }}>
+  return <PilotAccountContext.Provider value={{ client, user, loading: loading || authenticatingWallet, error, enabled, signIn, signInWallet, authenticatingWallet, signOut, wallet: currentWallet, walletMode, chooseWallet, browserWallets, externalProvider, selectBrowserWallet }}>
     {children}
     {enabled && client && provisionEmbedded && <WalletBoundary key={subject} owner={subject} onWallet={updateWallet}><Suspense fallback={null}><PrivyBridge client={client} user={user} loading={loading} onWallet={updateWallet} /></Suspense></WalletBoundary>}
   </PilotAccountContext.Provider>;

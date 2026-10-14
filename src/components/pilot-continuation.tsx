@@ -40,7 +40,7 @@ export function PilotContinuation({ client, selected, moments, profile, authenti
   return <section className="pilot-task" aria-label="Your continuation">
     <h2 ref={heading} tabIndex={-1}>{operation?.status === "delivered" ? "Your moment, ready to share" : operation?.status === "published" ? "You’re part of the story" : "Make the next moment yours"}</h2>
     {!profile ? <form className="pilot-onboarding" onSubmit={event => { event.preventDefault(); (authenticated ? actions.join : actions.google ?? actions.join)(name); }} aria-busy={busy}>
-      {!authenticated && <div className="pilot-wallet-entry"><WalletSignInButton disabled={busy} /><p>Use MetaMask or another browser wallet to sign in first. No gas is used.</p></div>}
+      {!authenticated && <div className="pilot-wallet-entry"><WalletSignInButton disabled={busy} /><p>Sign in with an EVM or Solana wallet. No gas is used.</p></div>}
       <p>{authenticated ? "You’re signed in. Choose the name that will appear beside your published moments." : "Choose the name that will appear beside your published moments. No wallet needed."}</p>
       <label>Your storyteller name<input required maxLength={60} autoComplete="nickname" value={name} onChange={event => setName(event.target.value)} /></label>
       <div className="pilot-auth-actions">

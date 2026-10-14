@@ -10,6 +10,7 @@ export async function checkOnboarding(env = process.env, request = fetch) {
     jwtIdClaim: "sub",
     privyJwtIntegration: "confirm-in-dashboard",
     ethereumWalletProvider: "confirm-in-dashboard",
+    solanaWalletProvider: "confirm-in-dashboard",
     connection: "not-configured",
   };
   if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return report;

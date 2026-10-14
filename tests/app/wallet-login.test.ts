@@ -11,7 +11,7 @@ const signer = new Wallet(id("Fork Night wallet-login test fixture"));
 // Supabase Auth serializes provider.Claims.CustomClaims under custom_claims.
 const identity: UserIdentity = { id: "20000000-0000-4000-8000-000000000091", identity_id: "20000000-0000-4000-8000-000000000091", user_id: maker, provider: "web3", identity_data: { sub: `web3:ethereum:${signer.address}`, custom_claims: { chain: "ethereum", address: signer.address, network: "10143" } } };
 const user: User = { id: maker, is_anonymous: false, app_metadata: { provider: "web3", providers: ["web3"] }, user_metadata: {}, aud: "authenticated", created_at: "2026-10-12T15:00:00Z", identities: [identity] };
-function fixture({ reject = false, disabled = false } = {}) {
+function fixture({ reject = false, disabled = false, network = "0x279f", missingNetwork = false, rejectSwitch = false } = {}) {
   const requests: { url: string; body: Record<string, unknown> }[] = [];
   const methods: string[] = [];
   const client = createClient<Database>("https://wallet-auth.invalid", "public-fixture-key", {
@@ -29,9 +29,18 @@ function fixture({ reject = false, disabled = false } = {}) {
   const wallet = { request: async ({ method, params }: { method: string; params?: unknown }) => {
     methods.push(method);
     if (method === "eth_requestAccounts") return [signer.address];
-    if (method === "eth_chainId") return "0x279f";
+    if (method === "eth_chainId") return network;
+    if (method === "wallet_switchEthereumChain") {
+      if (rejectSwitch) throw Object.assign(new Error("PRIVATE_NETWORK_DETAILS"), { code: 4001 });
+      if (missingNetwork) { missingNetwork = false; throw Object.assign(new Error("Unknown chain"), { code: 4902 }); }
+      network = "0x279f"; return null;
+    }
+    if (method === "wallet_addEthereumChain") {
+      assert.equal((params as { chainId: string }[])[0].chainId, "0x279f");
+      return null;
+    }
     if (method === "personal_sign") {
-      if (reject) throw new Error("Rejected signature with PRIVATE_PROVIDER_DETAILS");
+      if (reject) throw Object.assign(new Error("Rejected signature with PRIVATE_PROVIDER_DETAILS"), { code: 4001 });
       return signer.signMessage(toUtf8String((params as string[])[0]));
     }
     throw new Error(`Unexpected wallet method ${method}`);
@@ -64,6 +73,22 @@ test("a returning wallet gets the same Auth identity without creating a new gues
     assert.equal(h.requests.length, 1);
   }
 });
+test("EVM sign-in switches to Monad testnet and adds the network only when the wallet does not know it", async () => {
+  for (const missingNetwork of [false, true]) {
+    const h = fixture({ network: "0x1", missingNetwork });
+    await startWalletLogin(h.client, h.wallet, "https://fork-night.vercel.app/pilot");
+    assert.equal(h.methods.includes("wallet_addEthereumChain"), missingNetwork);
+    assert.match(String(h.requests[0].body.message), /Chain ID: 10143/);
+    assert.equal(h.methods.at(-1), "personal_sign");
+    assert.equal(verifyMessage(String(h.requests[0].body.message), String(h.requests[0].body.signature)), signer.address);
+  }
+});
+test("cancelling the network switch does not submit a login or alter the Auth session", async () => {
+  const h = fixture({ network: "0x1", rejectSwitch: true });
+  await assert.rejects(startWalletLogin(h.client, h.wallet, "https://fork-night.vercel.app/pilot"), /sign-in was cancelled/);
+  assert.equal(h.requests.length, 0);
+  assert.equal((await h.client.auth.getSession()).data.session, null);
+});
 test("naming a wallet account afterwards retains its authenticated UUID and does not make a guest", async () => {
   const h = fixture();
   await startWalletLogin(h.client, h.wallet, "http://localhost:3005/pilot");
@@ -76,7 +101,7 @@ test("naming a wallet account afterwards retains its authenticated UUID and does
 test("cancelled signatures and a disabled provider leave sign-in recoverable and expose no raw provider error", async () => {
   const cancelled = fixture({ reject: true });
   await assert.rejects(startWalletLogin(cancelled.client, cancelled.wallet, "http://localhost:3005/pilot"), error => {
-    assert.match(String(error), /Wallet sign-in did not finish/); assert.doesNotMatch(String(error), /PRIVATE_PROVIDER/); return true;
+    assert.match(String(error), /sign-in was cancelled/); assert.doesNotMatch(String(error), /PRIVATE_PROVIDER/); return true;
   });
   assert.equal(cancelled.requests.length, 0);
   assert.equal((await cancelled.client.auth.getSession()).data.session, null);

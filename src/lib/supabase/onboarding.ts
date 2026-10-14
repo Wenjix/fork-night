@@ -30,8 +30,9 @@ export function googleReturnUrl(current: string) {
   url.pathname = "/pilot";
   url.hash = "";
   for (const key of [...url.searchParams.keys()]) {
-    if (!["room", "moment"].includes(key)) url.searchParams.delete(key);
+    if (!["room", "moment", "create"].includes(key)) url.searchParams.delete(key);
   }
+  if (url.searchParams.get("create") !== "1" || url.searchParams.has("room")) url.searchParams.delete("create");
   url.searchParams.set("onboarding", "1");
   return url.href;
 }

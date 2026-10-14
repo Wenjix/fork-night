@@ -1680,9 +1680,29 @@
 .pilot-header-actions .pilot-join { min-height: 44px; white-space: nowrap; }
 .pilot-account-entry { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pilot-wallet-signin > .button { min-height: 44px; }
+.pilot-wallet-dialog { max-width: 520px; }
+.pilot-wallet-dialog > p { margin: 0 0 22px; }
+.pilot-wallet-chain + .pilot-wallet-chain { margin-top: 28px; }
+.pilot-wallet-chain h3 { margin: 0 0 10px; font-size: 20px; }
+.pilot-wallet-list { display: grid; gap: 8px; }
+.pilot-wallet-choice { display: flex; align-items: center; gap: 12px; min-height: 52px; width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); text-align: left; font: inherit; cursor: pointer; transition: border-color 160ms ease-out, background 160ms ease-out; }
+.pilot-wallet-choice > span:first-of-type { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.pilot-wallet-choice:hover:not(:disabled) { background: var(--surface); border-color: var(--ink); }
+.pilot-wallet-choice:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+.pilot-wallet-choice:disabled { cursor: wait; opacity: 0.65; }
+.pilot-wallet-choice > svg { flex-shrink: 0; }
+.pilot-wallet-waiting { max-width: 12ch; font-size: 14px; }
+.pilot-wallet-dialog .pilot-wallet-empty { margin: 0; font-size: 15px; }
+.pilot-wallet-dialog > small { display: block; margin-top: 24px; line-height: 1.5; }
+.pilot-wallet-dialog .pilot-wallet-signin-error { margin: 20px 0 0; color: var(--danger); }
+.pilot-release-provider { display: grid; gap: 5px; font-size: 14px; text-align: left; }
+.pilot-release-provider select { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; }
 .pilot-wallet-signin > p { font-size: 15px; line-height: 1.6; color: var(--danger); max-width: 40ch; margin: 8px 0 0; overflow-wrap: anywhere; }
 .pilot-header-actions .pilot-wallet-signin { position: relative; }
 .pilot-header-actions .pilot-wallet-signin > p { position: absolute; top: 100%; right: 0; z-index: 10; width: min(300px, calc(100vw - 40px)); padding: 14px; border-radius: 12px; background: var(--surface); box-shadow: var(--pilot-shadow); }
+.pilot-google-signin { position: relative; }
+.pilot-google-signin > .pilot-google-button { min-height: 44px; white-space: nowrap; }
+.pilot-google-signin > p { position: absolute; top: 100%; right: 0; z-index: 10; width: min(300px, calc(100vw - 40px)); margin: 8px 0 0; padding: 14px; border-radius: 12px; background: var(--surface); box-shadow: var(--pilot-shadow); color: var(--danger); font-size: 15px; line-height: 1.6; overflow-wrap: anywhere; }
 .pilot-wallet-entry { display: grid; gap: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .pilot-wallet-entry > p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0; max-width: 65ch; }
 .pilot-account-wallet > code { display: block; margin-top: 8px; }
