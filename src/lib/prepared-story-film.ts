@@ -43,7 +43,7 @@ export const BLADE_RUNNER_FILM = {
 const nightShift = fandomStory("kessler-night-shift")!;
 const nightBeat = (id: string) => nightShift.beats.find(beat => beat.id === id)!;
 
-/** The Night Shift's lead path (Sam, Jules, Sam, Wren) as one prepared Wan 3.0 clip, made Oct 14, 2026. */
+/** The Night Shift's lead path, all six scenes (Sam, Jules, Priya, Wren, Sam, Wren), as one prepared Wan 3.0 clip, made Oct 14, 2026. */
 export const NIGHT_SHIFT_FILM = {
   projectId: nightShift.id,
   title: nightShift.title,
@@ -53,21 +53,21 @@ export const NIGHT_SHIFT_FILM = {
   videoModel: "Wan 3.0",
   preparedOn: "2026-10-14",
   preparedOnLabel: "October 14, 2026",
-  duration: 12,
+  duration: 18,
   heading: "Six scenes. One night.",
   pathScenes: 6,
-  invite: "Six scenes, four key frames, one 12-second film. A prepared example, ready to play.",
-  sourcesHeading: "Four key frames from the six scenes",
-  intro: "Follow Mika through all six scenes, from the blackout up eighty-one floors to Mrs. Ito's window. Four key frames from that path become a 12-second anime clip.",
+  invite: "Six scenes, one 18-second film. A prepared example, ready to play.",
+  sourcesHeading: "The six scenes",
+  intro: "Follow Mika through all six scenes, from the blackout up eighty-one floors to Mrs. Ito's window, then watch these exact images become an 18-second anime clip, one shot per scene.",
   videoLabel: "The Night Shift, prepared motion example",
   downloadName: "fork-night-the-night-shift.mp4",
   disclosure: "Original story and characters. Authored sample collaboration between people and Wren, an AI agent; AI-generated images and motion.",
-  video: "/film-demo/night-shift-wan.mp4",
+  video: "/film-demo/night-shift-wan6.mp4",
   poster: "/film-demo/night-shift-poster.webp",
   captions: "/film-demo/night-shift-captions.vtt",
   /** The lead ending; selecting it offers the film. */
   lastSceneId: `${nightShift.id}-${nightShift.leadEnding}`,
-  images: ([["opening", 0], ["stairs", 0], ["chain", 0], ["dawn-81", 0]] as const).map(([id, panel], index) => {
+  images: ([["opening", 0], ["stairs", 0], ["floor-forty", 0], ["every-door", 0], ["chain", 0], ["dawn-81", 0]] as const).map(([id, panel], index) => {
     const beat = nightBeat(id);
     return { frame: index, title: beat.title, authorId: beat.authorId, caption: beat.captions[panel], src: `/film-demo/night-shift-image-${index}.webp` };
   }),

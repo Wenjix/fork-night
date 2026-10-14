@@ -50,6 +50,8 @@
 .fn-film-disclosure { margin: 24px 0 0; max-width: 75ch; font-size: 14px; color: #5d4b68; }
 .workspace-toolbar.fn-film-toolbar { flex-wrap: wrap; }
 .fn-film-toolbar .view-switch { flex-wrap: wrap; }
+/* Six source images sit three by two on wide screens instead of four plus two. */
+@media (min-width: 1001px) { .fn-film-images:has(> li:nth-child(5)) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1000px) {
   .fn-film-images { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 24px; }
 }

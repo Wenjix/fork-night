@@ -74,8 +74,10 @@ test("the Night Shift film follows its lead path, people and Wren, and every pre
   const { existsSync } = await import("node:fs");
   assert.deepEqual(Object.keys(PREPARED_FILMS).sort(), [BLADE_RUNNER_FILM.projectId, NIGHT_SHIFT_FILM.projectId].sort());
   assert.equal(NIGHT_SHIFT_FILM.lastSceneId, "kessler-night-shift-dawn-81");
-  assert.deepEqual(NIGHT_SHIFT_FILM.images.map(image => image.title), ["Lights out in Kessler Ward", "Eighty-one floors", "Hand to hand", "Dawn on eighty-one"]);
-  assert.deepEqual(NIGHT_SHIFT_FILM.images.map(image => image.authorId), ["sam", "jules", "sam", "wren"]);
+  assert.deepEqual(NIGHT_SHIFT_FILM.images.map(image => image.title), ["Lights out in Kessler Ward", "Eighty-one floors", "Floor forty", "Every door left open", "Hand to hand", "Dawn on eighty-one"]);
+  assert.deepEqual(NIGHT_SHIFT_FILM.images.map(image => image.authorId), ["sam", "jules", "priya", "wren", "sam", "wren"]);
+  // One reference image per scene: the film covers the whole six-scene path.
+  assert.equal(NIGHT_SHIFT_FILM.images.length, NIGHT_SHIFT_FILM.pathScenes);
   for (const film of Object.values(PREPARED_FILMS))
     for (const file of [film.poster, film.captions, ...film.images.map(image => image.src), film.video])
       assert(existsSync(new URL(`../../public${file}`, import.meta.url)), file);

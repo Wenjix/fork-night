@@ -6,9 +6,12 @@
   --muted: #bdb5cf;
   --line: #2f2645;
   --line-strong: #5b4c82;
-  --violet: #e0193a;
+  /* Text-safe reds on near-black (6.6:1 and 7.2:1); filled buttons use --ns-fill below. */
+  --violet: #ff5c74;
   --violet-dark: #ff6b81;
   --violet-soft: #2a0d18;
+  --ns-fill: #e0193a;
+  --ns-fill-hover: #c4122f;
   --yellow: #21e6ff;
   --ns-cyan: #21e6ff;
   --ns-red: #ff2e4d;
@@ -48,3 +51,11 @@
 #story-workspace[data-room-theme="neon"] .fn-film-invite { background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink); box-shadow: 4px 4px 0 rgba(33, 230, 255, 0.35); }
 #story-workspace[data-room-theme="neon"] .fn-film-invite :is(h2, p) { color: inherit; }
 #story-workspace[data-room-theme="neon"] .fn-film-invite p { color: var(--muted); }
+
+/* Filled red buttons keep a deeper red so their white labels stay readable (4.8:1). */
+#story-workspace[data-room-theme="neon"] :is(.button.primary, .fn-film-button[data-slot="button"]:not(.fn-film-button-light):not(.fn-film-button-outline), .restyle-styles button) { background: var(--ns-fill); border-color: var(--ns-fill); color: #fff; }
+#story-workspace[data-room-theme="neon"] :is(.button.primary, .fn-film-button[data-slot="button"]:not(.fn-film-button-light):not(.fn-film-button-outline), .restyle-styles button):hover { background: var(--ns-fill-hover); }
+#story-workspace[data-room-theme="neon"] .moment-card.selected { outline-color: var(--ns-red); border-color: var(--ns-red); }
+/* The film page's muted text is tuned for light paper; on the neon night it uses the room's own muted tone. */
+#story-workspace[data-room-theme="neon"] :is(.fn-film-intro p, .fn-film-image-position, .fn-film-images figcaption p, .fn-film-disclosure, .fn-film-invite p) { color: var(--muted); }
+#story-workspace[data-room-theme="neon"] :is(.fn-film-intro h2, .fn-film-section-heading h3, .fn-film-images h4) { color: var(--ink); }
