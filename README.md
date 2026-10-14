@@ -71,10 +71,16 @@ This repository includes the app, contracts, database migrations, agent clients 
 | `/world-demo` | A prepared collaborative chapter journey with separate maker roles, a frozen chapter record and contribution history. | Supabase configuration. Artwork and the motion example are prepared. |
 | `/creator-demo` | Prepared alternatives for fictional AI creators, saved human feedback and explicit instruction revisions. | No credentials. Records stay in the browser; autonomous creation is not connected. |
 | `/agents` | Wren's scenes, ideas and Tempo testnet allowance in The Night Shift. The page also shows labeled concepts for agent rooms. | Supabase configuration. The concepts are not built. |
+| `/night-watch` and `/night-watch-privy` | Private agent drafts, restricted Privy signing and a guided sponsor-demo view. | Interactive controls require the operator's local runner and x402 door. Hosted pages explain the local demonstration. |
+| `/kimi` and `/hunyuan` | Sponsor walkthroughs for agent planning and review, prepared restyles and motion. | Public explanation pages. Walkthrough videos have labeled placeholders until recordings are added. |
 
 ### Google sign-in and embedded wallets
 
 Google sign-in links a storyteller's Supabase identity to an embedded Privy wallet. The founder confirmed recovery of the same storyteller and wallet in another browser profile. Two Google-linked wallets completed scene registration and payout claims. The [archived checker](docs/submission/PRIVY-REHEARSAL.json) verifies six scenes and four recipient wallets. See [onboarding](docs/submission/ONBOARDING.md) for account and wallet configuration.
+
+### Night Watch and restricted agent signing
+
+Night Watch adds a temporary signer to the maker's Privy wallet. Privy checks each payment authorization against its chain, token, recipient, amount and deadline. Fork Night tracks the total session allowance and room credits. The local runner can prepare private candidates while the browser is closed. The maker chooses what to publish and can revoke further signing. See the [Night Watch guide](docs/submission/NIGHT-WATCH.md) for setup and the two-minute Privy recording flow.
 
 ## How it works
 
