@@ -41,6 +41,7 @@ supabase/.temp/
 .cloudflare/
 .vinext/
 .dev.vars*
+/workers/recovery-timer/worker-configuration.d.ts
 /dist/
 
 # Vercel project linkage and pulled settings

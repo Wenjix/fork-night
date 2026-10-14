@@ -37,7 +37,10 @@
     "contracts:compile": "node scripts/compile-contracts.mjs",
     "contracts:test": "node --test tests/contracts/releases.test.mjs && node --test tests/contracts/client.test.ts tests/contracts/rehearsal-check.test.mjs",
     "contracts:deploy": "node --env-file-if-exists=.env.local scripts/deploy-releases.mjs",
-    "contracts:check": "node --env-file-if-exists=.env.local scripts/check-release-rehearsal.mjs"
+    "contracts:check": "node --env-file-if-exists=.env.local scripts/check-release-rehearsal.mjs",
+    "pilot:readiness": "node --env-file-if-exists=.env.local scripts/check-pilot-readiness.ts",
+    "pilot:reconcile": "node --env-file-if-exists=.env.local scripts/reconcile-pilot.ts",
+    "pilot:prepare-rehearsal": "node --env-file-if-exists=.env.local scripts/prepare-judge-rehearsal.ts"
   },
   "dependencies": {
     "@fix-webm-duration/fix": "1.0.1",

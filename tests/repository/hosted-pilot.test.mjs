@@ -30,11 +30,25 @@ test("hosted settings exclude unrelated credentials and separate worker access f
   assert.equal(selected.web.FORK_NIGHT_PUBLIC_URL, "https://fork-night.vercel.app");
   assert.equal(selected.worker.OPENAI_API_KEY, env.OPENAI_API_KEY);
   assert.equal(selected.worker.TRIGGER_SECRET_KEY, undefined);
+  assert.deepEqual(selected.missingTimer, ["PILOT_TIMER_TRIGGER_SECRET_KEY"]);
+  assert.equal(selected.timer.TRIGGER_SECRET_KEY, "", "the web key is not implicitly shared with the timer");
   assert.equal(selected.worker.NEXT_PUBLIC_MONAD_CURATOR_ADDRESS, undefined);
-  for (const destination of [selected.web, selected.worker]) {
+  for (const destination of [selected.web, selected.worker, selected.timer]) {
     assert.equal(destination.MONAD_DEPLOYER_PRIVATE_KEY, undefined);
     assert.equal(destination.VERCEL_TOKEN, undefined);
   }
+});
+
+test("the timer gets only its dedicated Production key, excluding operator and provider credentials", () => {
+  const selected = selectHostedSettings({ ...env, PILOT_TIMER_TRIGGER_SECRET_KEY: "tr_prod_sk_TIMER_FIXTURE",
+    CLOUDFLARE_API_TOKEN: "PRIVATE_CLOUDFLARE_SENTINEL", CLOUDFLARE_ACCOUNT_ID: "a".repeat(32) });
+  assert.deepEqual(selected.timer, { TRIGGER_SECRET_KEY: "tr_prod_sk_TIMER_FIXTURE" });
+  assert.deepEqual(selected.missingTimer, []);
+  for (const destination of [selected.web, selected.worker, selected.timer])
+    assert.equal(destination.CLOUDFLARE_API_TOKEN, undefined);
+  const invalid = selectHostedSettings({ ...env, PILOT_TIMER_TRIGGER_SECRET_KEY: "tr_dev_sk_WRONG_ENVIRONMENT" });
+  assert.equal(invalid.timer.TRIGGER_SECRET_KEY, "");
+  assert.equal(invalid.invalidTimerKeyOmitted, true);
 });
 
 test("a development Trigger key becomes an explicit missing Production setting", () => {
@@ -66,7 +80,7 @@ test("preparation preserves local files and creates private settings outside the
   assert.equal(web.PILOT_LOCAL_CONTROLS, "0");
   assert.equal(worker.SUPABASE_SECRET_KEY, env.SUPABASE_SECRET_KEY);
   assert.equal(worker.TRIGGER_SECRET_KEY, undefined);
-  for (const file of [report.webEnvironmentFile, report.workerEnvironmentFile]) {
+  for (const file of [report.webEnvironmentFile, report.workerEnvironmentFile, report.timerSecretsFile]) {
     assert.equal((await stat(file)).mode & 0o777, 0o600);
     assert.equal(file.startsWith(`${report.sourceDirectory}/`), false);
     assert.equal((await readFile(file, "utf8")).includes("PRIVATE_DEPLOYER_SENTINEL"), false);

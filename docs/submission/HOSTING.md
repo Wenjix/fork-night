@@ -1,10 +1,28 @@
 # Full shared pilot on Vercel and Trigger.dev
 
-The complete Next.js app is deployed at [fork-night.vercel.app](https://fork-night.vercel.app), with the [shared Midnight Signal pilot](https://fork-night.vercel.app/pilot?room=midnight-signal) available at `/pilot`. Trigger Production version **20261013.1** has `fork-night-generate` registered, using the existing Supabase project for accounts, shared records and media.
+The existing Next.js deployment is [fork-night.vercel.app](https://fork-night.vercel.app), with the [shared Midnight Signal pilot](https://fork-night.vercel.app/pilot?room=midnight-signal). The last inspected Trigger Production version was **20261013.2**. The shared-room upgrade described below is implemented and tested locally; its migrations, matching deployment, scheduled recovery and three-person hosted walkthrough remain to be activated and verified.
 
 The operator's deployment receipt on October 13, 2026 confirms HTTP 200 for the lobby, pilot, signup, QR presentation, world demo and creator demo, and HTTP 401 for an unsigned generation request. Worker registration was independently checked through Trigger. A hosted sign-in, complete preview generation and deliberate publication with the local worker stopped remain to be rehearsed. This checkpoint confirms deployment and HTTP access; it does not claim that final browser journey is verified.
 
-The web app submits an admitted operation to `fork-night-generate`; the cloud worker performs image generation and saves the result. Running only Vercel with a Development Trigger key still depends on a local worker. Production needs a deployed task version and a Production key. [Trigger deployment guide](https://trigger.dev/docs/deployment/overview).
+The web app durably admits an operation and attempts to enqueue `fork-night-generate`; the cloud worker performs image generation and saves the result. The reconciler repairs interrupted dispatch and checks saved work independently of the browser. A small [Cloudflare minute timer](../../workers/recovery-timer/README.md) enqueues that ordinary Trigger task. Production needs matching deployed source and credentials. Vercel, Supabase and Trigger retain the web, storage and execution services; Cloudflare supplies the clock. This release needs no durable containers. [Trigger deployment guide](https://trigger.dev/docs/deployment/overview).
+
+## Shared-room upgrade
+
+Before deploying this source, apply the three additive migrations in order to the selected Supabase project:
+
+1. [Execution and accounting](../../supabase/migrations/202610130001_job_execution.sql).
+2. [Prepared rooms and participation](../../supabase/migrations/202610130002_shared_rooms.sql).
+3. [Operator reviews and bounded rehearsal preparation](../../supabase/migrations/202610130003_pilot_operations.sql).
+
+Schedule a short generation cutover. Inspect known running and legacy queued work first; let known paid work finish before pausing new spending. Preserve receipts, holds and published history. The migration disables the old claim function, leaves new admission unavailable until an execution environment is configured, and starts room creation disabled. An unfinished legacy request needs verified run evidence and the reviewed adoption/cancellation RPC; age alone does not justify releasing its hold. Use an isolated Supabase project/budget for Development paid work.
+
+Legacy estimated expenses without an outbox need an audited terminal observation before cost review. Observation fences the old claim while retaining its hold; a separate billing adjustment preserves the original expense value. Adopting work with recorded intents requires both terminal evidence and settled cost, and recovery still cannot repurchase an existing panel.
+
+Deploy matching web, Trigger worker and Cloudflare timer source, and configure `PRODUCTION` in the execution settings and database budget. `fork-night-reconcile` is an ordinary task with no native Trigger schedule. Both the Trigger `PILOT_RECONCILE_ENABLED` flag and Cloudflare `PILOT_TIMER_ENABLED` flag start at `0`. Follow the [timer activation procedure](../../workers/recovery-timer/README.md) to enable one Cloudflare minute schedule, observe its accepted Trigger run and a completed database checkpoint. Cloudflare supports minute Cron on Free; Trigger run/compute usage still consumes its shared credits. [Cloudflare Cron](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [Trigger usage](https://trigger.dev/pricing/).
+
+The [readiness command](../../scripts/check-pilot-readiness.ts) reports database allowances, unresolved work, Cloudflare timer settings, recent recovery runs and checkpoint freshness. It checks for conflicting native Trigger schedules too. Use reviewed Production service credentials and an operator Trigger key with run/schedule read access. Optional operator-only `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` enable the Cloudflare configuration read; missing access remains unverified. The [preparation command](../../scripts/prepare-judge-rehearsal.ts) prints a settings comparison and a once-only grant for review. It does not apply that grant. The grant requires existing $6 image headroom, retains the dollar cap and usage history, and targets at least 12 available room credits, 24 image-request slots, four per-maker room attempts and 36 additional global shaping claims, with nine shaping claims per fresh maker and voice off.
+
+Prove the existing-room journey with creation disabled, then enable the finite creation policy. Defaults allow one room per maker, three rooms and 36 granted credits per campaign, using two prepared openings. New rooms are public through their links and omitted from the curated directory; unpublished previews remain maker-only. A copied opening receives no historical treasury evidence, wallet approval or release rights. The final walkthrough needs three independent accounts taking three short turns each, peer branches, private previews and recovery after closing a browser.
 
 ## Prepare the source and settings
 
@@ -21,23 +39,28 @@ The command creates a fresh, ignored `.local/submission/fork-night-hosted-…` d
 | `source/` | Complete allowlisted application source, runtime assets, tests and curated docs |
 | `web.production.env` | Private settings for Vercel Production |
 | `worker.production.env` | Private settings for the Trigger Production worker |
+| `timer.production.secrets.json` | Only the dedicated Production Trigger enqueue key for Cloudflare |
 | `preparation.json` | Public-file hashes and missing-setting names; no secret values |
 
-Deploy **only `source/`**. The two private settings files are outside it. They have owner-only file permissions, and the containing directory has owner-only access. The selection excludes the working archive, Git history, deployer private key and hosting credentials. The [Vercel ignore file](../../.vercelignore) also excludes local files from CLI uploads. [Vercel exclusions](https://vercel.com/docs/deployments/vercel-ignore).
+Deploy **only `source/`**. The three private settings files are outside it. They have owner-only file permissions, and the containing directory has owner-only access. The selection excludes the working archive, Git history, deployer private key and hosting credentials. The [Vercel ignore file](../../.vercelignore) also excludes local files from CLI uploads. [Vercel exclusions](https://vercel.com/docs/deployments/vercel-ignore).
 
-Preparation reads `.env.local`, then `.env.production.local`, then process environment overrides. It preserves the input files. A Development Trigger key is omitted from the web settings and reported as missing. Local refill controls are forced off. Existing compute allowances and provider usage are not changed, and the command sends no network requests.
+Preparation reads `.env.local`, then `.env.production.local`, then process environment overrides. It preserves the input files. A Development Trigger key is omitted from web settings and reported as missing. Local refill controls are forced off, both execution environments are set to `PRODUCTION`, and reconciliation starts disabled. Existing compute allowances and provider usage are unchanged, and preparation sends no network requests.
 
 For repeatable preparation, put the Production `TRIGGER_SECRET_KEY` and chosen `FORK_NIGHT_PUBLIC_URL` in an ignored `.env.production.local`, then prepare a fresh bundle. Keep the Development Trigger key in `.env.local` for the local worker. Alternatively, fill the two missing values directly in the prepared web settings file before importing it.
 
+Supply the separate timer key as `PILOT_TIMER_TRIGGER_SECRET_KEY`. Preparation never copies the web key into the timer or imports Cloudflare management credentials into a hosted runtime. Check `missingTimer` before deploying the timer. Its package/lockfile live under `source/workers/recovery-timer/`; install and deploy it separately with the pinned Wrangler version.
+
 ## Deploy the cloud worker
 
-In the existing Trigger project `proj_mgjcdpmejdtuazlikyzo`, select **Production**. Import or add the three settings from `worker.production.env` through its environment-variable settings:
+In the existing Trigger project `proj_mgjcdpmejdtuazlikyzo`, select **Production**. Import the five settings from `worker.production.env` through its environment-variable settings:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SECRET_KEY` as a secret
 - `OPENAI_API_KEY` as a secret
+- `PILOT_EXECUTION_ENV=PRODUCTION`
+- `PILOT_RECONCILE_ENABLED=0` until coordinated timer activation
 
-The worker does not need a wallet key, Cartesia key or web Trigger key. Retain the current task's single concurrency, one attempt and paid-request recovery rules. All generation environments using this Supabase project share its existing budget records; they do not create separate allowances.
+Retain the image task's single concurrency, one attempt and paid-request recovery rules. The reconciler uses a separate concurrency-one queue. Its runtime credential must read generation runs and enqueue recovery; verify this in the deployed worker instead of copying the web's trigger-only key into it. API keys can have different permissions even within the same environment. [Trigger API keys](https://trigger.dev/docs/apikeys). All jobs using the same Supabase project share its budget; Production and Development require separate databases for paid work.
 
 Enter the prepared `source/` directory and install its pinned packages:
 
@@ -46,9 +69,9 @@ pnpm install --frozen-lockfile
 npx --no-install trigger deploy --env prod --skip-update-check
 ```
 
-Use the existing CLI login. If it has expired, run `npx --no-install trigger login` in your own terminal. Confirm the Production version lists `fork-night-generate` and completes deployment. The [worker configuration](../../trigger.config.ts) includes the compressed seed artwork and Sharp dependency needed by cloud execution.
+Use the existing CLI login. If it has expired, run `npx --no-install trigger login` in your own terminal. Confirm the Production version lists `fork-night-generate`, `fork-night-reconcile` and the existing health task, and completes deployment. The [worker configuration](../../trigger.config.ts) includes the compressed seed artwork and Sharp dependency needed by cloud execution.
 
-Create a named **Production / Trigger only** API key in that same Trigger project and put it in the web settings as `TRIGGER_SECRET_KEY`. The web app needs this key to submit runs; the worker gets its own Supabase/provider settings separately. A local CLI `--env-file` loads CLI settings; it does not automatically upload those settings into the cloud worker.
+Use a named Production API key for the web's `TRIGGER_SECRET_KEY`, restricted to enqueueing where the plan permits that preset. The timer uses its own named key. A local CLI `--env-file` loads CLI settings; deployed worker variables still need to be imported through the dashboard or supported upload path. [Trigger environment variables](https://trigger.dev/docs/deploy-environment-variables).
 
 ## Deploy the web app
 
@@ -106,4 +129,4 @@ Record the resulting URL, worker version and actual walkthrough evidence before 
 
 ## Retire the boat deployment after cutover
 
-Keep the [limited Cloudflare deployment](CLOUDFLARE.md) available until the hosted Vercel product and worker are verified. If a live Worker exists, replace any shared signup/QR links with the Vercel origin, then disable its automatic deployment and remove or redirect that specific Worker. Preserve its local configuration and verification history for now. No Supabase project or Monad contract is removed as part of the hosting switch.
+Keep the [limited Cloudflare signup deployment](CLOUDFLARE.md) available until the hosted Vercel product and worker are verified. If that signup Worker exists, replace any shared signup/QR links with the Vercel origin, then disable its automatic deployment and remove or redirect that specific Worker. Preserve its local configuration and verification history for now. The separate `fork-night-recovery-timer` remains part of the full pilot. No Supabase project or Monad contract is removed as part of the hosting switch.
