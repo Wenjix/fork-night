@@ -136,6 +136,7 @@
   cursor: pointer;
   font-weight: 650;
   touch-action: none !important;
+  -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 }

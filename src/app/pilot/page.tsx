@@ -1,6 +1,7 @@
-import { SharedPilot } from "@/components/shared-pilot";
+import { PilotExperience } from "@/components/pilot-experience";
 import { PilotAccountProvider } from "@/components/pilot-account";
 import "./pilot.css";
+import "./rooms.css";
 import "./composer.css";
 import "./releases.css";
 
@@ -11,5 +12,5 @@ export const metadata = {
 };
 
 export default function PilotPage() {
-  return <PilotAccountProvider><SharedPilot /></PilotAccountProvider>;
+  return <PilotAccountProvider><PilotExperience /></PilotAccountProvider>;
 }

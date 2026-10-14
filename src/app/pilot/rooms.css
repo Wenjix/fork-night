@@ -1,0 +1,52 @@
+.pilot-entrance { max-width: 1120px; }
+.pilot-entrance h2, .pilot-room-card h3, .pilot-create-invitation strong { font-family: var(--font-display), sans-serif; }
+.pilot-entrance section { margin: 32px 0; }
+.pilot-room-cards, .pilot-template-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.pilot-room-card, .pilot-create-invitation { border: 2px solid var(--ink); border-radius: 14px; padding: 24px; color: var(--ink); background: var(--paper); text-decoration: none; box-shadow: 3px 3px 0 var(--ink); }
+.pilot-room-card h3 { font-size: 26px; margin: 12px 0 8px; }
+.pilot-room-card p { line-height: 1.6; }
+.pilot-room-card > span { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-top: 20px; }
+.pilot-create-invitation { display: flex; align-items: center; gap: 18px; background: #eee6ff; }
+.pilot-create-invitation > span { flex: 1; display: grid; gap: 6px; }
+.pilot-create-invitation strong { font-size: 28px; }
+.pilot-create-invitation small { font-size: 15px; }
+.pilot-create-form { max-width: 900px; padding: 24px; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper); }
+.pilot-create-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pilot-create-form legend { font-weight: 700; margin-bottom: 16px; }
+.pilot-template-card { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-content: start; padding: 14px; border: 2px solid #b6acbe; border-radius: 10px; cursor: pointer; }
+.pilot-template-card[data-selected="true"] { border-color: var(--ink); background: #eee6ff; box-shadow: 2px 2px 0 var(--ink); }
+.pilot-template-card input { width: 20px; height: 20px; margin: 0; accent-color: #6441cc; }
+.pilot-template-card > span { grid-column: 1 / -1; }
+.pilot-template-card strong { font-family: var(--font-display), sans-serif; font-size: 24px; }
+.pilot-template-card small { display: block; margin: 6px 0; }
+.pilot-template-card p { line-height: 1.5; margin: 6px 0 0; }
+.pilot-template-art { aspect-ratio: 16 / 10; overflow: hidden; border-radius: 6px; }
+.pilot-template-art > * { width: 100%; height: 100%; object-fit: cover; }
+.pilot-create-label { display: grid; gap: 8px; font-weight: 700; margin: 22px 0 14px; }
+.pilot-create-label input, .pilot-invitation-link input { width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--ink); border-radius: 6px; background: white; color: var(--ink); font: inherit; }
+.pilot-create-form > p { line-height: 1.6; max-width: 70ch; }
+.pilot-create-name { margin-bottom: 20px; }
+.pilot-room-grant { padding: 16px; border-radius: 8px; background: #fff0a6; }
+.pilot-room-sign { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; border-block: 1px solid #cfc6ce; padding: 16px 0; margin-bottom: 24px; }
+.pilot-roster { flex: 1; min-width: 180px; }
+.pilot-roster summary { cursor: pointer; font-weight: 700; padding: 10px 0; }
+.pilot-roster-preview { display: block; font-size: 14px; font-weight: 400; margin-top: 6px; }
+.pilot-roster ul { padding-left: 20px; line-height: 1.8; }
+.pilot-invitation-link { display: grid; gap: 8px; width: 100%; font-size: 14px; }
+.pilot-invitation-link input { -webkit-user-select: all; user-select: all; }
+.pilot-publication-notice { padding: 16px 20px; margin-bottom: 24px; background: #eee6ff; border-left: 4px solid #6441cc; border-radius: 6px; }
+.pilot-publication-notice p { margin: 0; font-weight: 700; }
+.pilot-publication-notice ul { padding: 0; list-style: none; }
+.pilot-publication-notice li { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.pilot-publication-notice button, .pilot-roster summary { min-height: 44px; }
+@media (max-width: 640px) {
+  .pilot-roster-preview { display: none; }
+  .pilot-room-cards, .pilot-template-cards { grid-template-columns: 1fr; }
+  .pilot-create-form { padding: 16px; }
+  .pilot-create-invitation { padding: 18px; }
+  .pilot-entrance .pilot-header { align-items: flex-start; }
+  .pilot-entrance .pilot-header-actions { margin-left: auto; }
+  .pilot-room-sign { gap: 12px; }
+  .pilot-room-sign > .button { flex: 1; }
+  .pilot-publication-notice li { flex-wrap: wrap; }
+}

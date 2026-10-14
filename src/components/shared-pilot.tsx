@@ -27,6 +27,7 @@ import {
   type PilotRoom,
 } from "@/lib/pilot";
 import { layoutMoments } from "@/lib/map-layout";
+import { whileVisible, pollWhileVisible } from "@/lib/visible-interval";
 import { pilotCreditCost, validPilotCaptions } from "@/lib/pilot-format";
 import { PilotImage } from "./pilot-panels";
 import { PilotRecap } from "./pilot-recap";
@@ -34,10 +35,12 @@ import { PilotArtwork } from "./pilot-artwork";
 import { PilotIdeas } from "./pilot-ideas";
 import { PilotContinuation } from "./pilot-continuation";
 import { PilotIdentity } from "./pilot-identity";
+import { PilotDialog } from "./pilot-dialog";
+import { roomLink, validRoomId, newPublications, type RoomSnapshot } from "../lib/pilot-rooms";
 import { PilotCreditRefill } from "./pilot-credit-refill";
 import { PilotRoomActivity } from "./pilot-generation-status";
 import { SectionPlate } from "./visual-plates";
-import { RoomNetworkPlate } from "./room-network-plate";
+import { PilotRoomFunding } from "./guild-funding";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
 import { TestnetRelease } from "./testnet-release";
 import {
@@ -68,6 +71,16 @@ const message = (error: unknown) =>
 export function SharedPilot() {
   const account = usePilotAccount();
   const [client, setClient] = useState<Client>();
+  const [unavailable, setUnavailable] = useState(false);
+  const [snapshot, setSnapshot] = useState<RoomSnapshot>();
+  const [joinedRoom, setJoinedRoom] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [joinName, setJoinName] = useState("");
+  const [invitation, setInvitation] = useState("");
+  const [publications, setPublications] = useState<PilotMoment[]>([]);
+  const [truncated, setTruncated] = useState(false);
+  const seenMoments = useRef<Set<string> | null>(null);
+  const [otherWork, setOtherWork] = useState<{ room_id: string; parent_id: string }>();
   const [rooms, setRooms] = useState<PilotRoom[]>([]);
   // Resolve the shared link before fetching any story. A slow room list must
   // not briefly offer actions on the default room underneath that link.
@@ -112,37 +125,22 @@ export function SharedPilot() {
     let active = true;
     setClient(connected);
     void (async () => {
-      const result = await connected
-        .from("pilot_rooms")
-        .select("*")
-        .order("id");
-      if (result.error)
-        throw new Error(
-          "Rooms could not be loaded. Reconnect and refresh this page.",
-        );
-      if (!active) return;
-      setRooms(result.data);
       const query = new URLSearchParams(window.location.search);
       const requestedRoom = query.get("room");
-      const initialRoom =
-        result.data.find((item) => item.id === requestedRoom) ??
-        result.data.find((item) => item.id === "midnight-signal") ??
-        result.data[0];
-      setRoomId(initialRoom?.id ?? "");
+      if (!validRoomId(requestedRoom)) { if (active) setUnavailable(true); return; }
+      const [directory, exact] = await Promise.all([
+        connected.from("pilot_rooms").select("*").eq("is_listed", true).order("id"),
+        connected.from("pilot_rooms").select("*").eq("id", requestedRoom).maybeSingle(),
+      ]);
+      if (!active) return;
+      if (exact.error || directory.error) throw new Error("Rooms could not be loaded. Reconnect and refresh this page.");
+      if (!exact.data) { setUnavailable(true); return; }
+      setRooms([...(directory.data ?? []).filter(item => item.id !== requestedRoom), exact.data]);
+      setRoomId(requestedRoom);
+      if (query.get("created") === "1") setNotice("Your room is ready. Invite your storytellers to join.");
       const requestedMoment = query.get("moment");
-      if (requestedRoom && initialRoom?.id !== requestedRoom)
-        setError(
-          "That shared room is unavailable. You can read an open room below.",
-        );
-      else if (requestedMoment && isUuid(requestedMoment))
-        sharedTarget.current = {
-          room: initialRoom?.id ?? "",
-          moment: requestedMoment,
-        };
-      else if (requestedMoment)
-        setError(
-          "That shared moment link is incomplete. Choose a moment below.",
-        );
+      if (requestedMoment && isUuid(requestedMoment)) sharedTarget.current = { room: requestedRoom, moment: requestedMoment };
+      else if (requestedMoment) setError("That shared moment link is incomplete. Choose a moment below.");
     })().catch((reason) => {
       if (active) setError(message(reason));
     });
@@ -180,12 +178,28 @@ export function SharedPilot() {
   }, [client, account?.user?.id, account?.loading]);
 
   useEffect(() => {
+    setJoinedRoom(false);
+    if (!client || !profile || !roomId) return;
+    let active = true;
+    void client.from("pilot_room_participants").select("room_id,pilot_rooms(*)").eq("maker_id", profile.id).order("joined_at", { ascending: false }).limit(30).then(result => {
+      if (!active || result.error) return;
+      setJoinedRoom(result.data.some(row => row.room_id === roomId));
+      setRooms(current => [...current, ...result.data.map(row => row.pilot_rooms).filter((row): row is PilotRoom => !!row && !current.some(item => item.id === row.id))]);
+    });
+    return () => { active = false; };
+  }, [client, roomId, profile?.id]);
+
+  useEffect(() => {
     if (!client || !roomId) return;
     let active = true,
       fetching = false,
       first = true;
     setOperation(undefined);
     setDraft(undefined);
+    setSnapshot(undefined); setPublications([]); setInvitation(""); setOtherWork(undefined);
+    seenMoments.current = null;
+    let revision: number | undefined;
+    let currentStory: PilotMoment[] = [];
 
     if (selectionRoom.current !== roomId) {
       selectionRoom.current = roomId;
@@ -221,32 +235,34 @@ export function SharedPilot() {
       if (fetching) return;
       fetching = true;
       try {
-        const [story, capacity, own] = await Promise.all([
-          client!
-            .from("pilot_moments")
-            .select("*")
-            .eq("room_id", roomId)
-            .order("created_at")
-            .limit(500),
-          client!.rpc("pilot_room_credits", { p_room_id: roomId }),
+        const [roomState, own] = await Promise.all([
+          client!.rpc("pilot_room_snapshot", { p_room_id: roomId }),
           profile
-            ? client!
-                .from("pilot_operations")
-                .select("*,pilot_jobs(operation_id,state,panel_count,updated_at)")
-                .eq("room_id", roomId)
-                .order("created_at", { ascending: false })
-                .limit(50)
+            ? client!.from("pilot_operations").select("*,pilot_jobs(operation_id,state,panel_count,updated_at)")
+                .eq("room_id", roomId).order("created_at", { ascending: false }).limit(50)
             : Promise.resolve({ data: [], error: null }),
         ]);
-        if (story.error || capacity.error || own.error)
-          throw new Error(
-            "Connection interrupted. Showing the last saved story; reconnect to check for updates.",
-          );
+        if (roomState.error || !roomState.data || own.error) throw new Error("Connection interrupted. Showing the last saved story; reconnect to check for updates.");
+        const state = roomState.data as unknown as RoomSnapshot;
+        if (revision !== state.revision) {
+          const result = await client!.from("pilot_moments").select("*").eq("room_id", roomId).order("created_at").order("id").limit(501);
+          if (result.error) throw new Error("The story could not be refreshed. Your current continuation is still here.");
+          if (!active) return;
+          currentStory = result.data.slice(0, 500);
+          setTruncated(result.data.length > 500);
+          const fresh = newPublications(seenMoments.current, currentStory, profile?.id);
+          seenMoments.current = new Set(currentStory.map(moment => moment.id));
+          if (fresh.length) setPublications(previous => [...previous, ...fresh.filter(moment => !previous.some(item => item.id === moment.id))]);
+          if (profile) {
+            const participation = await client!.from("pilot_room_participants").select("public_id").eq("room_id", roomId).eq("maker_id", profile.id).maybeSingle();
+            if (!active) return;
+            if (!participation.error) setJoinedRoom(!!participation.data);
+          }
+          setMoments(currentStory); revision = state.revision;
+        }
         if (!active) return;
-        setMoments(story.data);
-        setCredits(capacity.data as Credits);
-        setLoadedRoom(roomId);
-        setSyncError("");
+        const story = { data: currentStory };
+        setSnapshot(state); setCredits(state.credits); setLoadedRoom(roomId); setSyncError("");
         if (visit.current?.roomId !== roomId) {
           let prior: PilotVisit | null = null;
           try {
@@ -269,14 +285,14 @@ export function SharedPilot() {
         setSelectedId((current) =>
           story.data.some((item) => item.id === (target ?? current))
             ? (target ?? current)
-            : (story.data.at(-1)?.id ?? ""),
+            : first ? (story.data.at(-1)?.id ?? "") : current,
         );
         setTipId((current) =>
           target && story.data.some((item) => item.id === target)
             ? target
             : story.data.some((item) => item.id === current)
               ? current
-              : (story.data.at(-1)?.id ?? ""),
+              : first ? (story.data.at(-1)?.id ?? "") : current,
         );
         if (target) sharedTarget.current = null;
         const initial = first;
@@ -285,20 +301,22 @@ export function SharedPilot() {
           current
             ? (own.data?.find((item) => item.id === current.id) ?? current)
             : initial
-              ? own.data?.find((item) => !finalStates.has(item.status))
+              ? own.data?.find((item) => ["queued", "dispatching", "uncertain"].includes(item.status))
+                ?? own.data?.find((item) => item.status === "delivered")
+                ?? own.data?.find((item) => item.status === "draft")
               : undefined,
         );
       } catch (reason) {
         if (active) setSyncError(message(reason));
+        throw reason;
       } finally {
         fetching = false;
       }
     }
-    void sync();
-    const interval = setInterval(() => void sync(), 3000);
+    const stop = pollWhileVisible(sync, 3000);
     return () => {
       active = false;
-      clearInterval(interval);
+      stop();
     };
   }, [client, roomId, profile]);
 
@@ -318,8 +336,9 @@ export function SharedPilot() {
       finally { fetching = false; }
     }
     void syncActivity();
-    const interval = setInterval(() => void syncActivity(), 3000);
-    return () => { active = false; clearInterval(interval); };
+    // Room totals are ambient and each check is a server function, so they refresh gently.
+    const stop = whileVisible(() => void syncActivity(), 10_000);
+    return () => { active = false; stop(); };
   }, [roomId]);
 
   // A user-requested refresh does not clear the selected draft or operation.
@@ -400,6 +419,9 @@ export function SharedPilot() {
 
   async function join(name: string) {
     const joined = await joinPilotAsGuest(client!, name);
+    const participation = await client!.rpc("pilot_join_room", { p_room_id: roomId });
+    if (participation.error) throw new Error("Your storyteller name is saved, but joining could not be confirmed. Check this room again.");
+    setJoinedRoom(true);
     if (draft) {
       try {
         localStorage.setItem(
@@ -414,6 +436,25 @@ export function SharedPilot() {
     }
     setProfile(joined);
     return joined;
+  }
+
+  async function invite() {
+    const url = roomLink(window.location.origin, roomId);
+    setInvitation(url);
+    try {
+      if (navigator.share) await navigator.share({ title: room?.title ?? "Fork Night", text: "Make a story together.", url });
+      else { await navigator.clipboard.writeText(url); setNotice("Room link copied. Send it to your storytellers."); }
+    } catch (reason) {
+      if (reason instanceof Error && reason.name === "AbortError") return;
+      setNotice("Select and copy the room link to invite your storytellers.");
+    }
+  }
+  async function joinRoom() {
+    if (!client) return;
+    if (!profile) { setJoinOpen(true); return; }
+    const result = await client.rpc("pilot_join_room", { p_room_id: roomId });
+    if (result.error) throw new Error("Joining could not be confirmed. Check this room again.");
+    setJoinedRoom(true); setJoinOpen(false);
   }
 
   async function share() {
@@ -474,11 +515,14 @@ export function SharedPilot() {
     });
     const result = await response.json();
     setRefresh((value) => value + 1);
-    if (!response.ok)
+    if (!response.ok) {
+      if (result.activeWork && validRoomId(result.activeWork.roomId) && isUuid(result.activeWork.parentId))
+        setOtherWork({ room_id: result.activeWork.roomId, parent_id: result.activeWork.parentId });
       throw new Error(
         result.error ??
           "Your draft is saved. Check the saved result to reconnect.",
       );
+    }
   }
 
   async function generate() {
@@ -521,6 +565,7 @@ export function SharedPilot() {
   }
 
   function select(id: string, changePath = false) {
+    setPublications(items => items.filter(item => item.id !== id));
     if (changePath) setTipId(id);
     setSelectedId(id);
     setShareUrl("");
@@ -702,6 +747,8 @@ export function SharedPilot() {
       />
     ) : null;
 
+  if (unavailable) return <main className="pilot-shell"><a className="pilot-brand" href="/pilot">fork night<span>.</span></a><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main>;
+
   return (
     <main className="pilot-shell">
       <header className="pilot-header">
@@ -727,6 +774,7 @@ export function SharedPilot() {
                 "",
                 `/pilot?room=${encodeURIComponent(event.target.value)}`,
               );
+              window.dispatchEvent(new PopStateEvent("popstate"));
             }}
           >
             {rooms.map((item) => (
@@ -737,7 +785,7 @@ export function SharedPilot() {
           </select>
         </label>
         <div className="pilot-header-actions">
-          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || hasActive || !!draft || !!account?.loading} signOutBlockedReason={hasActive ? "Finish generation or publish or discard your preview before signing out." : draft ? "Finish or cancel your continuation before signing out." : ""} onJoin={() => start()} />
+          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || hasActive || !!draft || !!account?.loading} signOutBlockedReason={hasActive ? "Finish generation or publish or discard your preview before signing out." : draft ? "Finish or cancel your continuation before signing out." : ""} onJoin={() => setJoinOpen(true)} />
           <button
             className="button secondary pilot-map-toggle"
             onClick={() => setView(view === "map" ? "read" : "map")}
@@ -749,10 +797,26 @@ export function SharedPilot() {
         </div>
       </header>
       <div className="pilot-intro">
-        <h1>Pick up where someone left off.</h1>
-        <p>Stories and ideas stay here for the next person.</p>
+        <h1>{room?.title ?? "Opening the shared story…"}</h1>
+        <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
       </div>
-      {loadedRoom === roomId && <RoomNetworkPlate roomId={roomId} />}
+      {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
+        <details className="pilot-roster"><summary>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></summary><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</details>
+        {!joinedRoom && profile && <button className="button secondary" disabled={busy} onClick={() => setJoinOpen(true)}>Join this room</button>}
+        {joinedRoom && <span>You joined this room</span>}
+        <button className="button secondary" type="button" onClick={() => void invite()}><Share2 size={17} aria-hidden="true" />Invite storytellers</button>
+        {invitation && <label className="pilot-invitation-link">Room invitation<input readOnly value={invitation} onFocus={event => event.target.select()} /></label>}
+      </section>}
+      {publications.length > 0 && <section className="pilot-publication-notice" aria-label="New published moments"><p role="status">{publications.length === 1 ? `${publications[0].maker_label} published a new branch.` : `${publications.length} new moments.`}</p><ul>{publications.map(moment => <li key={moment.id}><span>{moment.title} · {moment.maker_label}</span><button className="text-button" onClick={() => select(moment.id, true)}>Read it</button></li>)}</ul><button className="text-button" onClick={() => setPublications([])}>Dismiss</button></section>}
+      {truncated && <p role="status" className="pilot-notice">Showing the first 500 moments. This room has reached the reader’s current limit; some newer branches are not shown.</p>}
+      {otherWork && <p className="pilot-notice">This storyteller already has generation to finish. <a href={`/pilot?room=${encodeURIComponent(otherWork.room_id)}&moment=${otherWork.parent_id}`}>Return to your saved work</a>. Your current draft stays saved.</p>}
+      {joinOpen && <PilotDialog title="Join this story" onClose={() => { if (!busy) setJoinOpen(false); }} dismissible={!busy}>
+        <p>Your storyteller name will be visible in this room. Published moments are public; your unpublished previews stay private.</p>
+        {profile ? <p>Joining as <strong>{profile.display_name}</strong></p> : <label className="pilot-create-label">Storyteller name<input value={joinName} maxLength={60} autoComplete="nickname" onChange={event => setJoinName(event.target.value)} /></label>}
+        {error && <p role="alert">{error}</p>}
+        <button className="button primary" disabled={busy || (!profile && !joinName.trim())} onClick={() => void act(async () => { if (profile) await joinRoom(); else { await join(joinName); setJoinOpen(false); } })}>{busy ? "Joining…" : "Join this room"}</button>
+      </PilotDialog>}
+      <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />
       {loadedRoom === roomId && credits && <PilotRoomActivity credits={{ ...credits, ...activity }} interrupted={!!syncError} />}
       {(error || syncError || pathError || account?.error) && (
         <div className="pilot-notice" role="alert">

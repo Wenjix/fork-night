@@ -7,6 +7,7 @@ import type { Database, Tables } from "@/lib/supabase/database.types";
 import { isUuid, type PilotMoment } from "@/lib/pilot";
 
 import { IDEA_DRAG_TYPE } from "@/lib/pilot-composer";
+import { whileVisible } from "@/lib/visible-interval";
 import { SectionPlate } from "./visual-plates";
 
 type Idea = Tables<"pilot_ideas">;
@@ -111,10 +112,10 @@ export function PilotIdeas({
       else setNotes((old) => merge(old, result.data.slice(0, 20)));
     }
     void load();
-    const timer = setInterval(() => void load(), 5000);
+    const stop = whileVisible(() => void load(), 5000);
     return () => {
       active = false;
-      clearInterval(timer);
+      stop();
     };
   }, [client, moment.id, moment.room_id, retry]);
   async function older() {
