@@ -1,4 +1,3 @@
-import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   CalendarClock,
@@ -50,11 +49,17 @@ export function WrenAllowance() {
       id="allowance"
       aria-labelledby="allowance-title"
     >
-      <SectionPlate className="ag-section-head" icon={Wallet} tone="butter" headingId="allowance-title" title={<span className="fn-network-allowance-heading"><NetworkBrandMark network="tempo" /><span>Wren’s allowance on Tempo</span></span>}
-        description={<p>
+      <div className="ag-section-head">
+        <p className="ag-eyebrow">Testnet only</p>
+        <h2 id="allowance-title" className="fn-network-allowance-heading">
+          <NetworkBrandMark network="tempo" />
+          <span>Wren’s allowance on Tempo</span>
+        </h2>
+        <p>
           When The Night Shift runs low, Wren can top the room up from a small
           allowance its steward gave it on the {a.network}.
-        </p>} />
+        </p>
+      </div>
 
       <div className="ag-allowance">
         <div className="ag-rules">

@@ -82,6 +82,9 @@
 .km-video { margin-top: 36px !important; }
 .km-video-media, .km-video-frame { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 22px; border: 1px solid #8db1ff59; background: var(--km-deep); box-shadow: 0 24px 64px #05081a80; }
 .km-video-media { object-fit: cover; }
+iframe.km-video-media { height: auto; }
+.km-video-caption { display: flex; justify-content: flex-end; margin-top: 10px; font-size: 15px; font-weight: 600; }
+.km-video-caption a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
 .km-video-frame { display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center; text-decoration: none; color: var(--km-ink) !important;
   background:
     radial-gradient(1.5px 1.5px at 12% 24%, #fff9 50%, transparent 51%),

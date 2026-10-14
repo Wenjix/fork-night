@@ -1700,9 +1700,6 @@
 .pilot-wallet-signin > p { font-size: 15px; line-height: 1.6; color: var(--danger); max-width: 40ch; margin: 8px 0 0; overflow-wrap: anywhere; }
 .pilot-header-actions .pilot-wallet-signin { position: relative; }
 .pilot-header-actions .pilot-wallet-signin > p { position: absolute; top: 100%; right: 0; z-index: 10; width: min(300px, calc(100vw - 40px)); padding: 14px; border-radius: 12px; background: var(--surface); box-shadow: var(--pilot-shadow); }
-.pilot-google-signin { position: relative; }
-.pilot-google-signin > .pilot-google-button { min-height: 44px; white-space: nowrap; }
-.pilot-google-signin > p { position: absolute; top: 100%; right: 0; z-index: 10; width: min(300px, calc(100vw - 40px)); margin: 8px 0 0; padding: 14px; border-radius: 12px; background: var(--surface); box-shadow: var(--pilot-shadow); color: var(--danger); font-size: 15px; line-height: 1.6; overflow-wrap: anywhere; }
 .pilot-wallet-entry { display: grid; gap: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .pilot-wallet-entry > p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0; max-width: 65ch; }
 .pilot-account-wallet > code { display: block; margin-top: 8px; }

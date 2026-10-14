@@ -85,7 +85,7 @@ test("each fandom has two complete credited four-panel paths and six bounded ill
         assert(shot.caption.length > 50);
       }
     }
-    assert.equal(new Set(state.moments.filter(moment => moment.projectId === story.id).flatMap(moment => moment.panels.map(panel => panel.imageUrl)).filter(url => artAssetUrl(url) === story.artwork)).size, 6);
+    assert.equal(new Set(state.moments.filter(moment => moment.projectId === story.id).flatMap(moment => moment.panels.map(panel => panel.imageUrl))).size, 6);
     assert.equal(artPosition(`${story.artwork}#frame=5`), "100% 100%");
     for (const wrong of [`${story.artwork}#frame=6`, `${story.artwork}?tracking=1#frame=0`, `https://example.com${story.artwork}#frame=0`, `${story.artwork}#frame=0&x=1`, "/art/not-a-fandom.webp#frame=0"]) assert.equal(isApprovedArtUrl(wrong), false);
   }

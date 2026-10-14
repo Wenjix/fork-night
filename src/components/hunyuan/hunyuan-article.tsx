@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Clapperboard, Coins, Film, GitBranch, Images, Layers, ShieldCheck, Timer, Wand2 } from "lucide-react";
 import { BLADE_RUNNER_FILM as film } from "@/lib/prepared-story-film";
 import { BLADE_RUNNER_RESTYLE as restyle } from "@/lib/prepared-restyle";
-import { COPY, DEMO_VIDEO, LANGS, type Lang } from "./copy";
+import { COPY, DEMO_VIDEO, DEMO_YOUTUBE, LANGS, type Lang } from "./copy";
 import { RestyleCompare } from "./restyle-compare";
 
 const ROOM = "/#/project/blade-runner-memory";
@@ -62,7 +62,12 @@ export function HunyuanArticle({ hasVideo }: { hasVideo: boolean }) {
         <p className="hy-byline">{t.byline}</p>
         <p className="hy-lede">{t.lede}</p>
         <figure className="hy-video">
-          {hasVideo
+          {DEMO_YOUTUBE
+            // The page sends no referrer; YouTube's player needs one, so the frame sets its own policy.
+            ? <iframe src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(DEMO_YOUTUBE.id)}?rel=0`} title={t.videoLabel}
+                loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" />
+            : hasVideo
             ? <video src={`/${DEMO_VIDEO}`} poster={film.poster} controls playsInline preload="metadata" aria-label={t.videoLabel} />
             : <div className="hy-video-placeholder" role="img" aria-label={t.videoSoon}>
                 <img src={film.poster} alt="" width={720} height={720} />

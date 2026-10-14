@@ -40,7 +40,7 @@
 .hy-byline { margin-bottom: 20px; color: var(--hy-yellow); font-size: 0.95rem; font-weight: 600; }
 .hy-lede { max-width: 62ch; margin: 0 auto 36px; color: var(--hy-muted); font-size: 1.1rem; }
 .hy-video { max-width: 860px; margin: 0 auto; }
-.hy-video video, .hy-video-placeholder { width: 100%; aspect-ratio: 16 / 9; border-radius: 20px; background: #000; border: 1px solid var(--hy-line); }
+.hy-video video, .hy-video iframe, .hy-video-placeholder { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 20px; background: #000; border: 1px solid var(--hy-line); }
 .hy-video-placeholder { position: relative; overflow: hidden; display: grid; place-items: center; }
 .hy-video-placeholder img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.45; }
 .hy-video-placeholder span { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 999px; background: rgba(16, 22, 46, 0.85); font-weight: 600; }

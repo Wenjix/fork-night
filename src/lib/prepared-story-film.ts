@@ -15,17 +15,14 @@ export const BLADE_RUNNER_FILM = {
   video: "/film-demo/blade-runner-wan.mp4",
   poster: "/film-demo/blade-runner-poster.webp",
   captions: "/film-demo/blade-runner-captions.vtt",
-  /** The last scene of the fork that lays out these four images; it leads into this film. */
-  lastSceneId: `${story.id}-film-scene-4`,
-  // The film-scene fork lays out these exact references, so the map and the film share titles.
-  images: [1, 2, 3, 4].map((scene, index) => {
-    const beat = story.beats.find(item => item.id === `film-scene-${scene}`)!;
-    return {
-      frame: index,
+  images: ["opening", "greenhouse", story.leadEnding].flatMap(id => {
+    const beat = story.beats.find(item => item.id === id)!;
+    return beat.frames.map((frame, index) => ({
+      frame,
       title: beat.title,
       authorId: beat.authorId,
-      caption: beat.captions[0],
-      src: `/film-demo/blade-runner-image-${index}.webp`,
-    };
+      caption: beat.captions[index],
+      src: `/film-demo/blade-runner-image-${frame}.webp`,
+    }));
   }),
 } as const;

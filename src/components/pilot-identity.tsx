@@ -23,24 +23,6 @@ export function GuestSignOutDialog({ name, busy, disabled, error, blockedReason,
   </PilotDialog>;
 }
 
-/** Returning sign-in from the header; an in-app wallet is prepared after Google returns. */
-function GoogleSignInButton({ disabled }: { disabled: boolean }) {
-  const account = usePilotAccount();
-  const [working, setWorking] = useState(false);
-  const [error, setError] = useState("");
-  async function start() {
-    if (!account || working) return;
-    setWorking(true); setError("");
-    // Success leaves the page for Google, so the button stays busy.
-    try { await account.signIn("return"); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "Google sign-in could not start. Try again."); setWorking(false); }
-  }
-  return <div className="pilot-google-signin">
-    <GoogleButton type="button" disabled={disabled || working} onClick={() => void start()}>{working ? "Opening Google…" : "Sign in with Google"}</GoogleButton>
-    {error && <p role="alert">{error}</p>}
-  </div>;
-}
-
 export function PilotIdentity({ profile, disabled, onJoin, signOutBlockedReason = "", joinLabel = "Join this room" }: { profile?: Tables<"pilot_profiles">; disabled: boolean; onJoin: () => void; signOutBlockedReason?: string; joinLabel?: string }) {
   const account = usePilotAccount();
   const [working, setWorking] = useState(false);
@@ -90,5 +72,5 @@ export function PilotIdentity({ profile, disabled, onJoin, signOutBlockedReason 
       {account?.user && <button type="button" className="text-button pilot-signout-button" disabled={disabled || working} onClick={() => { setError(""); if (saved) void signOut(); else setConfirmGuestSignOut(true); }}>{working ? "Signing out…" : "Sign out of this browser"}</button>}
       {disabled && signOutBlockedReason && <small>{signOutBlockedReason}</small>}
     </div>
-  </details>{confirmGuestSignOut && !saved && <GuestSignOutDialog name={profile!.display_name} busy={working} disabled={disabled} error={error} blockedReason={signOutBlockedReason} onClose={() => { if (!working) setConfirmGuestSignOut(false); }} onConfirm={() => void signOut()} />}</> : <div className="pilot-account-entry">{account?.enabled && <GoogleSignInButton disabled={disabled} />}<WalletSignInButton disabled={disabled} /><button className="button secondary pilot-join" type="button" disabled={disabled} onClick={onJoin}><UserRound size={17} aria-hidden="true" />{joinLabel}</button></div>;
+  </details>{confirmGuestSignOut && !saved && <GuestSignOutDialog name={profile!.display_name} busy={working} disabled={disabled} error={error} blockedReason={signOutBlockedReason} onClose={() => { if (!working) setConfirmGuestSignOut(false); }} onConfirm={() => void signOut()} />}</> : <div className="pilot-account-entry"><WalletSignInButton disabled={disabled} /><button className="button secondary pilot-join" type="button" disabled={disabled} onClick={onJoin}><UserRound size={17} aria-hidden="true" />{joinLabel}</button></div>;
 }

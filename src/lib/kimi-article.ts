@@ -19,14 +19,17 @@ export const LANG_STATUS_ID = "km-lang-status";
  * shows an empty 16:9 frame that says where it goes.
  * - A file under public/ (it must also be added to config/submission-files.json to reach the hosted site):
  *   { kind: "file", src: "/kimi/walkthrough.mp4", poster: "/kimi/walkthrough.webp" }
- * - A hosted video (YouTube, Loom, X): { kind: "link", href: "https://…", label: "Watch the walkthrough" }
+ * - A YouTube video, embedded with YouTube's privacy-enhanced player: { kind: "youtube", id: "<video id>", href: "https://youtu.be/<video id>" }
+ * - Any other hosted video (Loom, X): { kind: "link", href: "https://…", label: "Watch the walkthrough" }
  */
 export type KimiVideo =
   | { kind: "file"; src: string; poster?: string }
+  | { kind: "youtube"; id: string; href: string }
   | { kind: "link"; href: string; label: string }
   | null;
 
-export const KIMI_VIDEO: KimiVideo = null;
+/** Wenjie's walkthrough of the Night Watch with Kimi K3 (Oct 13, 2026). */
+export const KIMI_VIDEO: KimiVideo = { kind: "youtube", id: "KOdXT0_DNQI", href: "https://youtu.be/KOdXT0_DNQI" };
 
 /** Facts both locales share. Seconds and dollars are strings so they render exactly as measured. */
 export const KIMI_FACTS = {

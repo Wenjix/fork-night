@@ -53,6 +53,17 @@ export function VideoSlot({ video, copy }: { video: KimiVideo; copy: ArticleCopy
       </video>
     </figure>;
   }
+  if (video?.kind === "youtube") {
+    // The page sends no referrer; YouTube's player needs one, so the frame sets its own policy.
+    return <figure className="km-video">
+      <iframe className="km-video-media" src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.id)}?rel=0`}
+        title={copy.hero.videoLabel} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" />
+      <figcaption className="km-video-caption">
+        <a href={video.href} target="_blank" rel="noreferrer">{copy.hero.videoLabel}<ArrowRight size={15} aria-hidden="true" /></a>
+      </figcaption>
+    </figure>;
+  }
   if (video?.kind === "link") {
     return <figure className="km-video">
       <a className="km-video-frame km-video-link" href={video.href} target="_blank" rel="noreferrer">

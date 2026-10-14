@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 /** Published path of the recorded walkthrough, relative to public/. */
 export const DEMO_VIDEO = "hunyuan/fork-night-hunyuan-demo.mp4";
 
+/** Wenjie's walkthrough on YouTube (Oct 13, 2026); when set, it plays in place of the local file. */
+export const DEMO_YOUTUBE: { id: string; href: string } | null = { id: "mvQY0h9BfZo", href: "https://youtu.be/mvQY0h9BfZo" };
+
 export type Lang = "en" | "zh";
 export const LANGS: readonly { id: Lang; label: string; htmlLang: string }[] = [
   { id: "en", label: "English", htmlLang: "en" },

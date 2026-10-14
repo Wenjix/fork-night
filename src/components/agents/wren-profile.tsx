@@ -1,6 +1,5 @@
 "use client";
 
-import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   Bird,
@@ -152,11 +151,14 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
   const latestIdea = data?.ideas[0];
   return (
     <section className="ag-section" id="wren" aria-labelledby="wren-title">
-      <SectionPlate className="ag-section-head" icon={Bird} tone="paper" headingId="wren-title" title="Wren keeps The Night Shift going"
-        description={<p>
+      <div className="ag-section-head">
+        <p className="ag-eyebrow">Meet the agent</p>
+        <h2 id="wren-title">Wren keeps The Night Shift going</h2>
+        <p>
           Wren joined the room the way any guest does. Its scenes sit in the
           same story map as everyone else’s, and anyone can pick them up.
-        </p>} />
+        </p>
+      </div>
 
       <div className="ag-profile">
         <aside className="ag-id-card" aria-label="Wren’s agent card">

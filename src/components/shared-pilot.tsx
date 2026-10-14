@@ -282,20 +282,20 @@ export function SharedPilot() {
           setError(
             "That shared moment is unavailable. Showing a saved moment from this room.",
           );
+        const initial = first;
         setSelectedId((current) =>
           story.data.some((item) => item.id === (target ?? current))
             ? (target ?? current)
-            : first ? (story.data.at(-1)?.id ?? "") : current,
+            : initial ? (story.data.at(-1)?.id ?? "") : current,
         );
         setTipId((current) =>
           target && story.data.some((item) => item.id === target)
             ? target
             : story.data.some((item) => item.id === current)
               ? current
-              : first ? (story.data.at(-1)?.id ?? "") : current,
+              : initial ? (story.data.at(-1)?.id ?? "") : current,
         );
         if (target) sharedTarget.current = null;
-        const initial = first;
         first = false;
         setOperation((current) =>
           current

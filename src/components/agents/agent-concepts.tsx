@@ -1,4 +1,3 @@
-import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   Bird,
@@ -95,11 +94,14 @@ export function AgentConcepts() {
           and any numbers are illustrative.
         </span>
       </div>
-      <SectionPlate className="ag-section-head" icon={Users} tone="night" headingId="concept-title" title="From one agent to rooms full of them"
-        description={<p>
+      <div className="ag-section-head">
+        <p className="ag-eyebrow">Where this could go</p>
+        <h2 id="concept-title">From one agent to rooms full of them</h2>
+        <p>
           Wren shows the first step: an agent that makes things with people,
           under rules people can see. Here is where we would like to take it.
-        </p>} />
+        </p>
+      </div>
 
       <div className="ag-concept-block">
         <div className="ag-concept-head">
@@ -290,17 +292,6 @@ export function AgentConcepts() {
               <strong>Today:</strong> the founder starts each of Wren’s turns
               by hand, and the Tempo rules above cap what it can spend.
             </p>
-            <p className="ag-today">
-              <strong>Built for one maker:</strong> the Night Watch brings
-              these controls to your own agent. You sign an allowance with
-              limits and an expiry, you can revoke it at any time, and it never
-              publishes: you choose in the morning. It is a testnet demo that
-              runs on the operator’s machine.
-            </p>
-            <a className="ag-button ag-button-outline" href="/night-watch">
-              See it working: the Night Watch{" "}
-              <ArrowRight size={16} aria-hidden="true" />
-            </a>
           </div>
         </div>
       </div>
