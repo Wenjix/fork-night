@@ -261,7 +261,7 @@ function run(code: string, scope: Record<string, unknown>) {
 }
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
-function chipMenu(user: object, saved: Record<string, string>, failures: { signOut?: Error; sessionStorage?: boolean } = {}) {
+function chipMenu(user: object, saved: Record<string, string>, failures: { signOut?: Error; sessionStorage?: boolean; localStorage?: boolean } = {}) {
   const steps: string[] = [];
   const timers: (() => void)[] = [];
   const account = storyteller(user, "Moth");
@@ -279,6 +279,7 @@ function chipMenu(user: object, saved: Record<string, string>, failures: { signO
     },
     removeEventListener: (type: string, listener: (event: Event) => void, capture?: boolean) => { listeners.get(listenerKey(type, capture))?.delete(listener); },
   };
+  if (failures.localStorage) Object.defineProperty(window, "localStorage", { get() { throw new Error("blocked"); } });
   /** The page's next input of this type: every listener for it runs, as a dispatch would. */
   const press = (type: string, init: { repeat?: boolean } = {}) => {
     for (const key of [listenerKey(type, true), listenerKey(type)]) for (const listener of [...listeners.get(key) ?? []]) listener({ type, ...init } as unknown as Event);
@@ -294,8 +295,16 @@ function chipMenu(user: object, saved: Record<string, string>, failures: { signO
   };
   const focusAfterConfirm = { current: null as unknown };
   const warning = { current: null };
+  const expireCookie = (name: string) => steps.push(`expire ${name}`);
+  // The chip calls this inside a try/catch, so a failed check shows only as the missing step.
+  const forgetPrivySession = (storage: unknown, expire: unknown, appId?: unknown) => {
+    assert.equal(storage, localStorage); assert.equal(expire, expireCookie);
+    assert.equal(appId, undefined, "the build's app id, so this app's guest credential goes too");
+    steps.push("forgetPrivySession");
+  };
   const handlers = run(`() => { ${lift("signOut")}\n${lift("requestSignOut")}\nreturn { signOut, requestSignOut }; }`, {
     ready: { status: "ready", client, account, named: true }, busy: false, account, savedHere: memory(saved), window, createSignOutRequest,
+    forgetPrivySession, expireCookie,
     needsPilotTrip: (who: unknown, storage: unknown) => needsPilotTrip(who, storage, true),
     load: async (path: string) => { steps.push(`load ${path}`); return modules[path]; },
     setBusy: (value: boolean) => steps.push(`busy ${value}`), setError: (value: string) => { if (value) steps.push(`error ${value}`); },
@@ -332,7 +341,7 @@ test("during the trip the button stays busy until the next press or key, which a
     const chip = chipMenu(users.google, { "privy:token": "t" });
     chip.handlers.requestSignOut();
     await settle();
-    assert.deepEqual(chip.timers, [], "no timer: a slow /pilot keeps \"Signing out…\" until it loads");
+    assert.deepEqual(chip.timers, [], "no timer: without input the button stays busy until /pilot loads");
     assert.deepEqual(chip.listening(), ["pointerdown capture x1", "keydown capture x1"], "the chip hears the next input before the page does");
     assert.match(chip.steps.at(-1)!, /^replace /, "still busy without input");
     chip.press(input);
@@ -370,12 +379,25 @@ test("a saved account without a Privy session signs out on the page: Supabase fi
   const blocked = chipMenu(users.wallet, { "privy:token": "t" }, { sessionStorage: true });
   blocked.handlers.requestSignOut();
   await settle();
-  assert.deepEqual(blocked.steps, ["busy true", ...loads, "signOutPilotAccount", "clearVisitorIdeas", "signed out"], "no safe request without sessionStorage");
+  assert.deepEqual(blocked.steps, ["busy true", ...loads, "signOutPilotAccount", "forgetPrivySession", "clearVisitorIdeas", "signed out"],
+    "no safe request without sessionStorage: sign out here, then remove the Privy session's keys as /pilot does");
   const failed = chipMenu(users.google, {}, { signOut: new Error("Your account could not be signed out. Refresh and try again.") });
   failed.handlers.requestSignOut();
   await settle();
   assert.deepEqual(failed.steps, ["busy true", ...loads, "signOutPilotAccount", "busy false", "error Your account could not be signed out. Refresh and try again."],
     "a failed sign-out keeps the ideas and the account");
+});
+
+test("without sessionStorage, Privy's keys go only after the storyteller is signed out, and blocked storage cannot stop it", async () => {
+  const failed = chipMenu(users.wallet, { "privy:token": "t" }, { sessionStorage: true, signOut: new Error("Your account could not be signed out. Refresh and try again.") });
+  failed.handlers.requestSignOut();
+  await settle();
+  assert.deepEqual(failed.steps, ["busy true", ...loads, "signOutPilotAccount", "busy false", "error Your account could not be signed out. Refresh and try again."],
+    "still signed in: the Privy session stays with it");
+  const locked = chipMenu(users.wallet, { "privy:token": "t" }, { sessionStorage: true, localStorage: true });
+  locked.handlers.requestSignOut();
+  await settle();
+  assert.deepEqual(locked.steps, ["busy true", ...loads, "signOutPilotAccount", "signed out"], "storage that refuses access is skipped");
 });
 
 test("the chip treats only supabase-js's own session key as a stored session", () => {
@@ -443,30 +465,35 @@ function chipMount(tab: Pick<Storage, "getItem" | "setItem" | "removeItem"> | "b
   const steps: string[] = [];
   const pending = new Map<number, () => void>();
   let timer = 0;
-  const leaving = new Set<() => void>();
+  const listeners = new Map<string, Set<(event?: Event) => void>>();
   const window = {
     get sessionStorage() { if (tab === "blocked") throw new Error("blocked"); return tab; },
     location: { pathname },
     setTimeout: (run: () => void, ms: number) => { steps.push(`timer ${ms}`); pending.set(++timer, run); return timer; },
     clearTimeout: (id: number) => { pending.delete(id); },
-    addEventListener: (type: string, listener: () => void) => { steps.push(`listen ${type}`); leaving.add(listener); },
-    removeEventListener: (type: string, listener: () => void) => { if (type === "pagehide") leaving.delete(listener); },
+    addEventListener: (type: string, listener: (event?: Event) => void, capture?: boolean) => {
+      steps.push(`listen ${type}${capture ? " capture" : ""}`);
+      listeners.set(type, (listeners.get(type) ?? new Set()).add(listener));
+    },
+    removeEventListener: (type: string, listener: (event?: Event) => void, capture?: boolean) => { if (capture) listeners.get(type)?.delete(listener); },
   };
   const focusSignIn = { current: false };
   const cleanup = run(effect.arguments[0].getText(chipFile), {
     window, focusSignIn, signedOutHere, forgetSignedOut, sessionStored: () => session,
     setMounted: (value: boolean) => steps.push(`mounted ${value}`), setNotice: (value: string) => steps.push(`notice ${value}`),
   })();
-  /** The page goes away (a link, a reload): the browser fires pagehide. */
-  const leave = () => { for (const listener of [...leaving]) listener(); };
-  return { steps, focusSignIn, cleanup, pending, leave, leaving };
+  /** The browser fires `type` at the window: pagehide when the page goes away (a link, a reload), pointerdown or keydown when the visitor acts. */
+  const fire = (type: string, init: { repeat?: boolean } = {}) => { for (const listener of [...listeners.get(type) ?? []]) listener({ type, ...init } as unknown as Event); };
+  const leave = () => fire("pagehide");
+  const listening = () => [...listeners.values()].reduce((count, set) => count + set.size, 0);
+  return { steps, focusSignIn, cleanup, pending, fire, leave, listening };
 }
 
 test("back from the /pilot trip, the chip confirms the sign-out and moves focus to Sign in, then forgets it", () => {
   const tab = memory();
   markSignedOut(tab, "/agents?tab=wren#roster");
   const chip = chipMount(tab, { pathname: "/agents" });
-  assert.deepEqual(chip.steps, ["mounted true", "notice Signed out of this browser.", "listen pagehide", "timer 1000"]);
+  assert.deepEqual(chip.steps, ["mounted true", "notice Signed out of this browser.", "listen pagehide capture", "listen pointerdown capture", "listen keydown capture", "timer 1000"]);
   assert.equal(chip.focusSignIn.current, true);
   assert.ok(signedOutHere(tab, "/agents"), "kept for a second");
   for (const forget of chip.pending.values()) forget();
@@ -492,9 +519,9 @@ test("a header replaced within the second (\"/\" restoring a #/project route) st
   const removed = chipMount(tab, { pathname: "/" });
   removed.cleanup();
   assert.equal(removed.pending.size, 0, "the removed chip does not forget the sign-out");
-  assert.equal(removed.leaving.size, 0, "nor when the page goes away later");
+  assert.equal(removed.listening(), 0, "nor when the page goes away or the visitor acts later");
   const stays = chipMount(tab, { pathname: "/" });
-  assert.deepEqual(stays.steps, ["mounted true", "notice Signed out of this browser.", "listen pagehide", "timer 1000"]);
+  assert.deepEqual(stays.steps, ["mounted true", "notice Signed out of this browser.", "listen pagehide capture", "listen pointerdown capture", "listen keydown capture", "timer 1000"]);
   assert.equal(stays.focusSignIn.current, true);
   for (const forget of stays.pending.values()) forget();
   assert.equal(signedOutHere(tab, "/"), false);
@@ -507,7 +534,7 @@ test("only the page the trip returns to confirms: after a stopped return, anothe
   assert.deepEqual(lobby.steps, ["mounted true"]);
   assert.equal(lobby.focusSignIn.current, false, "focus stays where the visitor put it");
   assert.ok(signedOutHere(tab, "/agents"), "the flag is left for its own page");
-  assert.deepEqual(chipMount(tab, { pathname: "/agents" }).steps, ["mounted true", "notice Signed out of this browser.", "listen pagehide", "timer 1000"]);
+  assert.deepEqual(chipMount(tab, { pathname: "/agents" }).steps, ["mounted true", "notice Signed out of this browser.", "listen pagehide capture", "listen pointerdown capture", "listen keydown capture", "timer 1000"]);
 });
 
 test("leaving the return page within the second forgets the confirmation, so the next page stays quiet", () => {
@@ -519,6 +546,63 @@ test("leaving the return page within the second forgets the confirmation, so the
   const reloaded = chipMount(tab, { pathname: "/agents" });
   assert.deepEqual(reloaded.steps, ["mounted true"], "a reload, a header link or Sign in then back: no second confirmation");
   assert.equal(reloaded.focusSignIn.current, false);
+});
+
+test("a press or key on the return page forgets the confirmation, so a view switch that replaces the header stays quiet", () => {
+  for (const input of ["pointerdown", "keydown"]) {
+    const tab = memory();
+    markSignedOut(tab, "/#/project/blade-runner-memory");
+    const project = chipMount(tab, { pathname: "/" });
+    project.fire(input);
+    assert.equal(tab.getItem(SIGNED_OUT_KEY), null, `the ${input} that starts a header link's view switch comes first`);
+    project.cleanup();
+    const lobby = chipMount(tab, { pathname: "/" });
+    assert.deepEqual(lobby.steps, ["mounted true"], "the lobby's new header says nothing");
+    assert.equal(lobby.focusSignIn.current, false);
+  }
+});
+
+test("once the confirmation is forgotten, nothing is left listening and no timer is pending", () => {
+  for (const end of ["timer", "pointerdown", "keydown", "pagehide"]) {
+    const tab = memory();
+    markSignedOut(tab, "/agents");
+    const chip = chipMount(tab, { pathname: "/agents" });
+    assert.deepEqual([chip.listening(), chip.pending.size], [3, 1]);
+    if (end === "timer") for (const forget of [...chip.pending.values()]) forget();
+    else chip.fire(end);
+    assert.equal(tab.getItem(SIGNED_OUT_KEY), null, end);
+    assert.deepEqual([chip.listening(), chip.pending.size], [0, 0], `after the ${end}, later presses find nothing to forget`);
+  }
+  const tab = memory();
+  markSignedOut(tab, "/agents");
+  const held = chipMount(tab, { pathname: "/agents" });
+  held.fire("keydown", { repeat: true });
+  assert.deepEqual([held.listening(), held.pending.size], [3, 1], "a held key's repeat changes nothing");
+  assert.ok(signedOutHere(tab, "/agents"));
+});
+
+test("a key still held from the trip does not forget the confirmation before \"/\" restores its route", () => {
+  const tab = memory();
+  markSignedOut(tab, "/#/project/blade-runner-memory");
+  const first = chipMount(tab, { pathname: "/" });
+  first.fire("keydown", { repeat: true });
+  assert.ok(signedOutHere(tab, "/"), "a repeat is not the visitor acting");
+  first.cleanup();
+  assert.equal(chipMount(tab, { pathname: "/" }).focusSignIn.current, true, "the chip that stays still confirms");
+});
+
+test("\"/\" restoring a #/project route confirms once: in the chip that stays, and in no later view", () => {
+  const tab = memory();
+  markSignedOut(tab, "/#/project/blade-runner-memory");
+  const lobbyHeader = chipMount(tab, { pathname: "/" });
+  lobbyHeader.cleanup();
+  const projectHeader = chipMount(tab, { pathname: "/" });
+  projectHeader.fire("pointerdown");
+  projectHeader.cleanup();
+  const spacesHeader = chipMount(tab, { pathname: "/" });
+  const notices = [projectHeader, spacesHeader].flatMap(chip => chip.steps).filter(step => step.startsWith("notice "));
+  assert.deepEqual(notices, ["notice Signed out of this browser."]);
+  assert.equal(spacesHeader.focusSignIn.current, false);
 });
 
 test("the agents page's header link is named by its words, with an arrow that screen readers skip", async () => {

@@ -152,7 +152,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} />} account={false} />
     <main className="pilot-shell pilot-entrance" id="shared-stories" tabIndex={-1}>
     <div className="pilot-entrance-account"><span>Shared rooms · public stories, private previews</span><div className="pilot-header-actions">{account?.signingOut ? <p className="pilot-signout-status" role="status">Signing out of this browser…</p> : <PilotIdentity profile={profile} disabled={!!pending || busy || !!account?.loading} signOutBlockedReason={signOutBlock} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" />}</div></div>
-    {/* Hidden while the sign-out runs: an earlier "could not be verified, refresh" must not invite a reload that stops it. */}
+    {/* Hidden while the sign-out runs: an earlier "could not be verified, refresh" no longer applies, since the sign-out goes ahead regardless. */}
     {account?.error && !account.signingOut && <div ref={accountNotice} className="pilot-notice" role="alert"><p>{account.error}</p></div>}
     {creating ? <>
       <a className="text-button" href="/pilot"><ArrowLeft size={16} aria-hidden="true" />Shared stories</a>

@@ -4,7 +4,7 @@ import { useContext, useEffect, useId, useRef, useState, useSyncExternalStore, t
 import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
 import { ChevronDown, UserRound, Wallet } from "lucide-react";
 import type { Database } from "../lib/supabase/database.types.ts";
-import { createSignOutRequest, forgetSignedOut, privySessionStored, sessionKey, signedOutHere } from "../lib/supabase/signout-request.ts";
+import { createSignOutRequest, expireCookie, forgetPrivySession, forgetSignedOut, privySessionStored, sessionKey, signedOutHere } from "../lib/supabase/signout-request.ts";
 import { HeaderAccountVisibility } from "./app-header.tsx";
 import "@/app/header-account.css";
 
@@ -84,11 +84,20 @@ function AccountChip() {
     focusSignIn.current = true;
     setNotice("Signed out of this browser.");
     // "/" replaces its header while it restores a #/project route, so the chip that stays clears the flag: after a
-    // second, or sooner if the page is left (a link, a reload), so the next page does not confirm again.
-    const forget = () => forgetSignedOut(tab);
-    window.addEventListener("pagehide", forget);
+    // second, or sooner when the page is left (a link, a reload) or the visitor presses or types. A header link that
+    // only switches "/"'s view also replaces the header, with no pagehide, so the next view does not confirm again. A
+    // key still held from the trip repeats; that must not clear the flag before the restore remounts the chip. Once
+    // forgotten, nothing is left listening: the timer and the listeners go too.
+    const until = ["pagehide", "pointerdown", "keydown"];
+    const stop = () => { window.clearTimeout(shown); for (const type of until) window.removeEventListener(type, forget, true); };
+    const forget = (event?: Event) => {
+      if ((event as KeyboardEvent | undefined)?.repeat) return;
+      forgetSignedOut(tab);
+      stop();
+    };
+    for (const type of until) window.addEventListener(type, forget, true);
     const shown = window.setTimeout(forget, 1000);
-    return () => { window.clearTimeout(shown); window.removeEventListener("pagehide", forget); };
+    return stop;
   }, []);
   useEffect(() => { if (stored) setNotice(""); }, [stored]);
   function signedOut() {
@@ -221,13 +230,15 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
   async function signOut() {
     if (!ready || busy) return;
     setBusy(true); setError("");
+    let privyLeft = false;
     if (needsPilotTrip(ready.account, savedHere)) {
       try {
         // Replace, not assign: /pilot replaces its own entry with the return path, so Back does not land here twice.
         window.location.replace(createSignOutRequest(window.sessionStorage, window.location.href));
         // A cancelled navigation (a leave prompt answered "Stay", or Stop) fires no event, so the next press or key
-        // gives the button back; a slow /pilot keeps "Signing out…" until it loads. A held key's repeats do not
-        // count, or a held Enter would start the trip again.
+        // gives the button back, even while a slow /pilot is still loading; a second click then starts the trip
+        // again and its navigation replaces the pending one. A held key's repeats do not count, or a held Enter would
+        // restart the trip with every repeat.
         const release = (event: Event) => {
           if ((event as KeyboardEvent).repeat) return;
           setBusy(false);
@@ -236,7 +247,11 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
         for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, release, true);
         return;
       }
-      catch { /* Without sessionStorage there is no safe request: sign out here and leave the Privy session stored, as /pilot does when Privy is unreachable. */ }
+      catch {
+        // Without sessionStorage there is no safe request: sign out here, then remove the Privy session's keys as
+        // /pilot does, since its bridge cannot end that session on this page.
+        privyLeft = true;
+      }
     }
     let helpers: [typeof import("../lib/supabase/onboarding.ts"), typeof import("../lib/pilot-rooms.ts")];
     try { helpers = await Promise.all([import("../lib/supabase/onboarding.ts"), import("../lib/pilot-rooms.ts")]); }
@@ -250,6 +265,10 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
       setBusy(false);
       setError(reason instanceof Error ? reason.message : "Sign-out could not finish. Try again.");
       return;
+    }
+    if (privyLeft) {
+      try { forgetPrivySession(window.localStorage, expireCookie); }
+      catch { /* Storage may be what failed; the storyteller is signed out either way. */ }
     }
     try { helpers[1].clearVisitorIdeas(window.localStorage); }
     catch { /* Sign-out succeeds even if idea storage is unavailable. */ }

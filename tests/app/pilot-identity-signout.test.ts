@@ -85,6 +85,9 @@ test("the sign-out status takes the name's box; the whole entrance keeps a 16px 
   assert.equal(status.color, "var(--muted)");
   const phone = media("max-width: 760px");
   assert.equal(declarations(phone, ".pilot-signout-status")["max-width"], declarations(phone, ".pilot-guest-identity > summary")["max-width"]);
+  // Up to 480px the status never fits beside the label, so it takes a row of its own either way and keeps one line there (it comes later, so it wins).
+  assert.equal(declarations(media("max-width: 480px"), ".pilot-signout-status")["max-width"], "none");
+  assert.ok(css.indexOf(".pilot-signout-status { max-width: none; }") > css.indexOf(".pilot-signout-status { max-width: 16ch; }"));
   // The gutter belongs to the whole entrance, so the bar and everything under it line up at every width.
   const entrance = declarations(await readFile("src/app/pilot/rooms.css", "utf8"), ".pilot-entrance");
   assert.equal(entrance["max-width"], "min(1120px, calc(100% - 32px))");

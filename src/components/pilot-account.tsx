@@ -228,8 +228,9 @@ export function PilotAccountProvider({ children }: { children: ReactNode }) {
       for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, release, true);
     })();
   }, [loading]);
-  // Until the sign-out settles, leaving the page (Back, a reload, closing the tab) still signs this
-  // browser out. Keyed on the status, so StrictMode and an unmount remove it too.
+  // While the status is up (until a failure or a sign-out that stays on /pilot, or after a return
+  // until the next press or key), leaving the page (Back, a reload, closing the tab) still signs
+  // this browser out. Keyed on the status, so StrictMode and an unmount remove it too.
   useEffect(() => {
     if (!tripping) return;
     window.addEventListener("pagehide", forgetStoredSessions);

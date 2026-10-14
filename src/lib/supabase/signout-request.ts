@@ -18,21 +18,30 @@
  *    tab cannot sign anyone out (logout CSRF).
  * 4. { returnTo }: from the moment the request is read, the account bar shows "Signing out of this
  *    browser…" (the account context's signingOut flag) and the rest of the entrance is inert, so a
- *    click cannot leave halfway. Leaving anyway (Back, a reload, closing the tab) still signs this
- *    browser out: until the sign-out settles, a pagehide listener removes the stored Supabase
- *    session (sessionKey()) and Privy's (forgetPrivySession()), as a failed logout call would.
+ *    click cannot leave halfway. The request is read in an effect when the provider mounts, so
+ *    until /pilot's scripts have loaded, its static shell ("Opening the rooms…") and the header's
+ *    links still work. Following a link or going Back then leaves the session stored, the request
+ *    unused in this tab and the /pilot?signout=… entry in history; returning to that entry, or
+ *    reloading it, within SIGNOUT_REQUEST_TTL_MS finishes the sign-out. Once the status shows,
+ *    leaving anyway (Back, a reload, closing the tab) still signs this browser out: while the
+ *    status is up, a pagehide listener removes the stored Supabase session (sessionKey()) and
+ *    Privy's (forgetPrivySession()), as a failed logout call would.
  *    Once the account has loaded, call the provider's own signOut() when someone is signed in,
  *    when the account check failed (the session may still be stored) or when a Privy session is
- *    stored (a session the server ended can leave it behind). signOut() ends the Privy session
- *    (waiting up to 3 s), signs out of this browser (scope local) and clears the visitor's unsent
- *    ideas. The chip has already asked an anonymous guest to confirm, so do not ask again.
+ *    stored (a session the server ended can leave it behind). signOut() ends the Privy session (it
+ *    waits up to 3 s for a Privy bridge that is not mounted yet, then gives Privy's logout up to
+ *    3 s), signs out of this browser (scope local) and clears the visitor's unsent ideas. The chip
+ *    has already asked an anonymous guest to confirm, so do not ask again.
  *    - On success, or when there was nothing to sign out: forgetPrivySession(), since an
  *      unreachable Privy finishes its own cleanup only after this page has left. Then, when
  *      returnTo is a path, markSignedOut(window.sessionStorage, returnTo) and
  *      window.location.replace(returnTo), so history holds the start page once and its chip, on
- *      that path only, confirms the sign-out. The status stays until the next press or key, in
- *      case the navigation is stopped. When returnTo is null, stay on /pilot, now signed out.
- *    - On failure: stay on /pilot and show the error under the account bar. A scope-local
+ *      that path only, confirms the sign-out. The status, and the pagehide listener with it, stays
+ *      until the next press or key, in case the navigation is stopped; a held key's repeats do
+ *      not end it. When returnTo is null, the status ends and the page stays on /pilot, now signed
+ *      out.
+ *    - On failure: stay on /pilot and show the error under the account bar. The status ends, and
+ *      the pagehide listener with it, so leaving keeps the session, as the error says. A scope-local
  *      sign-out does not call GET /auth/v1/user, but auth-js first refreshes an access token that
  *      has expired, and a refresh that cannot reach Supabase fails the sign-out and keeps the
  *      session. When the account had loaded, the bar's own sign-out remains. After a failed
@@ -74,18 +83,26 @@ const PRIVY_SAVED_USERS = "privy:saved-users";
 
 /**
  * Privy's own logout clears its session only once its logout call settles, which takes about 20 s
- * when privy.io is unreachable. This removes what that cleanup removes (destroyLocalState in
- * @privy-io/js-sdk-core 0.78.2): the tokens stored with no user and under the active user (Privy
- * JSON-encodes each value), the active user and its place in the saved users, and the matching
- * cookies. privy:caid identifies the device and stays. Never throws.
+ * when privy.io is unreachable. This removes what that cleanup (destroyLocalState) removes, in both
+ * of Privy's layouts; Privy JSON-encodes each value.
+ * - The session this app writes: @privy-io/react-auth 3.48.1's own Session, which its custom-JWT
+ *   sign-in fills (useSubscribeToJwtAuthWithFlag, then startAuthFlow/authenticate, then
+ *   _storeAllTokens): privy:token, privy:refresh_token, privy:pat, privy:id_token when identity
+ *   tokens are on, and the privy-token, privy-session and privy-id-token cookies.
+ * - @privy-io/js-sdk-core 0.78.2's: those tokens with no user and under the active user (its identity
+ *   token as "id-token"), the active user and its place in the saved users, the guest credential
+ *   privy:guest:<appId> (only when the app id is known), and the matching cookies, privy-refresh-token
+ *   and privy-<user>-… included.
+ * privy:caid identifies the device and stays, as do other users' keys. Never throws.
  */
-export function forgetPrivySession(storage: Pick<Storage, "getItem" | "setItem" | "removeItem">, expireCookie: (name: string) => void) {
+export function forgetPrivySession(storage: Pick<Storage, "getItem" | "setItem" | "removeItem">, expireCookie: (name: string) => void, appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
   let user: unknown = null;
   try { user = JSON.parse(storage.getItem(PRIVY_ACTIVE_USER) ?? "null"); }
   catch { /* No readable active user: clear the keys stored with no user. */ }
   const active = typeof user === "string" && user ? user : undefined;
   for (const scope of active ? [undefined, active] : [undefined]) {
-    for (const name of ["token", "pat", "refresh_token", "id-token"]) {
+    // With no user, react-auth's own session also keeps its identity token as "id_token".
+    for (const name of scope ? ["token", "pat", "refresh_token", "id-token"] : ["token", "pat", "refresh_token", "id-token", "id_token"]) {
       try { storage.removeItem(scope ? `privy:${scope}:${name}` : `privy:${name}`); }
       catch { /* Blocked storage holds no session to clear. */ }
     }
@@ -94,8 +111,10 @@ export function forgetPrivySession(storage: Pick<Storage, "getItem" | "setItem" 
       catch { /* Cookies may be blocked too. */ }
     }
   }
-  try { storage.removeItem(PRIVY_ACTIVE_USER); }
-  catch { /* As above. */ }
+  for (const key of [PRIVY_ACTIVE_USER, ...(appId ? [`privy:guest:${appId}`] : [])]) {
+    try { storage.removeItem(key); }
+    catch { /* As above. */ }
+  }
   if (!active) return;
   try {
     // Privy stores the saved users as a JSON array that its storage JSON-encodes again.

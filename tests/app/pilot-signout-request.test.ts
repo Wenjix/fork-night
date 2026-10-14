@@ -74,7 +74,9 @@ function pilotPage(href: string, storage = sessionStore(), { signOutFails = fals
       const env = { ...refs, window, hasSignOutRequest, withoutSignOutRequest, markSignedOut, loading, error, tripping, currentUser: { current: user }, privySessionStored: () => privy,
         consumeSignOutRequest: (...args: Parameters<typeof consumeSignOutRequest>) => { const result = consumeSignOutRequest(...args); consumed.push(result); return result; },
         signOut: async () => { steps.push("signOut"); await until; if (signOutFails) throw new Error("Your account could not be signed out. Refresh and try again."); },
-        forgetPrivySession: (storage: unknown, expire: unknown) => { assert.equal(storage, local); assert.equal(expire, expireCookieFake); steps.push("forget privy"); },
+        forgetPrivySession: (storage: unknown, expire: unknown, appId?: unknown) => {
+          assert.equal(storage, local); assert.equal(expire, expireCookieFake); assert.equal(appId, undefined, "the build's app id"); steps.push("forget privy");
+        },
         expireCookie: expireCookieFake, forgetStoredSessions: () => { steps.push("forget sessions"); },
         setError: (message: string) => { steps.push(`error ${message}`); }, setTripping: (value: boolean) => { trips.push(value); } };
       const deps = effects.map(({ deps }) => deps === undefined ? undefined : run(deps, env) as unknown[]);
@@ -243,7 +245,7 @@ test("a failed sign-out stays on /pilot and shows the error, keeping Privy's key
   assert.equal(pagehide(page), 0, "leaving now keeps the session, as the page says");
 });
 
-test("until the sign-out settles, leaving the page (Back, a reload, closing the tab) still signs this browser out", async () => {
+test("while the status is up, leaving the page (Back, a reload, closing the tab) still signs this browser out", async () => {
   const storage = sessionStore();
   let finish!: () => void;
   const page = pilotPage(origin + createSignOutRequest(storage, `${origin}/agents`), storage, { until: new Promise<void>(resolve => { finish = () => resolve(); }) });
@@ -350,22 +352,32 @@ test("a return path that dot segments turn into another site is dropped: sign ou
   assert.deepEqual(page.trips, [true, false]);
 });
 
-// Privy's real layout (@privy-io/js-sdk-core 0.78.2): every value JSON-encoded; each token stored with no
-// user and under the active user; the saved users a JSON array encoded twice; privy:caid for the device.
-const ACTIVE = "did:privy:cm0active00", OTHER = "did:privy:cm0other000";
+// Privy's two layouts, every value JSON-encoded. The session this app writes is @privy-io/react-auth 3.48.1's
+// own: privy:token, privy:refresh_token, privy:pat and privy:id_token, with no user. @privy-io/js-sdk-core
+// 0.78.2 also keeps each token under the active user (its identity token as "id-token"), the active user, the
+// saved users (a JSON array encoded twice) and a guest credential per app. privy:caid identifies the device.
+const ACTIVE = "did:privy:cm0active00", OTHER = "did:privy:cm0other000", APP = "cm0app00000", OTHER_APP = "cm0otherapp";
+// The build inlines the app id; forgetPrivySession reads it when it runs.
+process.env.NEXT_PUBLIC_PRIVY_APP_ID = APP;
 function privyLayout() {
   const storage = sessionStore();
   const put = (key: string, value: unknown) => storage.setItem(key, JSON.stringify(value));
   for (const scope of ["", `${ACTIVE}:`, `${OTHER}:`]) for (const name of ["token", "pat", "refresh_token", "id-token"]) put(`privy:${scope}${name}`, `${scope}${name}`);
+  put("privy:id_token", "react-auth identity token");
   put("privy:active-user", ACTIVE);
   put("privy:saved-users", JSON.stringify([ACTIVE, OTHER]));
+  put(`privy:guest:${APP}`, "guest credential");
+  put(`privy:guest:${OTHER_APP}`, "another app's guest credential");
   put("privy:caid", "device-1");
   return storage;
 }
 function assertPrivyForgotten(storage: ReturnType<typeof sessionStore>, cookies: string[]) {
+  assert.equal(storage.getItem("privy:id_token"), null, "react-auth's identity token goes");
+  assert.equal(storage.getItem(`privy:guest:${APP}`), null, "and this app's guest credential");
   assert.deepEqual([...storage.map.keys()].filter(key => key.startsWith("privy:")).sort(), [
     "privy:caid", `privy:${OTHER}:id-token`, `privy:${OTHER}:pat`, `privy:${OTHER}:refresh_token`, `privy:${OTHER}:token`, "privy:saved-users",
-  ].sort(), "the unscoped and the active user's tokens and the active user go; another saved user and the device stay");
+    `privy:guest:${OTHER_APP}`,
+  ].sort(), "the unscoped and the active user's tokens and the active user go; another saved user, another app and the device stay");
   assert.deepEqual(JSON.parse(JSON.parse(storage.getItem("privy:saved-users")!)), [OTHER]);
   assert.equal(JSON.parse(storage.getItem("privy:caid")!), "device-1");
   assert.deepEqual(cookies, [
@@ -391,6 +403,8 @@ test("forgetPrivySession removes what Privy's own cleanup removes, and nothing e
   forgetPrivySession(noUser, name => { unscoped.push(name); });
   assert.deepEqual(unscoped, ["privy-token", "privy-refresh-token", "privy-id-token", "privy-session"]);
   assert.equal(noUser.getItem("privy:token"), null);
+  assert.equal(noUser.getItem("privy:id_token"), null, "react-auth's session has no active user");
+  assert.equal(noUser.getItem(`privy:guest:${APP}`), null);
   assert.equal(noUser.getItem(`privy:${ACTIVE}:token`), JSON.stringify(`${ACTIVE}:token`), "with no active user, no user's tokens are touched");
   assert.deepEqual(JSON.parse(JSON.parse(noUser.getItem("privy:saved-users")!)), [ACTIVE, OTHER]);
 
@@ -402,6 +416,24 @@ test("forgetPrivySession removes what Privy's own cleanup removes, and nothing e
   garbled.setItem("privy:saved-users", "not json");
   assert.doesNotThrow(() => forgetPrivySession(garbled, () => {}));
   assert.equal(garbled.getItem("privy:token"), null);
+});
+
+test("forgetPrivySession removes a guest credential only for the app id it is given or built with", () => {
+  const unknown = privyLayout();
+  forgetPrivySession(unknown, () => {}, "");
+  assert.notEqual(unknown.getItem(`privy:guest:${APP}`), null, "no app id, no guest credential removed");
+  assert.equal(unknown.getItem("privy:id_token"), null, "the session goes regardless");
+  const other = privyLayout();
+  forgetPrivySession(other, () => {}, OTHER_APP);
+  assert.equal(other.getItem(`privy:guest:${OTHER_APP}`), null);
+  assert.notEqual(other.getItem(`privy:guest:${APP}`), null);
+  const built = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+  delete process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+  try {
+    const unset = privyLayout();
+    forgetPrivySession(unset, () => {});
+    assert.notEqual(unset.getItem(`privy:guest:${APP}`), null, "a build without NEXT_PUBLIC_PRIVY_APP_ID removes none");
+  } finally { if (built === undefined) delete process.env.NEXT_PUBLIC_PRIVY_APP_ID; else process.env.NEXT_PUBLIC_PRIVY_APP_ID = built; }
 });
 
 test("expireCookie expires a cookie as Privy's cookie library removes it, and sessionKey names supabase-js's key", () => {
