@@ -14,6 +14,10 @@ export function FirstNightInvitation({ variant = "lobby" }: { variant?: "lobby" 
   const [selected, setSelected] = useState<string>(FIRST_NIGHT_STARTERS[0].id);
   const { status, story, retry } = useFirstNightStory();
   const client = pilotBrowserClient();
+  const heroCopy = variant === "lobby" && <div className="fn-first-hero-copy">
+    <h1>Build a story with friends. Every branch credits its makers, and finished stories pay them on Monad.</h1>
+    <p>Pick a moment, add your part, invite the next maker.</p>
+  </div>;
 
   if (status !== "ready" || !story) {
     const loading = status === "loading";
@@ -24,18 +28,15 @@ export function FirstNightInvitation({ variant = "lobby" }: { variant?: "lobby" 
         : status === "unavailable"
           ? "This shared story isn’t available to join right now."
           : "We couldn’t load the shared story.";
-    return <section className="fn-first-invitation fn-first-invitation-pending" data-variant={variant} aria-labelledby={titleId} aria-busy={loading}>
+    return <>{heroCopy}<section className="fn-first-invitation fn-first-invitation-pending" data-variant={variant} aria-labelledby={titleId} aria-busy={loading}>
       <div className="fn-first-pending-art"><StoryArt src="/art/night-shift-neon.webp#frame=0" description="The towers of Kessler Ward during a blackout, from the prepared story." /><span>Kessler Ward · prepared story</span></div>
       <div className="fn-first-invitation-copy"><h2 id={titleId}>Every story starts somewhere.</h2><p role="status">{message}</p>{!loading && <div className="fn-first-pending-actions"><button type="button" className="fn-first-secondary" onClick={retry}><RefreshCw size={17} aria-hidden="true" />Try again</button><a href={variant === "rooms" ? "#shared-directory" : "/pilot#shared-directory"}>Browse shared stories <ArrowRight size={17} aria-hidden="true" /></a></div>}</div>
-    </section>;
+    </section></>;
   }
 
   const panel = story.panels[0];
   return <>
-    {variant === "lobby" && <div className="fn-first-hero-copy">
-      <h1>Build a story with friends. Every branch credits its makers, and finished stories pay them on Monad.</h1>
-      <p>Pick a moment, add your part, invite the next maker.</p>
-    </div>}
+    {heroCopy}
     <section className="fn-first-invitation" data-variant={variant} aria-labelledby={titleId}>
     <figure className="fn-first-opening">
       <a className="fn-first-opening-art" href={firstNightRoomHref()} aria-label={`Read the opening of ${story.title}`}>
