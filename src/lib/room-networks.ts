@@ -1,4 +1,5 @@
 import { WREN, WREN_TOP_UPS, txUrl } from "./agents/wren.ts";
+import { MIDNIGHT_SIGNAL_RELEASE_PROOF_LINE, MONAD_RELEASE_CONTRACT, MONAD_EXPLORER } from "./onchain/records.ts";
 
 export const NETWORK_BRANDS = {
   monad: { name: "Monad", testnet: "Testnet", mark: "/brands/networks/monad.svg", currency: "test MON" },
@@ -17,10 +18,10 @@ export type RoomNetworkDemo = {
 
 const MONAD_RELEASE: RoomNetworkDemo = {
   network: "monad",
-  summary: "Story releases, support and claims in test MON.",
+  summary: `${MIDNIGHT_SIGNAL_RELEASE_PROOF_LINE} ·`,
   proof: {
-    label: "View release contract",
-    href: "https://testnet.monadscan.com/address/0x15247565331013132e5563Cd29E99E0baA38690f",
+    label: "View on MonadScan ↗",
+    href: `${MONAD_EXPLORER}/address/${MONAD_RELEASE_CONTRACT}`,
   },
 };
 

@@ -61,3 +61,14 @@ test("unapproved wallets and unrelated accounts cannot register public scenes", 
   assert.equal(registration(rows({ wallets: [curator, ZeroAddress, curator, makerWallet] }).elements[1]), undefined);
   assert.equal(registration(rows({ account: otherWallet }).elements[1]), undefined);
 });
+
+test("registered scene state links to its MonadScan transaction when the receipt is known", () => {
+  const state = snapshot({ registered: [true, true, false, false] });
+  state.scenes[1].transactionHash = `0x${"a".repeat(64)}`;
+  const element = ReleaseScenes({ prepared, snapshot: state, account: curator, accepted: true, busy: false, pending: false,
+    onAction: () => {}, explorer: "https://testnet.monadscan.com" }) as Element;
+  const markup = html(React.Children.toArray(element.props.children)[1]);
+  assert.match(markup, /href="https:\/\/testnet\.monadscan\.com\/tx\/0x[a]+"/);
+  assert.match(markup, /Scene registered/);
+  assert.match(markup, /0x0000/);
+});

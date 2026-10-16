@@ -6,9 +6,10 @@ import { tsImport } from "tsx/esm/api";
 import { ZeroAddress } from "ethers";
 import * as journey from "../../src/lib/onchain/journey.ts";
 import { prepareRelease } from "../../src/lib/onchain/model.ts";
+import { MIDNIGHT_SIGNAL_RELEASE_TIP_ID } from "../../src/lib/onchain/records.ts";
 import { config, curator, makerWallet, moments, otherWallet } from "./release-fixtures.ts";
 
-const { TestnetRelease, PreparedWorkWallet } = await tsImport("../../src/components/testnet-release.tsx", import.meta.url);
+const { TestnetRelease, PreparedWorkWallet, releaseDisplayTipId } = await tsImport("../../src/components/testnet-release.tsx", import.meta.url);
 const { ReleaseScenes } = await tsImport("../../src/components/release-scenes.tsx", import.meta.url);
 const samples = moments.slice(0, 2).map((moment, index) => ({ ...moment, room_id: "kessler-ward", maker_id: null,
   maker_label: index ? "Jules · prepared sample" : "Sam · prepared sample",
@@ -31,6 +32,14 @@ test("Kessler exposes its release panel while unrelated rooms remain outside it"
       if (value === undefined) delete process.env[key!]; else process.env[key!] = value;
     }
   }
+});
+
+test("Midnight Signal defaults to the completed six-scene release when a newer child is selected", () => {
+  const released = { ...moments.at(-1)!, id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
+  const child = { ...moments.at(-1)!, id: "10000000-0000-4000-8000-000000000099", parent_id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
+  assert.equal(releaseDisplayTipId("midnight-signal", [...moments.slice(0, -1), released, child], child.id), MIDNIGHT_SIGNAL_RELEASE_TIP_ID);
+  assert.equal(releaseDisplayTipId("midnight-signal", [...moments, released], moments.at(-1)!.id), moments.at(-1)!.id);
+  assert.equal(releaseDisplayTipId("kessler-ward", [released, child], child.id), child.id);
 });
 
 test("prepared work approval is restricted to its curator, an unapproved prepared identity and explicit rights consent", () => {

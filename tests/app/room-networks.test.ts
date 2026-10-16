@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { getRoomNetworkShowcase, NETWORK_BRANDS } from "../../src/lib/room-networks.ts";
 import { WREN_TOP_UPS } from "../../src/lib/agents/wren.ts";
+import { MIDNIGHT_SIGNAL_RELEASE_PROOF_LINE, MONAD_RELEASE_CONTRACT } from "../../src/lib/onchain/records.ts";
 
 test("unknown and unassigned rooms do not acquire an invented testnet", () => {
   for (const id of ["lantern-archive", "missing-room", "", "__proto__"]) {
@@ -29,6 +30,9 @@ test("Monad releases remain distinct from the USDC funding rails", () => {
   assert.equal(demo.network, "monad");
   assert.equal(NETWORK_BRANDS.monad.currency, "test MON");
   assert.equal(new URL(demo.proof.href).hostname, "testnet.monadscan.com");
+  assert.equal(demo.summary, `${MIDNIGHT_SIGNAL_RELEASE_PROOF_LINE} ·`);
+  assert.equal(demo.proof.label, "View on MonadScan ↗");
+  assert.ok(demo.proof.href.endsWith(`/address/${MONAD_RELEASE_CONTRACT}`));
   assert.doesNotMatch(demo.summary, /USDC|top-up/);
 });
 
