@@ -81,9 +81,10 @@ export class ReleaseClient {
   }
   private async registrationTransactions(prepared: PreparedRelease, registeredIds: string[], block: number) {
     const wanted = new Set(registeredIds.map(id => id.toLowerCase()));
-    if (!wanted.size) return new Map<string, string>();
+    if (!wanted.size || !this.config.explorer) return new Map<string, string>();
     try {
       const event = this.contract.interface.getEvent("MomentRegistered");
+      if (!event) return new Map<string, string>();
       const logs = await this.provider.getLogs({
         address: this.config.address,
         fromBlock: this.config.chainId === 10143 ? MONAD_RELEASE_DEPLOYMENT_BLOCK : 0,
@@ -106,7 +107,7 @@ export class ReleaseClient {
     const block = await this.provider.getBlockNumber();
     const [project, release, ...sceneReads] = await this.read([["projects", [prepared.projectId]], ["getRelease", [prepared.id]],
       ...prepared.scenes.flatMap((scene): Read[] => [["moments", [scene.id]], ["makers", [prepared.projectId, scene.makerId]]])], block);
-    const scenes = prepared.scenes.map((scene, index) => {
+    const scenes: Snapshot["scenes"] = prepared.scenes.map((scene, index) => {
       const moment = sceneReads[2 * index], maker = sceneReads[2 * index + 1];
       const registered = moment.beneficiary !== ZeroAddress;
       const matches = registered && moment.projectId === prepared.projectId && moment.parentId === scene.parentId &&
