@@ -90,6 +90,8 @@ export function AgentsShowcase() {
       </AgentRoomHeader>
 
       <main>
+        <WrenAllowance />
+
         <section className="ag-hero" aria-labelledby="agents-title">
           <div className="ag-hero-copy">
             <h1 id="agents-title">
@@ -128,7 +130,6 @@ export function AgentsShowcase() {
 
         <WrenProfile room={room} />
         <TurnSteps />
-        <WrenAllowance />
         <AgentConcepts />
       </main>
 

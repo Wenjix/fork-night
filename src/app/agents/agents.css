@@ -203,6 +203,10 @@
 .ag-step-optional a { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
 
 /* Allowance */
+.ag-mpp-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding: 0; margin: 0 0 20px; list-style: none; }
+.ag-mpp-strip li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 9px; min-height: 58px; padding: 12px 14px; border: 1px solid #7ee8cf55; border-radius: 12px; background: #7ee8cf14; color: var(--ag-ink); font-size: 14px; font-weight: 650; line-height: 1.3; }
+.ag-mpp-strip li > svg:first-child { color: var(--ag-agent); }
+.ag-mpp-strip li > svg:last-child { color: var(--ag-muted); }
 .ag-allowance { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .ag-rules, .ag-keys { display: flex; flex-direction: column; gap: 18px; padding: 24px; border-radius: 12px; border: 1px solid var(--ag-line); background: var(--ag-panel); min-width: 0; }
 .ag-rules-lead { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px; background: #e0edcd; color: var(--ag-ink); font-size: 15px; }
@@ -315,6 +319,7 @@
   .ag-hero { grid-template-columns: minmax(0, 1fr); gap: 36px; }
   .ag-hero-frame { max-width: 560px; transform: none; }
   .ag-profile, .ag-allowance, .ag-concept-grid, .ag-future-agents { grid-template-columns: minmax(0, 1fr); }
+  .ag-mpp-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ag-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ag-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -335,6 +340,7 @@
   .ag-count strong { font-size: 32px; }
   .ag-steps { grid-template-columns: minmax(0, 1fr); }
   .ag-step-optional { flex-direction: column; gap: 12px; padding: 16px; }
+  .ag-mpp-strip { grid-template-columns: minmax(0, 1fr); }
   .ag-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .ag-flow-arrow { display: none; }
   .ag-agent-only { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: left; }
