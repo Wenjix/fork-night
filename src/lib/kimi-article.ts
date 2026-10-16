@@ -28,8 +28,8 @@ export type KimiVideo =
   | { kind: "link"; href: string; label: string }
   | null;
 
-/** Wenjie's walkthrough of the Night Watch with Kimi K3 (Oct 13, 2026). */
-export const KIMI_VIDEO: KimiVideo = { kind: "youtube", id: "KOdXT0_DNQI", href: "https://youtu.be/KOdXT0_DNQI" };
+/** Wenjie's walkthrough of the Night Watch with Kimi K3. */
+export const KIMI_VIDEO: KimiVideo = { kind: "youtube", id: "EH01ky2c0XM", href: "https://youtu.be/EH01ky2c0XM" };
 /** YouTube's privacy-enhanced player: the embed's host, and the only origin the toggle's pause command goes to. */
 export const YOUTUBE_ORIGIN = "https://www.youtube-nocookie.com";
 
@@ -50,6 +50,8 @@ export const KIMI_FACTS = {
   /** 1-based: the take Kimi suggested showing first. */
   pick: 1,
 } as const;
+
+export const KIMI_DESK_BASELINE_SECONDS = "22.1";
 
 export type JobKey = keyof typeof KIMI_FACTS.jobs;
 export const JOB_KEYS: readonly JobKey[] = ["desk", "night", "wren"];
@@ -142,7 +144,7 @@ export const KIMI_QUOTES: QuoteSet = {
   },
 };
 
-/** Simplified Chinese renderings of KIMI_QUOTES, shown under each quote as 「译文」 in the Chinese article. */
+/** Simplified Chinese renderings; each English original is available in a disclosure below its translation. */
 export const KIMI_QUOTES_ZH: QuoteSet = {
   copilot: {
     forkPoint: "Mira 决定加入 Dokkaebi，两人一起跳上小船",
@@ -200,6 +202,21 @@ export type ArticleCopy = {
   nav: { label: string; rooms: string; agents: string; nightWatch: string; kimi: string };
   toggle: { label: string; announce: string };
   hero: { eyebrow: string; title: string; dek: string; byline: string; readTime: string; videoLabel: string; videoPlaceholder: string };
+  reading: {
+    jumpLabel: string;
+    jumps: { target: "jobs" | "wrote" | "why"; label: string }[];
+    timingDetails: string;
+    copilotDetails: string;
+    nightDetails: string;
+    wrenDetails: string;
+    technicalDetails: string;
+    safetyDetails: string;
+    pricingDetails: string;
+    defaultEffort: string;
+    lowEffort: string;
+    verdicts: string[];
+    safeguards: string[];
+  };
   jobs: { heading: string; intro: string; waitingLabel: string; secondsUnit: string; desk: JobCopy; night: JobCopy; wren: JobCopy };
   flow: { heading: string; intro: string; kimiTag: string; steps: { title: string; actor: string }[] };
   wrote: {
@@ -234,11 +251,26 @@ const en: ArticleCopy = {
   hero: {
     eyebrow: "Build notes · Kimi K3 via TokenRouter",
     title: "Kimi K3 is the Night Watch’s brain",
-    dek: "One model, three jobs: a desk co-pilot, an overnight planner that checks its own work, and the planner for the room’s AI agent. Every timing and cost below comes from live testnet runs.",
+    dek: "A creative co-pilot at your desk. A planner while you sleep. Here’s how Kimi turns a story brief into a plan you can build on.",
     byline: "Fork Night · {date}",
     readTime: "3-minute read",
     videoLabel: "Watch the walkthrough",
     videoPlaceholder: "The walkthrough video goes here",
+  },
+  reading: {
+    jumpLabel: "In this article",
+    jumps: [{ target: "jobs", label: "The three jobs" }, { target: "wrote", label: "Live examples" }, { target: "why", label: "The numbers" }],
+    timingDetails: "Timing notes from the live runs",
+    copilotDetails: "Story context & the other suggestions",
+    nightDetails: "Read the self-checks & morning note",
+    wrenDetails: "Read Wren’s starting idea",
+    technicalDetails: "Run details & request format",
+    safetyDetails: "How the safeguards work",
+    pricingDetails: "Model & pricing notes",
+    defaultEffort: "Default effort",
+    lowEffort: "Low effort",
+    verdicts: ["Matches the brief", "Arrives too early", "Adds unestablished lore"],
+    safeguards: ["You choose what gets published.", "Spending stays within your policy.", "Failed plans fall back safely."],
   },
   jobs: {
     heading: "Three jobs, one model",
@@ -249,7 +281,7 @@ const en: ArticleCopy = {
       name: "Desk co-pilot",
       when: "While you’re at your desk",
       waiting: "You, at the desk",
-      does: "Suggests three briefs for the moment you’re continuing, grounded in the world kit and the story so far. You click one, edit it, then authorize.",
+      does: "Three ideas grounded in your story. Pick one, edit it, and make it yours.",
       per: "per answer",
       detail: "At default effort the same request took 22.1 s and $0.0225.",
     },
@@ -257,7 +289,7 @@ const en: ArticleCopy = {
       name: "Overnight brain",
       when: "While you’re away",
       waiting: "No one: you’re asleep",
-      does: "Reads the room and plans three different takes. Every text passes the safety check, then Kimi K3 checks its own plan against the world kit, picks the take to show first and writes a morning note.",
+      does: "Plans three takes, checks them against your world, and leaves a morning note.",
       per: "per night",
       detail: "Of that: planning 9.4 s, self-check 3.7 s.",
     },
@@ -265,28 +297,28 @@ const en: ArticleCopy = {
       name: "Wren’s planner",
       when: "The room’s AI agent",
       waiting: "The room",
-      does: "Now plans Wren’s turns: an idea note, a title, two captions and an image prompt.",
+      does: "Turns Wren’s idea into a title, two captions, and an image prompt.",
       per: "per plan",
       detail: "1,054 input and 241 output tokens, 24 of them reasoning. At default effort it took 9.1 s.",
     },
   },
   flow: {
     heading: "One night with Kimi K3",
-    intro: "Seven steps from brief to morning. Kimi K3 does the thinking in three of them; it never draws, publishes or spends.",
+    intro: "Kimi proposes and checks. You set the limits and choose what to publish.",
     kimiTag: "Kimi K3",
     steps: [
-      { title: "The co-pilot suggests three briefs; you pick and edit one", actor: "You + Kimi K3" },
-      { title: "You authorize a capped Night Watch", actor: "You + Privy" },
-      { title: "Kimi reads the room and plans three takes", actor: "Kimi K3" },
-      { title: "Every text passes the safety check", actor: "Safety check" },
-      { title: "Kimi checks its own plan against the world kit", actor: "Kimi K3" },
-      { title: "The image model draws", actor: "Image model" },
-      { title: "In the morning you see its note and its pick, and choose what to publish", actor: "You" },
+      { title: "Choose a brief", actor: "You + Kimi K3" },
+      { title: "Set a spending cap", actor: "You + Privy" },
+      { title: "Plan three takes", actor: "Kimi K3" },
+      { title: "Check for safety", actor: "Safety check" },
+      { title: "Check the plan", actor: "Kimi K3" },
+      { title: "Draw the scenes", actor: "Image model" },
+      { title: "Pick what to publish", actor: "You" },
     ],
   },
   wrote: {
     heading: "What Kimi actually wrote",
-    intro: "Real outputs, word for word, shown the way the app shows them.",
+    intro: "A few highlights from the live runs. Open any example for the full context.",
     live: "From a live testnet run, {date}",
     translationLabel: "Translation",
     originalLabel: "Original",
@@ -295,7 +327,7 @@ const en: ArticleCopy = {
       forkPointLabel: "Fork point",
       readLabel: "What the story needs",
       whyLabel: "Why",
-      callout: "The octopus librarian comes from the world kit’s lore. Kimi pulled it from there; the maker never mentioned it.",
+      callout: "The maker never mentioned the octopus librarian. Kimi found it in the world’s lore.",
     },
     night: {
       title: "What your Night Watch thought",
@@ -303,7 +335,7 @@ const en: ArticleCopy = {
       readLabel: "Read the room (first sentence)",
       takeLabel: "Take",
       checkLabel: "Self-check",
-      pickBadge: "Night Watch suggests starting here",
+      pickBadge: "Kimi’s first pick",
       noteLabel: "Morning note",
       note: "No images were drawn in this run: it shows the thinking alone.",
     },
@@ -317,7 +349,7 @@ const en: ArticleCopy = {
   },
   why: {
     heading: "Why Kimi K3",
-    intro: "What we measured on the day.",
+    intro: "Measured on {date}. Single runs, not a benchmark.",
     metrics: [
       { value: "22.1 s → 3.9 s", label: "Desk answer at low reasoning effort", sub: "Wren’s plan: 9.1 s → 3.8 s" },
       { value: "15.7 s", label: "A whole night’s thinking", sub: "Plan, safety check and self-check" },
@@ -386,11 +418,26 @@ const zh: ArticleCopy = {
   hero: {
     eyebrow: "开发笔记 · 经 TokenRouter 调用 Kimi K3",
     title: "Kimi K3 是 Night Watch（夜巡）的大脑",
-    dek: "一个模型，三项工作：书桌旁的创作副驾、会自查方案的夜间规划者，以及故事房间里 AI 智能体的规划者。下文的每个耗时和费用，都来自测试网上的实际运行。",
+    dek: "坐在书桌前，它陪你找灵感；入睡后，它继续规划。看看 Kimi 如何把一段故事提要，变成你能接着创作的方案。",
     byline: "Fork Night · {date}",
     readTime: "约 3 分钟读完",
     videoLabel: "观看演示视频",
     videoPlaceholder: "演示视频将放在这里",
+  },
+  reading: {
+    jumpLabel: "本文导航",
+    jumps: [{ target: "jobs", label: "三项工作" }, { target: "wrote", label: "实际输出" }, { target: "why", label: "实测数据" }],
+    timingDetails: "查看实际运行的耗时记录",
+    copilotDetails: "故事背景与其他建议",
+    nightDetails: "查看自查意见与晨间留言",
+    wrenDetails: "查看 Wren 最初的想法",
+    technicalDetails: "运行详情与请求格式",
+    safetyDetails: "安全措施如何运作",
+    pricingDetails: "模型与计费说明",
+    defaultEffort: "默认推理强度",
+    lowEffort: "低推理强度",
+    verdicts: ["符合提要", "抵达得太早", "引入了未确立的设定"],
+    safeguards: ["发布什么，由你决定。", "花费受你的策略约束。", "规划失败，也有安全兜底。"],
   },
   jobs: {
     heading: "一个模型，三项工作",
@@ -401,7 +448,7 @@ const zh: ArticleCopy = {
       name: "书桌副驾",
       when: "当你坐在书桌前",
       waiting: "你，就在书桌前",
-      does: "针对你要续写的那一刻，结合世界设定和已有的故事，给出三个创作提要。点选一个、改一改，再授权即可。",
+      does: "结合你的故事，给出三个灵感。选一个，改一改，接着创作。",
       per: "每次回答",
       detail: "同样的请求在默认推理强度下用时 22.1 秒，花费 $0.0225。",
     },
@@ -409,7 +456,7 @@ const zh: ArticleCopy = {
       name: "夜间大脑",
       when: "当你离开时",
       waiting: "没人在等：你已经睡了",
-      does: "先读懂房间，规划三个不同的方案。每段文字都要先通过安全审核，然后 Kimi K3 对照世界设定自查方案，选出最值得先看的一个，并写下一段晨间留言。",
+      does: "规划三个方案，对照世界设定自查，再留下一段晨间留言。",
       per: "每晚",
       detail: "其中：规划 9.4 秒，自查 3.7 秒。",
     },
@@ -417,28 +464,28 @@ const zh: ArticleCopy = {
       name: "Wren 的规划",
       when: "故事房间里的 AI 智能体",
       waiting: "整个故事房间",
-      does: "现在负责规划 Wren 的回合：一段想法、一个标题、两条图说和一段图像提示词。",
+      does: "把 Wren 的想法变成标题、两条图说和图像提示词。",
       per: "每次规划",
       detail: "输入 1,054 个 token，输出 241 个，其中 24 个用于推理。默认推理强度下用时 9.1 秒。",
     },
   },
   flow: {
     heading: "Kimi K3 的一个夜晚",
-    intro: "从提要到清晨，一共七步。其中三步由 Kimi K3 负责思考；它从不作画、不发布，也从不花钱。",
+    intro: "Kimi 提建议、做自查。你设定额度，再决定发布什么。",
     kimiTag: "Kimi K3",
     steps: [
-      { title: "副驾给出三条提要建议，你挑一条再修改", actor: "你 + Kimi K3" },
-      { title: "你授权一个有额度上限的 Night Watch", actor: "你 + Privy" },
-      { title: "Kimi 读懂房间，规划三个方案", actor: "Kimi K3" },
-      { title: "每段文字都通过安全审核", actor: "安全审核" },
-      { title: "Kimi 对照世界设定自查方案", actor: "Kimi K3" },
-      { title: "图像模型作画", actor: "图像模型" },
-      { title: "清晨，你看到它的留言和推荐，再决定发布哪一个", actor: "你" },
+      { title: "选定故事提要", actor: "你 + Kimi K3" },
+      { title: "设定花费上限", actor: "你 + Privy" },
+      { title: "规划三个方案", actor: "Kimi K3" },
+      { title: "内容安全审核", actor: "安全审核" },
+      { title: "自查故事方案", actor: "Kimi K3" },
+      { title: "绘制画面", actor: "图像模型" },
+      { title: "决定发布什么", actor: "你" },
     ],
   },
   wrote: {
     heading: "Kimi 实际写了什么",
-    intro: "以下是 Kimi 的真实输出，按应用里的样子呈现。每段先给中文译文，英文原文一字未改地附在下方，作为证据。",
+    intro: "精选几段实际输出。展开可看完整背景；每段译文下都保留了可展开的英文原文。",
     live: "来自 {date} 的一次测试网实际运行",
     translationLabel: "译文",
     originalLabel: "原文",
@@ -447,7 +494,7 @@ const zh: ArticleCopy = {
       forkPointLabel: "续写起点",
       readLabel: "故事需要什么",
       whyLabel: "理由",
-      callout: "章鱼图书管理员来自世界设定里的背景故事。是 Kimi 自己从中找到的，创作者从没提过。",
+      callout: "创作者从没提过章鱼图书管理员。Kimi 自己从世界设定中找到了它。",
     },
     night: {
       title: "你的 Night Watch 想了些什么",
@@ -455,7 +502,7 @@ const zh: ArticleCopy = {
       readLabel: "读懂房间（第一句）",
       takeLabel: "方案",
       checkLabel: "自查",
-      pickBadge: "Night Watch 建议从这里看起",
+      pickBadge: "Kimi 的首选",
       noteLabel: "晨间留言",
       note: "这次运行没有作画，只展示思考过程。",
     },
@@ -469,7 +516,7 @@ const zh: ArticleCopy = {
   },
   why: {
     heading: "为什么选 Kimi K3",
-    intro: "以下是当天实测的结果。",
+    intro: "测于 {date}。仅为单次运行记录，并非基准测试。",
     metrics: [
       { value: "22.1 秒 → 3.9 秒", label: "低推理强度下的书桌回答", sub: "Wren 的规划：9.1 秒 → 3.8 秒" },
       { value: "15.7 秒", label: "一整晚的思考", sub: "规划、安全审核和自查" },

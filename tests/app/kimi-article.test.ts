@@ -109,7 +109,7 @@ test("the page is static and safe on the hosted site", () => {
     assert.doesNotMatch(read(path), /process\.env|fetch\(|createClient|supabase/i, path);
   }
   assert.doesNotMatch(read("src/app/kimi/page.tsx"), /searchParams|headers\(|cookies\(/, "nothing makes the route dynamic");
-  assert.deepEqual(KIMI_VIDEO, { kind: "youtube", id: "KOdXT0_DNQI", href: "https://youtu.be/KOdXT0_DNQI" }, "the walkthrough is Wenjie's YouTube video");
+  assert.deepEqual(KIMI_VIDEO, { kind: "youtube", id: "EH01ky2c0XM", href: "https://youtu.be/EH01ky2c0XM" }, "the walkthrough is Wenjie's YouTube video");
 });
 
 test("both languages render; English is the server default; ?lang=zh selects Chinese before paint", () => {
@@ -236,11 +236,11 @@ test("the video slot: an empty frame now, a player or a link once the walkthroug
   assert.match(empty, /role="img" aria-label="The walkthrough video goes here"/);
   const file = renderToStaticMarkup(React.createElement(VideoSlot, { video: { kind: "file", src: "/kimi/walkthrough.mp4", poster: "/kimi/poster.webp" }, copy: en }));
   assert.match(file, /<video class="km-video-media" controls="" preload="metadata" playsInline="" poster="\/kimi\/poster.webp"><source src="\/kimi\/walkthrough.mp4"\/><\/video>/);
-  const youtube = renderToStaticMarkup(React.createElement(VideoSlot, { video: { kind: "youtube", id: "KOdXT0_DNQI", href: "https://youtu.be/KOdXT0_DNQI" }, copy: en }));
-  assert.match(youtube, /<iframe class="km-video-media" src="https:\/\/www.youtube-nocookie.com\/embed\/KOdXT0_DNQI\?rel=0&amp;enablejsapi=1" title="Watch the walkthrough"/, "enablejsapi lets the toggle pause it");
+  const youtube = renderToStaticMarkup(React.createElement(VideoSlot, { video: { kind: "youtube", id: "EH01ky2c0XM", href: "https://youtu.be/EH01ky2c0XM" }, copy: en }));
+  assert.match(youtube, /<iframe class="km-video-media" src="https:\/\/www.youtube-nocookie.com\/embed\/EH01ky2c0XM\?rel=0&amp;enablejsapi=1" title="Watch the walkthrough"/, "enablejsapi lets the toggle pause it");
   assert.equal(YOUTUBE_ORIGIN, "https://www.youtube-nocookie.com", "the privacy-enhanced host, where the pause command goes");
   assert.match(youtube, /referrerPolicy="strict-origin-when-cross-origin"|referrerpolicy="strict-origin-when-cross-origin"/i, "YouTube's player needs a referrer");
-  assert.match(youtube, /href="https:\/\/youtu.be\/KOdXT0_DNQI"/, "a plain link stays for anyone who prefers YouTube itself");
+  assert.match(youtube, /href="https:\/\/youtu.be\/EH01ky2c0XM"/, "a plain link stays for anyone who prefers YouTube itself");
   const zhCopy = ARTICLE.zh;
   assert.match(renderToStaticMarkup(React.createElement(VideoSlot, { video: KIMI_VIDEO, copy: zhCopy })), /title="观看演示视频"/);
   const link = renderToStaticMarkup(React.createElement(VideoSlot, { video: { kind: "link", href: "https://example.com/watch", label: "Watch the walkthrough" }, copy: en }));

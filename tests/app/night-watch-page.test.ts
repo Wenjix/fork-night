@@ -30,7 +30,7 @@ test("the hosted explainer links the recorded demo and the project README", asyn
     if (saved === undefined) delete process.env.PILOT_LOCAL_CONTROLS;
     else process.env.PILOT_LOCAL_CONTROLS = saved;
   });
-  assert.equal(KIMI_VIDEO.href, "https://youtu.be/KOdXT0_DNQI");
+  assert.equal(KIMI_VIDEO.href, "https://youtu.be/EH01ky2c0XM");
   for (const privyDemo of [false, true]) {
     const html = renderToStaticMarkup(await NightWatchPageContent({ privyDemo }));
     assert.match(html, new RegExp(`See <a href="${escape(KIMI_VIDEO.href)}" target="_blank" rel="noreferrer">the recorded demo</a> and `
