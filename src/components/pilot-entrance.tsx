@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Plus, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Feather, Plus, Users } from "lucide-react";
 import { pilotBrowserClient } from "../lib/supabase/pilot-client";
 import type { Tables } from "../lib/supabase/database.types";
 import { joinPilotAsGuest } from "../lib/supabase/guest";
@@ -11,6 +11,7 @@ import { PilotIdentity } from "./pilot-identity";
 import { AppHeader } from "./app-header";
 import { FirstNightGuide } from "./first-night-guide";
 import { FirstNightInvitation } from "./first-night-invitation";
+import { SectionPlate } from "./visual-plates";
 import { PilotImage } from "./pilot-panels";
 import { pilotPanels } from "../lib/pilot";
 
@@ -146,7 +147,14 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
   const signOutBlock = pending ? (creating ? "Check your saved room request before signing out." : "Open Create a room and check your saved room request before signing out.")
     : busy ? "Wait for your storyteller name to finish saving before signing out."
     : account?.loading ? "Checking your storyteller account. You can sign out when it finishes." : "";
-  const cards = (items: Room[]) => <div className="pilot-room-cards">{items.map(room => <a className="pilot-room-card" key={room.id} href={`/pilot?room=${encodeURIComponent(room.id)}`}><Users size={22} aria-hidden="true" /><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={17} aria-hidden="true" /></span></a>)}</div>;
+  const cards = (items: Room[]) => <div className="pilot-room-cards">{items.map(room => {
+    const template = templates.find(item => item.id === room.template_id && item.version === room.template_version);
+    const opening = template ? pilotPanels(template.panels)[0] : undefined;
+    return <a className={`pilot-room-card${opening && client ? " pilot-room-card-illustrated" : ""}`} key={room.id} href={`/pilot?room=${encodeURIComponent(room.id)}`}>
+      {opening && client ? <div className="pilot-room-card-art"><PilotImage client={client} panel={opening} allowRetry={false} /><span>Prepared opening</span></div> : <BookOpen size={26} aria-hidden="true" />}
+      <div className="pilot-room-card-copy"><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={17} aria-hidden="true" /></span></div>
+    </a>;
+  })}</div>;
   return <div className="pilot-page" ref={page}>
     <a className="skip-link" href="#shared-stories">Skip to shared stories</a>
     <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} />} account={false} />
@@ -156,7 +164,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     {account?.error && !account.signingOut && <div ref={accountNotice} className="pilot-notice" role="alert"><p>{account.error}</p></div>}
     {creating ? <>
       <a className="text-button" href="/pilot"><ArrowLeft size={16} aria-hidden="true" />Shared stories</a>
-      <div className="pilot-intro"><h1>A beginning for your story.</h1><p>Choose a prepared opening, then invite two or three storytellers to see where it goes.</p></div>
+      <div className="pilot-intro pilot-create-heading"><h1>A beginning for your story.</h1><p>Choose a prepared opening, then invite two or three storytellers to see where it goes.</p></div>
       <form className="pilot-create-form" onSubmit={event => { event.preventDefault(); void create(); }}>
         <fieldset disabled={busy || !!pending}><legend>Choose an opening</legend><div className="pilot-template-cards">{templates.map(template => <label className="pilot-template-card" key={`${template.id}:${template.version}`} data-selected={choice === `${template.id}:${template.version}`}>
           <input type="radio" name="opening" value={`${template.id}:${template.version}`} checked={choice === `${template.id}:${template.version}`} onChange={() => { const next = `${template.id}:${template.version}`; setChoice(next); if (!edited) setTitle(template.title); saveForm(edited ? title : template.title, next); }} />
@@ -176,7 +184,19 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     </>}
     {error && <div className="pilot-notice" role="alert"><p>{error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
     {account?.notice && <div className="pilot-notice" role="alert"><p>{account.notice}</p><button type="button" className="text-button" onClick={account.dismissNotice}>Dismiss</button></div>}
-    {!!joined.length && <section aria-label="Your joined rooms"><h2>Your joined stories</h2>{cards(joined)}</section>}
-    <section id="shared-directory" aria-label="Open shared stories" aria-busy={!policy && !error}><h2>Stories to pick up</h2>{rooms.length ? cards(rooms) : <div role="status">{!policy && !error ? <p>Opening the shared stories…</p> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <p>No stories in the directory yet. If someone invited you, open their room link.</p>}</div>}</section>
-  </main></div>;
+    {!!joined.length && <section className="pilot-directory-section" aria-label="Your joined rooms"><SectionPlate icon={Users} title="Your joined stories" description="Pick up a thread with the same storyteller account." tone="lavender" />{cards(joined)}</section>}
+    <section className="pilot-directory-section" id="shared-directory" aria-label="Open shared stories" aria-busy={!policy && !error}>
+      <SectionPlate icon={BookOpen} title="Stories to pick up" description="Read first. Join when you have an idea for the next moment." />
+      {rooms.length ? cards(rooms) : <div className="pilot-directory-empty" role="status">
+        {!policy && !error ? <><BookOpen size={28} aria-hidden="true" /><p>Opening the shared stories…</p></> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <><h3>No stories in the directory yet.</h3><p>If someone invited you, open their room link. Share-link rooms do not appear in this directory.</p><a className="text-button" href="/pilot?create=1">Start your own room <ArrowRight size={17} aria-hidden="true" /></a></>}
+      </div>}
+    </section>
+    <section className="pilot-explore-more" aria-labelledby="pilot-explore-title">
+      <h2 id="pilot-explore-title">More ways to make.</h2>
+      <div><a href="/"><BookOpen size={20} aria-hidden="true" /><span><strong>Explore the lobby</strong><small>Prepared stories and guilds · local preview</small></span><ArrowRight size={18} aria-hidden="true" /></a>
+        <a href="/agents"><Feather size={20} aria-hidden="true" /><span><strong>Make with agents</strong><small>Wren’s room, Night Watch and creator review</small></span><ArrowRight size={18} aria-hidden="true" /></a>
+        <a href="/world-demo"><Users size={20} aria-hidden="true" /><span><strong>Night City After Hours</strong><small>Shared-world concept · fictional participation</small></span><ArrowRight size={18} aria-hidden="true" /></a></div>
+    </section>
+    </main>
+  </div>;
 }

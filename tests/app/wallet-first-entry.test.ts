@@ -86,3 +86,14 @@ test("a Solana identity displays its real sign-in address and explains the separ
   assert.match(html, /connect an EVM or in-app wallet on Monad testnet/);
   assert.doesNotMatch(html, /saved with Google|Preparing your in-app wallet/);
 });
+
+test("a signed-out visitor sees Google sign-in in the header before wallet sign-in and naming", () => {
+  const account: PilotAccount = { loading: false, error: "", enabled: true, authenticatingWallet: false, signIn: async () => {}, signInWallet: async () => {}, signOut: async () => {}, walletMode: "embedded", wallet: { owner: "", address: "", loading: false, error: "" }, chooseWallet: () => {} };
+  const html = renderToStaticMarkup(createElement(PilotAccountContext.Provider, { value: account }, createElement(PilotIdentity, { profile: undefined, disabled: false, onJoin: () => {}, joinLabel: "Choose a storyteller name" })));
+  assert.match(html, /Sign in with Google/);
+  assert.match(html, /src="\/brands\/google-g.png"/);
+  assert.ok(html.indexOf("Sign in with Google") < html.indexOf("Sign in with wallet"));
+  assert.ok(html.indexOf("Sign in with wallet") < html.indexOf("Choose a storyteller name"));
+  const withoutPrivy = renderToStaticMarkup(createElement(PilotAccountContext.Provider, { value: { ...account, enabled: false } }, createElement(PilotIdentity, { profile: undefined, disabled: false, onJoin: () => {} })));
+  assert.doesNotMatch(withoutPrivy, /Sign in with Google/);
+});

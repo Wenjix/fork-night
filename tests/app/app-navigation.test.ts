@@ -53,10 +53,10 @@ test("cross-page, modified and non-primary clicks retain native link and beforeu
 test("agent spaces keep the product exits and identify the current tool within their own navigation", () => {
   for (const [current, href] of [["agents", "/agents"], ["night-watch", "/night-watch"], ["creator", "/creator-demo"], ["privy", "/night-watch-privy"], ["tempo", "/tempo"]]) {
     const html = renderToStaticMarkup(createElement(AgentRoomHeader, { current }));
-    assert.match(html, /<details class="fn-agent-spaces">/);
-    assert.doesNotMatch(html, /<details[^>]+open/);
     const nav = html.match(/<nav[^>]+aria-label="Agent spaces"[^>]*>([\s\S]*?)<\/nav>/)![1];
     assert.deepEqual([...nav.matchAll(/href="([^"]+)"/g)].map(match => match[1]), ["/agents", "/night-watch", "/creator-demo", "/night-watch-privy", "/tempo"]);
+    // The agent pages fold away under one disclosure, closed until a visitor opens it.
+    assert.match(html, /<details class="fn-agent-spaces"><summary>More agent pages/);
     assert.equal((nav.match(/aria-current="page"/g) ?? []).length, 1);
     assert.match(nav, new RegExp(`href="${href}" aria-current="page"`));
     assert.ok(html.includes('href="/pilot"'));
@@ -64,9 +64,7 @@ test("agent spaces keep the product exits and identify the current tool within t
   }
 });
 
-
-
-test("both entry components expose the shared first-night invitation while data loads", async () => {
+test("the initial shared-room entrance is navigable while data loads and does not claim an empty directory", async () => {
   const { PilotEntrance } = await tsImport("../../src/components/pilot-entrance.tsx", import.meta.url);
   const html = renderToStaticMarkup(createElement(PilotEntrance, { creating: false, navigate: () => undefined }));
   assert.match(html, /aria-label="Main navigation"/);
@@ -79,9 +77,10 @@ test("both entry components expose the shared first-night invitation while data 
   assert.match(html, /Join a story/);
   assert.match(html, /Make your mark/);
   assert.match(html, /href="\/pilot\?create=1"/);
+  assert.match(html, /href="\/world-demo"/);
 });
 
-test("shared-room routing resolves the query before showing an invitation or draft", async () => {
+test("shared-room routing waits for the actual query before presenting an invitation or draft", async () => {
   const { PilotExperience } = await tsImport("../../src/components/pilot-experience.tsx", import.meta.url);
   const html = renderToStaticMarkup(createElement(PilotExperience));
   assert.match(html, /Opening the rooms/);

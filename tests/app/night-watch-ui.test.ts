@@ -460,7 +460,8 @@ test("the agents page and the Night Watch link to each other as one idea", async
   const { AgentRoomHeader } = await tsImport("../../src/components/agents/agent-room-header.tsx", import.meta.url);
   for (const [current, href] of [["agents", "/agents"], ["night-watch", "/night-watch"], ["privy", "/night-watch-privy"]]) {
     const html = renderToStaticMarkup(createElement(AgentRoomHeader, { current }));
-    const activeLinks = html.match(/<a[^>]+aria-current="page"[^>]*>/g) ?? [];
+    const nav = html.match(/<nav[^>]+aria-label="Agent spaces"[^>]*>([\s\S]*?)<\/nav>/)![1];
+    const activeLinks = nav.match(/<a[^>]+aria-current="page"[^>]*>/g) ?? [];
     assert.equal(activeLinks.length, 1, "exactly one destination is current");
     assert.ok(activeLinks[0].includes(`href="${href}"`), "the shared nav marks the current room");
   }

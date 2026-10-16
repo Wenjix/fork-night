@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   CalendarClock,
@@ -69,13 +70,8 @@ export function WrenAllowance() {
       id="allowance"
       aria-labelledby="allowance-title"
     >
-      <div className="ag-section-head">
-        <p className="ag-eyebrow">Testnet only</p>
-        <h2 id="allowance-title" className="fn-network-allowance-heading">
-          <NetworkBrandMark network="tempo" />
-          <span>Wren’s allowance on Tempo</span>
-        </h2>
-        <p>
+      <SectionPlate className="ag-section-head" icon={Wallet} tone="butter" headingId="allowance-title" title={<span className="fn-network-allowance-heading"><NetworkBrandMark network="tempo" /><span>Wren’s allowance on Tempo</span></span>}
+        description={<p>
           {expired ? (
             <>
               When The Uncharted Star ran low, Wren could top the room up from a
@@ -88,8 +84,7 @@ export function WrenAllowance() {
               small allowance its steward gave it on the {a.network}.
             </>
           )}
-        </p>
-      </div>
+        </p>} />
 
       <div className="ag-allowance">
         <div className="ag-rules">
