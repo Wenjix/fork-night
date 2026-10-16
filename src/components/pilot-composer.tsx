@@ -8,6 +8,7 @@ import {
   ArrowDown,
   Lightbulb,
   Plus,
+  RefreshCw,
   Shuffle,
   Sparkles,
   Undo2,
@@ -483,19 +484,6 @@ export function PilotComposer({
                   : "Explore possibilities"}
               </button>
             )}
-            {count > 0 && draft.captions.some(Boolean) && (
-              <button
-                type="button"
-                className="text-button"
-                disabled={frozen}
-                onClick={() => {
-                  update({ stage: "preview" });
-                  focusPreview();
-                }}
-              >
-                Return to saved preview
-              </button>
-            )}
           </div>
           <p className="pilot-helper-copy">
             Previewing uses your words. Images come later, when you choose.
@@ -676,7 +664,12 @@ export function PilotComposer({
               </button>
             )}
           </div>
-          <div className="pilot-generate-action">
+          {draft.submitted && busy ? (
+            <div className="pilot-generation-status" data-phase="starting" role="status" aria-live="polite" aria-atomic="true">
+              <div className="pilot-generation-state"><RefreshCw size={20} aria-hidden="true" className="pilot-generation-active" /><strong>Starting your panel…</strong></div>
+              <p>Your panel plan is saved. Image generation is starting now.</p>
+            </div>
+          ) : <div className="pilot-generate-action">
             <button
               type="button"
               className="button primary"
@@ -711,7 +704,7 @@ export function PilotComposer({
                   ? "This room needs more credits. Your draft is saved here."
                   : "Used only when every panel arrives. One or two panels: 1 credit. Three: 2 credits."}
             </small>
-          </div>
+          </div>}
         </section>
       )}
       {draft.pendingSpeech && (

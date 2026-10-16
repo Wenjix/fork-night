@@ -18,7 +18,7 @@ const operation: GenerationOperation = {
   panels: moments[3].panels, source_kind: "fixture", charged_units: 1, generation_error: null, published_moment_id: null,
   source_idea_id: null, source_idea_label: null, source_idea_body: null,
 };
-const actions = { join: () => {}, publish: () => {}, discard: () => {}, check: () => {}, continue: () => {}, share: () => {}, change: () => true, generate: () => {}, cancel: () => {}, useIdea: () => {}, inspect: () => {} };
+const actions = { join: () => {}, publish: () => {}, discard: () => {}, check: () => {}, continue: () => {}, share: () => {}, change: () => true, generate: () => {}, cancel: () => {}, useIdea: () => {}, inspect: () => {}, continueDraft: () => {}, startFresh: () => {} };
 const props = { client: {} as SupabaseClient<Database>, selected: moments[3], moments, profile, operation,
   composing: false, composerVisible: true, busy: false, interrupted: false, inspecting: false, heading: { current: null }, actions };
 
@@ -33,7 +33,8 @@ test("a private delivered preview requires publication and busy publication cann
 test("publication invites a peer on its own moment without leaving stale actions on another scene", () => {
   const published = { ...operation, status: "published", published_moment_id: moments[3].id };
   const html = renderToStaticMarkup(createElement(PilotContinuation, { ...props, operation: published }));
-  assert.match(html, /Invite the next storyteller/);
+  assert.match(html, /Your moment is live\. Invite the next maker/);
+  assert.match(html, /Copy invite link/);
   assert.match(html, /Continue from here/);
   assert.equal(visibleContinuation(published, moments[2].id), undefined);
   assert.equal(visibleContinuation({ ...operation, status: "discarded" }, moments[2].id)?.status, "discarded");
@@ -57,6 +58,15 @@ test("opening the map unmounts the composer and its voice controls while retaini
   const map = renderToStaticMarkup(createElement(PilotContinuation, { ...props, operation: undefined, composing: true, composerVisible: false, draft }));
   assert.doesNotMatch(map, /Preview my idea|Hold to talk/);
   assert.equal(draft.thought, "The boat returns");
+});
+
+test("a restored browser draft opens on a choice card before the composer", () => {
+  const draft = { requestId: operation.request_id, roomId: operation.room_id, parentId: operation.parent_id, captions: ["Saved panel"], stage: "preview" };
+  const html = renderToStaticMarkup(createElement(PilotContinuation, { ...props, operation: undefined, composing: true, draft, recoveredDraft: true }));
+  assert.match(html, /You have an unfinished draft\. Continue it or start fresh\./);
+  assert.match(html, /Continue draft/);
+  assert.match(html, /Start fresh/);
+  assert.doesNotMatch(html, /Return to saved preview|Generate 1 panel/);
 });
 
 test("Google onboarding retains guest entry and keeps returning-account sign-in distinct", () => {

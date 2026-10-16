@@ -19,8 +19,8 @@ export function generationStatus(operation: GenerationOperation, now = Date.now(
     detail: `Generation has started for your ${panels === 1 ? "panel" : `${panels} panels`}. The complete result will appear here for review.`, reserved };
   if (operation.status === "delivered") return { phase: "ready", step: 2, title: "Ready to review",
     detail: "Your images are saved privately. Publish my moment adds them to the shared story.", reserved: 0 };
-  if (operation.status === "draft") return { phase: "draft", step: -1, title: "Saved, ready to generate",
-    detail: "Your panel plan is saved. Generate saved idea starts image generation.", reserved: 0 };
+  if (operation.status === "draft") return { phase: "starting", step: 0, title: "Starting your panel…",
+    detail: "Your panel plan is saved. Image generation is starting now.", reserved: 0 };
   return { phase: "checking", step: 1, title: "Generation needs checking",
     detail: operation.generation_error ?? "No recent progress has been recorded. Check the saved result before trying another idea.", reserved };
 }
