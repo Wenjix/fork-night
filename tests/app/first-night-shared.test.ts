@@ -49,7 +49,7 @@ function handoff(patch: Record<string, unknown> = {}, starter: string | null = "
     draft: undefined, hasActive: false, mutation: { current: false }, parseFirstNightStarter, stripFirstNightParams,
     window, setNotice: (notice: string) => { notices.push(notice); }, select: (...args: unknown[]) => { selections.push(args); },
     setFirstNightStarter() {}, setDraft: (draft: unknown) => { drafts.push(draft); },
-    setInspectingSource() {}, setOperation() {}, setComposing() {}, setView() {}, setError() {},
+    setDraftRecovery() {}, setInspectingSource() {}, setOperation() {}, setComposing() {}, setView() {}, setError() {},
     localStorage: store, pendingKey: (id: string, room: string) => `${id}:${room}`, crypto, pilotPath,
     requestAnimationFrame() {}, taskHeading: { current: null }, ...patch,
   };
@@ -155,7 +155,7 @@ function publishing(response: unknown) {
   const publish = run(shared("publishMoment"), {
     client: { rpc: async () => response }, profile: { id: actor }, roomId: FIRST_NIGHT_ROOM_ID,
     operation: { id: resultId, status: "delivered" }, recordFirstNightResult: (value: unknown) => { records.push(value); },
-    setOperation: (value: unknown) => { operations.push(value); }, setMoments() {}, select() {}, setDraft() {}, setComposing() {},
+    setOperation: (value: unknown) => { operations.push(value); }, setMoments() {}, select() {}, setDraft() {}, setDraftRecovery() {}, setComposing() {},
   });
   return { publish, records, operations };
 }
