@@ -999,6 +999,10 @@ export function ForkNight() {
                   {fanStory.original ? fanStory.fandom : `Unofficial fan story · ${fanStory.fandom}`} · {visualStyle?.label ?? fanStory.artStyle}
                 </p>
               )}
+              {mayNameProject && projectId === "kessler-night-shift" && <p className="kessler-shared-invitation">
+                <a className="button secondary" href="/pilot?room=kessler-ward">Join the shared Kessler Ward room <ArrowUpRight size={17} aria-hidden="true" /></a>
+                <small>This prepared preview stays in your browser. Make new scenes together in the shared room.</small>
+              </p>}
             </div>
             {accessible && (
               <div className="collaborators">

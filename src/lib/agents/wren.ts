@@ -15,9 +15,9 @@ export const WREN = {
   /** Public byline UUID (`maker_id`) of Wren's single anonymous guest profile. */
   profileId: "dffe2a21-02f4-41a0-9564-35140372bfa9",
   displayName: "Wren (AI agent)",
-  role: "Keeps The Night Shift going",
+  role: "Keeps The Uncharted Star going",
   roomId: "night-shift",
-  roomTitle: "The Night Shift",
+  roomTitle: "The Uncharted Star",
   joinedOn: "Oct 12, 2026",
   joinedAs: "An ordinary guest: one anonymous guest session",
 } as const;

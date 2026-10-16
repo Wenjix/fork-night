@@ -38,12 +38,12 @@ test("starter handoff allows only public presets on the exact recommended openin
   }
   assert.equal(parseFirstNightStarter(new URL(firstNightRoomHref("private thought"), "https://fork.invalid").search), null);
   assert(!firstNightRoomHref("private thought").includes("private"));
-  const valid = new URL(firstNightRoomHref("follow-window"), "https://fork.invalid").search;
+  const valid = new URL(firstNightRoomHref("rooftops"), "https://fork.invalid").search;
   for (const search of [
-    valid.replace("paper-moon", "midnight-signal"),
+    valid.replace(FIRST_NIGHT_ROOM_ID, "midnight-signal"),
     valid.replace(FIRST_NIGHT_MOMENT_ID, RESULT),
     valid.replace("firstNight=1", "firstNight=0"),
-    valid.replace("follow-window", "my-private-draft"),
+    valid.replace("rooftops", "my-private-draft"),
     `${valid}&room=midnight-signal`, `${valid}&starter=unfold-moon`,
   ]) assert.equal(parseFirstNightStarter(search), null);
 });
@@ -61,7 +61,7 @@ test("read-first links do not request a composer, while an explicit own idea doe
 });
 
 test("consuming a handoff preserves room, moment and other query values", () => {
-  const params = new URLSearchParams(stripFirstNightParams(`?room=paper-moon&moment=${FIRST_NIGHT_MOMENT_ID}&firstNight=1&starter=own&view=story&tag=a&tag=b`));
+  const params = new URLSearchParams(stripFirstNightParams(`?room=${FIRST_NIGHT_ROOM_ID}&moment=${FIRST_NIGHT_MOMENT_ID}&firstNight=1&starter=own&view=story&tag=a&tag=b`));
   assert.equal(params.get("room"), FIRST_NIGHT_ROOM_ID);
   assert.equal(params.get("moment"), FIRST_NIGHT_MOMENT_ID);
   assert.equal(params.get("view"), "story");
@@ -163,4 +163,12 @@ test("recommendation validation requires the published matching room and usable 
     [room, { ...moment, panels: [] }], [room, { ...moment, panels: [{ caption: " ", imageUrl: "/art/midnight-story.webp#frame=3" }] }],
     [room, { ...moment, panels: [{ caption: "A moon", imageUrl: "https://unapproved.invalid/image" }] }],
   ] as const) assert.equal(firstNightStoryFromRows(nextRoom, nextMoment as PilotMoment | null), null);
+});
+
+
+test("previous Paper Moon invitations keep their own prompts and cannot borrow Kessler presets", () => {
+  const base = "?room=paper-moon&moment=10000000-0000-4000-8000-000000000002&firstNight=1&starter=";
+  assert.match(parseFirstNightStarter(`${base}follow-window`)!.prompt, /paper moon has vanished/);
+  assert.equal(parseFirstNightStarter(`${base}follow-window`)!.roomId, "paper-moon");
+  assert.equal(parseFirstNightStarter(`${base}rooftops`), null);
 });

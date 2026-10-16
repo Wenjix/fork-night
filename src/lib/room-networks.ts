@@ -45,6 +45,7 @@ const PAPER_MOON_TOP_UPS: readonly RoomNetworkDemo[] = [
 
 /** Public, dated demo evidence. Room credits remain a pooled count across payment rails. */
 export function getRoomNetworkShowcase(roomId: string): readonly RoomNetworkDemo[] {
+  if (roomId === "kessler-ward") return [{ ...MONAD_RELEASE, summary: "Register story ancestry and creator wallet credits. Signatures are separate from publishing a scene." }];
   if (roomId === "midnight-signal") return [MONAD_RELEASE];
   if (roomId === "paper-moon") return PAPER_MOON_TOP_UPS;
   if (roomId === WREN.roomId) {

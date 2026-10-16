@@ -9,7 +9,7 @@ import { prepareRelease, RELEASE_TERMS, sourceKey } from "../../src/lib/onchain/
 
 const artifact = JSON.parse(await readFile(".local/contracts/ForkNightReleases.json", "utf8"));
 const hre = await createHardhatRuntimeEnvironment({ networks: { simulation: { type: "edr-simulated", chainType: "l1", chainId: 31337 } } });
-async function fixture(t) {
+async function fixture(t, roomId = "midnight-signal") {
   const connection = await hre.network.connect("simulation");
   t.after(() => connection.close());
   const requests = [];
@@ -21,13 +21,13 @@ async function fixture(t) {
   const contract = await new ContractFactory(artifact.abi, artifact.bytecode, first).deploy();
   await contract.waitForDeployment();
   const config = { chainId: 31337, address: await contract.getAddress(), curator, rpcUrl: "http://127.0.0.1:8545", name: "Local test network", explorer: "" };
-  const root = { id: "00000000-0000-4000-8000-000000000001", parent_id: null, room_id: "midnight-signal", maker_id: null,
-    maker_label: "Declared seed maker", title: "The midnight signal", panels: [{ caption: "A light returns.", imageUrl: "/art/midnight-story.webp#frame=0" }],
+  const root = { id: "00000000-0000-4000-8000-000000000001", parent_id: null, room_id: roomId, maker_id: null,
+    maker_label: "Declared seed maker", title: roomId === "kessler-ward" ? "Kessler Ward" : "The midnight signal", panels: [{ caption: "A light returns.", imageUrl: roomId === "kessler-ward" ? "/art/night-shift-neon.webp#frame=0" : "/art/midnight-story.webp#frame=0" }],
     created_at: "2026-10-11T12:00:00Z", source_kind: "prepared", source_idea_id: null, source_idea_label: null, source_idea_body: null };
   const child = { ...root, id: "00000000-0000-4000-8000-000000000002", parent_id: root.id,
     maker_id: "00000000-0000-4000-8000-000000000003", maker_label: "Second maker", title: "A continuation",
     panels: [{ caption: "Another signal answers.", imagePath: "00000000-0000-4000-8000-000000000002/1.webp", sha256: "a".repeat(64) }] };
-  const prepared = prepareRelease([root, child], "midnight-signal", child.id, curator);
+  const prepared = prepareRelease([root, child], roomId, child.id, curator);
   const record = { manifest: prepared.manifest, manifestHash: prepared.hash, releaseId: prepared.id,
     chainId: config.chainId, contract: config.address, terms: RELEASE_TERMS };
   async function send(method, args, signer = first, overrides = {}) {
@@ -71,6 +71,25 @@ test("downloaded records reject changed scenes, ancestry, release IDs and networ
     const changed = JSON.parse(JSON.stringify(f.record)); change(changed);
     assert.throws(() => prepareReleaseRecord(changed, f.config));
   }
+});
+
+test("Kessler records select their own onchain project without altering the default Midnight preflight", async t => {
+  const f = await fixture(t, "kessler-ward");
+  assert.equal(prepareReleaseRecord(JSON.parse(JSON.stringify(f.record)), f.config).id, f.prepared.id);
+  await f.send("createProject", operationArgs(f.prepared, "create"));
+  const result = await f.check();
+  assert.equal(result.project.id, f.prepared.projectId);
+  assert.equal(result.project.started, true);
+  assert.equal(result.release.scenes[0].makerLabel, "Prepared Kessler Ward story");
+  const original = await f.check({ record: undefined });
+  assert.equal(original.project.started, false);
+  assert.notEqual(original.project.id, result.project.id);
+  const mixed = structuredClone(f.record);
+  mixed.manifest.scenes[1].roomId = "midnight-signal";
+  assert.throws(() => prepareReleaseRecord(mixed, f.config), /room/);
+  const unsupported = structuredClone(f.record);
+  for (const scene of unsupported.manifest.scenes) scene.roomId = "paper-moon";
+  assert.throws(() => prepareReleaseRecord(unsupported, f.config), /room/);
 });
 
 test("the checker distinguishes registration, funding and each independent claim on the local EVM", async t => {

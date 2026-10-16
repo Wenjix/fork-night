@@ -1,6 +1,19 @@
-import { ZeroAddress } from "ethers";
+import { getAddress, isAddress, ZeroAddress } from "ethers";
 import type { Snapshot } from "./client.ts";
-import { sameAddress, type PreparedRelease } from "./model.ts";
+import { releaseByline, releaseRoom, sameAddress, type PreparedRelease } from "./model.ts";
+
+export function preparedWorkApproval(prepared: PreparedRelease, snapshot: Snapshot, account: string, curator: string, wallet: string, accepted: boolean) {
+  if (!account || !sameAddress(account, curator)) throw new Error("Only the configured curator can approve the prepared-work wallet.");
+  if (!sameAddress(snapshot.curator, curator) || snapshot.root !== prepared.scenes[0].id || !snapshot.termsMatch)
+    throw new Error("Start and verify this testnet project before approving its prepared work.");
+  const index = prepared.scenes.findIndex(scene => scene.moment.maker_id === null && scene.moment.source_kind === "fixture");
+  if (!releaseRoom(prepared.scenes[0].moment.room_id)?.preparedLabel || index < 0)
+    throw new Error("This path has no declared prepared work to approve.");
+  if (snapshot.scenes[index]?.maker !== ZeroAddress) throw new Error("The prepared-work wallet is already approved and cannot be replaced.");
+  if (!accepted) throw new Error("Confirm who holds the prepared story's rights before approving its wallet.");
+  if (!isAddress(wallet.trim()) || sameAddress(wallet.trim(), ZeroAddress)) throw new Error("Enter the actual rights holder's complete EVM wallet address.");
+  return { index, address: getAddress(wallet.trim()) };
+}
 
 export function registrationReason({ prepared, snapshot, index, account, accepted, busy, pending }: {
   prepared: PreparedRelease; snapshot: Snapshot; index: number; account: string;
@@ -14,7 +27,7 @@ export function registrationReason({ prepared, snapshot, index, account, accepte
   if (busy) return "Waiting for the current wallet action.";
   if (!accepted) return "Accept the release terms to register this scene.";
   if (index > 0 && !snapshot.scenes[index - 1]?.registered)
-    return `Register ${prepared.scenes[index - 1].moment.maker_label}’s scene first.`;
+    return `Register ${releaseByline(prepared.scenes[index - 1].moment)}’s scene first.`;
   return "";
 }
 
@@ -24,7 +37,7 @@ export function walletBylines(prepared: PreparedRelease, snapshot: Snapshot, acc
     if (!account || !sameAddress(snapshot.scenes[index]?.maker ?? "", account) || makers.has(scene.makerId)) return false;
     makers.add(scene.makerId);
     return true;
-  }).map(scene => scene.moment.maker_label);
+  }).map(scene => releaseByline(scene.moment));
 }
 
 export function releaseJourney(prepared: PreparedRelease, snapshot: Snapshot | undefined, account: string, curatorAddress: string, guestId?: string) {

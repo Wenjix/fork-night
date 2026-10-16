@@ -1,8 +1,15 @@
 import { isUuid, pilotPanels, type PilotMoment, type PilotRoom } from "./pilot.ts";
+import { KESSLER_OPENING_ID, KESSLER_ROOM_ID } from "./kessler-room.ts";
 
-export const FIRST_NIGHT_ROOM_ID = "paper-moon";
-export const FIRST_NIGHT_MOMENT_ID = "10000000-0000-4000-8000-000000000002";
+export const FIRST_NIGHT_ROOM_ID = KESSLER_ROOM_ID;
+export const FIRST_NIGHT_MOMENT_ID = KESSLER_OPENING_ID;
 export const FIRST_NIGHT_STARTERS = [
+  { id: "rooftops", label: "Follow the bird of light", prompt: "Mika follows the bird of cyan light across the rooftops. What unexpected help does she find on the next tower?" },
+  { id: "stairs", label: "Take the dark stairwell", prompt: "Mika starts up the dark stairwell with the insulin case. Someone on the next landing offers a way forward." },
+  { id: "own", label: "Bring your own idea", prompt: "" },
+] as const;
+// Already-shared Paper Moon invitations retain their original public suggestions.
+const LEGACY_STARTERS = [
   { id: "follow-window", label: "Step through a window", prompt: "One window shows a tomorrow where the paper moon has vanished. Someone decides to step through and find it." },
   { id: "unfold-moon", label: "Unfold the paper moon", prompt: "A corner of the paper moon comes loose. Inside its folds, someone discovers a message meant for the whole street." },
   { id: "own", label: "Bring your own idea", prompt: "" },
@@ -29,13 +36,17 @@ export function firstNightRoomHref(starterId?: string | null) {
 export function parseFirstNightStarter(search: string) {
   const params = new URLSearchParams(search);
   if (["room", "moment", "firstNight", "starter"].some(key => params.getAll(key).length > 1) ||
-    params.get("room") !== FIRST_NIGHT_ROOM_ID || params.get("moment") !== FIRST_NIGHT_MOMENT_ID || params.get("firstNight") !== "1") return null;
+    params.get("firstNight") !== "1") return null;
+  const roomId = params.get("room"), momentId = params.get("moment");
+  const starters = roomId === FIRST_NIGHT_ROOM_ID && momentId === FIRST_NIGHT_MOMENT_ID ? FIRST_NIGHT_STARTERS
+    : roomId === "paper-moon" && momentId === "10000000-0000-4000-8000-000000000002" ? LEGACY_STARTERS : null;
+  if (!starters) return null;
   const starterId = params.get("starter");
-  const starter = FIRST_NIGHT_STARTERS.find(item => item.id === starterId);
+  const starter = starters.find(item => item.id === starterId);
   if (!starter) return null;
   return {
-    roomId: FIRST_NIGHT_ROOM_ID,
-    momentId: FIRST_NIGHT_MOMENT_ID,
+    roomId: roomId!,
+    momentId: momentId!,
     starterId: starter.id,
     prompt: starter.prompt,
   };

@@ -78,13 +78,13 @@ export function WrenAllowance() {
         <p>
           {expired ? (
             <>
-              When The Night Shift ran low, Wren could top the room up from a
+              When The Uncharted Star ran low, Wren could top the room up from a
               small allowance its steward gave it on the {a.network}. The
               allowance expired on {a.expiresAt}.
             </>
           ) : (
             <>
-              When The Night Shift runs low, Wren can top the room up from a
+              When The Uncharted Star runs low, Wren can top the room up from a
               small allowance its steward gave it on the {a.network}.
             </>
           )}

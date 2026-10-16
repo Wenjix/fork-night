@@ -76,7 +76,7 @@ function generating(response: unknown) {
   const draft = { requestId: "70000000-0000-4000-8000-000000000001", parentId: momentId, roomId: "midnight-signal", captions: [caption], stage: "preview" };
   const generate = run(room(named("generate")), {
     ...env, client: { rpc: async (_name: string, args: Record<string, unknown>) => { sent.push(args); return response; } },
-    selected: { id: momentId }, operation: undefined, finalStates: new Set(["published", "discarded", "failed"]), enqueue: async () => {},
+    selected: { id: momentId }, operation: undefined, wrenBusy: false, finalStates: new Set(["published", "discarded", "failed"]), enqueue: async () => {},
     draft, validPilotCaptions, definitelyRejected, setOperation() {}, crypto,
   }) as () => Promise<void>;
   const stored = () => JSON.parse(store.getItem("fork-night-pilot-draft:p1:midnight-signal") ?? "null");

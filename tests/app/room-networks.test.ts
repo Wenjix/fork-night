@@ -32,6 +32,14 @@ test("Monad releases remain distinct from the USDC funding rails", () => {
   assert.doesNotMatch(demo.summary, /USDC|top-up/);
 });
 
+test("Kessler points to the existing multi-project contract without borrowing another room’s receipts", () => {
+  const [demo] = getRoomNetworkShowcase("kessler-ward");
+  assert.equal(demo.network, "monad");
+  assert.equal(demo.proof.href, getRoomNetworkShowcase("midnight-signal")[0].proof.href);
+  assert.match(demo.summary, /Signatures are separate from publishing/);
+  assert.doesNotMatch(demo.summary, /Recorded|received|paid|claimed/);
+});
+
 test("Night Shift's Tempo proof follows the recorded Wren payment", () => {
   const [demo] = getRoomNetworkShowcase("night-shift");
   const latest = WREN_TOP_UPS.at(-1)!;

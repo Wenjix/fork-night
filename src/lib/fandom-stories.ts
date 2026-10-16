@@ -23,7 +23,7 @@ export type FandomStory = {
   visualStyles?: readonly { id: "anime" | "film"; label: string; artwork: ArtAssetUrl }[];
   /** An original prepared story rather than fan fiction. */
   original?: true;
-  /** A room skin; "neon" is the Night Shift's red-and-cyan night city. */
+  /** A room skin; "neon" is Kessler Ward's red-and-cyan night city. */
   theme?: "neon";
   leadEnding: string;
   alternateEnding: string;
@@ -37,7 +37,7 @@ export const FANDOM_STORIES: readonly FandomStory[] = [
     // A prepared mix of human makers and Wren, Fork Night's AI agent, across two forks. Original characters; frames
     // generated Oct 14, 2026 with Hy-Image 3.5 preview on GMI Cloud (.internal/implementation/night-shift-neon-2026-10-14).
     id: "kessler-night-shift",
-    title: "The Night Shift",
+    title: "Kessler Ward",
     original: true,
     theme: "neon",
     fandom: "Original story",

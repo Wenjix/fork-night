@@ -25,7 +25,7 @@ export function FirstNightInvitation({ variant = "lobby" }: { variant?: "lobby" 
           ? "This shared story isn’t available to join right now."
           : "We couldn’t load the shared story.";
     return <section className="fn-first-invitation fn-first-invitation-pending" data-variant={variant} aria-labelledby={titleId} aria-busy={loading}>
-      <div className="fn-first-pending-art"><StoryArt src="/art/midnight-story.webp#frame=3" description="A paper moon in a lamplit night, from Fork Night’s story illustrations." /><span>Fork Night story illustration</span></div>
+      <div className="fn-first-pending-art"><StoryArt src="/art/night-shift-neon.webp#frame=0" description="The towers of Kessler Ward during a blackout, from the prepared story." /><span>Kessler Ward · prepared story</span></div>
       <div className="fn-first-invitation-copy"><h2 id={titleId}>Every story starts somewhere.</h2><p role="status">{message}</p>{!loading && <div className="fn-first-pending-actions"><button type="button" className="fn-first-secondary" onClick={retry}><RefreshCw size={17} aria-hidden="true" />Try again</button><a href={variant === "rooms" ? "#shared-directory" : "/pilot#shared-directory"}>Browse shared stories <ArrowRight size={17} aria-hidden="true" /></a></div>}</div>
     </section>;
   }
@@ -41,7 +41,7 @@ export function FirstNightInvitation({ variant = "lobby" }: { variant?: "lobby" 
     </figure>
     <div className="fn-first-invitation-copy">
       <h2 id={titleId}>What happens next?</h2>
-      <p>Choose a spark, then make it yours in the shared room.</p>
+      <p>Choose a spark, then make it yours in Kessler Ward. Write a scene yourself or ask Wren for a private preview.</p>
       <fieldset className="fn-first-starters"><legend>Choose a starting idea</legend>{FIRST_NIGHT_STARTERS.filter(starter => starter.id !== "own").map(starter => <label className="fn-first-starter" key={starter.id} data-selected={selected === starter.id}>
         <input type="radio" name={starterName} value={starter.id} checked={selected === starter.id} onChange={() => setSelected(starter.id)} />
         <span className="fn-first-starter-dot" aria-hidden="true">{selected === starter.id && <span />}</span><span>{starter.label}</span>

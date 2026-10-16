@@ -48,6 +48,8 @@ import { SectionPlate } from "./visual-plates";
 import { PilotRoomFunding } from "./guild-funding";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
 import { TestnetRelease } from "./testnet-release";
+import { WrenAssistant } from "./wren-assistant";
+import { KESSLER_ROOM_ID } from "../lib/kessler-room";
 import {
   IDEA_DRAG_TYPE,
   parseComposerDraft,
@@ -107,6 +109,12 @@ export function SharedPilot() {
   const [draft, setDraft] = useState<Draft>();
 
   const [releaseBusy, setReleaseBusy] = useState(false);
+  const [wrenBusy, setWrenBusy] = useState(false);
+  const [wrenPreviewId, setWrenPreviewId] = useState<string>();
+  const [wrenOperationId, setWrenOperationId] = useState<string>();
+  const [wrenMoments, setWrenMoments] = useState<Set<string>>(new Set());
+  const wrenScope = useRef<{ roomId: string; actorId: string | undefined } | null>(null);
+  const currentDraft = useRef(draft);
   const [view, setView] = useState<"map" | "read">("read");
   const [composing, setComposing] = useState(false);
   const [inspectingSource, setInspectingSource] = useState(false);
@@ -121,6 +129,13 @@ export function SharedPilot() {
   const taskHeading = useRef<HTMLHeadingElement>(null);
   const actorId = account?.loading ? null : account?.user?.id ?? null;
   const firstNightJourney = useFirstNightJourney({ roomId: roomId || undefined, actorId });
+
+  useEffect(() => {
+    wrenScope.current = { roomId, actorId: profile?.id };
+    setWrenPreviewId(undefined); setWrenOperationId(undefined); setWrenBusy(false);
+    return () => { wrenScope.current = null; };
+  }, [roomId, profile?.id]);
+  useEffect(() => { currentDraft.current = draft; }, [draft]);
 
   useEffect(() => {
     const sync = () => setFirstNightStarter(parseFirstNightStarter(window.location.search));
@@ -276,9 +291,13 @@ export function SharedPilot() {
         if (roomState.error || !roomState.data || own.error) throw new Error("Connection interrupted. Showing the last saved story; reconnect to check for updates.");
         const state = roomState.data as unknown as RoomSnapshot;
         if (revision !== state.revision) {
-          const result = await client!.from("pilot_moments").select("*").eq("room_id", roomId).order("created_at").order("id").limit(501);
+          const [result, assistance] = await Promise.all([
+            client!.from("pilot_moments").select("*").eq("room_id", roomId).order("created_at").order("id").limit(501),
+            roomId === KESSLER_ROOM_ID ? client!.rpc("pilot_wren_assistance", { p_room_id: roomId }) : Promise.resolve({ data: [], error: null }),
+          ]);
           if (result.error) throw new Error("The story could not be refreshed. Your current continuation is still here.");
           if (!active) return;
+          if (!assistance.error) setWrenMoments(new Set(assistance.data?.map(item => item.moment_id) ?? []));
           currentStory = result.data.slice(0, 500);
           setTruncated(result.data.length > 500);
           const fresh = newPublications(seenMoments.current, currentStory, profile?.id);
@@ -294,6 +313,7 @@ export function SharedPilot() {
         if (!active) return;
         const story = { data: currentStory };
         setSnapshot(state); setCredits(state.credits); setLoadedRoom(roomId); setSyncError("");
+        setRooms(current => current.map(item => item.id === roomId && item.title !== state.title ? { ...item, title: state.title } : item));
         if (visit.current?.roomId !== roomId) {
           let prior: PilotVisit | null = null;
           try {
@@ -415,7 +435,7 @@ export function SharedPilot() {
   const selectedLabel = momentLetter(Math.max(0, selectedIndex));
   const updates = pathUpdates(path, baseline);
   const reviewing = operation?.status === "delivered";
-  const signOutBlock = roomSignOutBlock({ generating: hasActive, drafting: !!draft, walletBusy: releaseBusy, checking: !!account?.loading, busy });
+  const signOutBlock = roomSignOutBlock({ generating: hasActive || wrenBusy || !!wrenPreviewId, drafting: !!draft, walletBusy: releaseBusy, checking: !!account?.loading, busy });
 
   useEffect(() => {
     if (!roomId || loadedRoom !== roomId || account?.loading || profileLoadedFor !== actorId || profile && profile.id !== actorId) return;
@@ -569,6 +589,7 @@ export function SharedPilot() {
 
   async function generate() {
     if (!client || !profile || !selected) return;
+    if (wrenBusy) throw new Error("Check your saved Wren request before starting another scene.");
     if (operation && !finalStates.has(operation.status)) {
       await enqueue(operation);
       return;
@@ -635,6 +656,7 @@ export function SharedPilot() {
   }
   function start(idea?: Tables<"pilot_ideas">, invitation?: { parentId: string; prompt: string }) {
     if (!selected) return;
+    if (wrenBusy || wrenPreviewId) { setNotice("Wren has your saved fork. Check its request before starting another continuation."); return; }
     if (releaseBusy) {
       setNotice("Finish the current wallet action before starting a new continuation.");
       return;
@@ -853,6 +875,25 @@ export function SharedPilot() {
     setOperation({ ...operation, status: "discarded" });
   }
 
+  async function recoverWrenPreview(operationId: string) {
+    if (!client || !profile) throw new Error("Reconnect your storyteller account to review this preview.");
+    const result = await client.from("pilot_operations").select("*,pilot_jobs(operation_id,state,panel_count,updated_at)")
+      .eq("id", operationId).eq("room_id", roomId).eq("maker_id", profile.id).single();
+    if (wrenScope.current?.roomId !== roomId || wrenScope.current.actorId !== profile.id) return;
+    if (result.error || !result.data) throw new Error("Your private scene is saved. Check again to load it.");
+    if (result.data.status !== "delivered") return;
+    setWrenPreviewId(operationId);
+    if (currentDraft.current) throw new Error("Wren’s preview is saved. Cancel your current draft when you’re ready, then check Wren’s request to review it.");
+    setOperation(result.data); setWrenOperationId(operationId); setWrenPreviewId(undefined); setSelectedId(result.data.parent_id); setComposing(true); setView("read");
+  }
+
+  function acceptWrenRequest(parentId: string, originDraftId?: string) {
+    if (wrenScope.current?.roomId !== roomId || wrenScope.current.actorId !== profile?.id) return;
+    if (!originDraftId || !draft || draft.requestId !== originDraftId || draft.submitted || draft.stage !== "idea" || draft.parentId !== parentId) return;
+    if (profile) localStorage.removeItem(pendingKey(profile.id, roomId));
+    setDraft(undefined); setComposing(false);
+  }
+
   const ideaSection =
     client && selected ? (
       <PilotIdeas
@@ -873,7 +914,7 @@ export function SharedPilot() {
     <>
       <a className="skip-link" href="#shared-story">Skip to story</a>
       <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} account={false} />
-      <main className="pilot-shell" id="shared-story" tabIndex={-1}>
+      <main className="pilot-shell" id="shared-story" data-room-theme={roomId === KESSLER_ROOM_ID ? "neon" : undefined} tabIndex={-1}>
       <div className="pilot-room-toolbar">
         <a className="fn-context-link" href="/pilot"><ArrowLeft size={17} aria-hidden="true" />All shared rooms</a>
         <label className="pilot-room-choice">
@@ -881,7 +922,7 @@ export function SharedPilot() {
           <select
             aria-label="Story room"
             value={roomId}
-            disabled={busy || releaseBusy || hasActive || !!draft}
+            disabled={busy || releaseBusy || wrenBusy || !!wrenPreviewId || hasActive || !!draft}
             onChange={(event) => {
               setRoomId(event.target.value);
               setSelectedId("");
@@ -906,7 +947,7 @@ export function SharedPilot() {
           </select>
         </label>
         <div className="pilot-header-actions">
-          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || hasActive || !!draft || !!account?.loading} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={() => setJoinOpen(true)} />
+          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || hasActive || !!draft || !!account?.loading} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={() => setJoinOpen(true)} />
           <button
             className="button secondary pilot-map-toggle"
             onClick={() => setView(view === "map" ? "read" : "map")}
@@ -920,6 +961,7 @@ export function SharedPilot() {
       <div className="pilot-intro">
         <h1>{room?.title ?? "Opening the shared story…"}</h1>
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
+        {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">The opening and its two branches are prepared examples. New published scenes carry their storyteller’s byline; Wren’s help is identified separately.</p>}
       </div>
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
         <details className="pilot-roster"><summary>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></summary><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</details>
@@ -1054,6 +1096,7 @@ export function SharedPilot() {
                             ? profile?.display_name
                             : selected.maker_label}
                         </strong>
+                        {(reviewing ? operation.id === wrenOperationId : wrenMoments.has(selected.id)) && <span> · with Wren’s help</span>}
                         {reviewing ? (
                           " · ready for your review"
                         ) : parent ? (
@@ -1094,7 +1137,7 @@ export function SharedPilot() {
                 <PilotContinuation
                   key={profile?.id ?? account?.user?.id ?? "visitor"}
                   client={client} selected={selected} moments={moments} profile={profile} authenticated={isSavedAccount(account?.user)}
-                  operation={operation} draft={draft} composing={composing} composerVisible={view === "read"} busy={busy || releaseBusy || !!account?.loading || !!account?.error && !account.user}
+                  operation={operation} draft={draft} composing={composing} composerVisible={view === "read"} busy={busy || releaseBusy || wrenBusy && !reviewing || !!account?.loading || !!account?.error && !account.user}
                   interrupted={!!syncError} credits={credits} inspecting={inspectingSource}
                   heading={taskHeading}
                   actions={{
@@ -1132,7 +1175,7 @@ export function SharedPilot() {
                     <button
                       className="button primary"
                       hidden={composing && !!draft}
-                      disabled={busy || releaseBusy}
+                      disabled={busy || releaseBusy || wrenBusy}
                       onClick={() => start()}
                     >
                       <GitBranch size={18} />
@@ -1149,6 +1192,14 @@ export function SharedPilot() {
                     </button>
                   </div>
                 )}
+                {roomId === KESSLER_ROOM_ID && <WrenAssistant
+                  key={`wren:${roomId}:${profile?.id ?? "visitor"}`} client={client} actorId={profile?.id}
+                  parent={moments.find(moment => moment.id === draft?.parentId) ?? selected} moments={moments}
+                  initialBrief={draft?.stage === "idea" ? draft.thought : undefined}
+                  originDraftId={draft?.requestId}
+                  blocked={busy || releaseBusy || !!account?.loading || !!operation && !finalStates.has(operation.status) || !!draft && (draft.submitted === true || draft.stage !== "idea")}
+                  onJoin={() => setJoinOpen(true)} onBusyChange={setWrenBusy} onAccepted={acceptWrenRequest} onReady={recoverWrenPreview} onInspect={id => select(id)}
+                />}
                 {shareUrl && (
                   <label className="pilot-share-link">
                     Link to this moment
@@ -1159,7 +1210,7 @@ export function SharedPilot() {
                     />
                   </label>
                 )}
-                <div hidden={composing || hasActive || reviewing}>
+                <div hidden={composing || hasActive || wrenBusy || reviewing}>
                   <TestnetRelease
                     roomId={roomId} moments={moments} tipId={path.at(-1)!.id}
                     makerId={profile?.id} makerName={profile?.display_name} client={client}

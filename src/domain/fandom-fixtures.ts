@@ -50,8 +50,14 @@ export function extendFandomDemo(state: DemoState): DemoState {
   const missing = stories.filter(story => !state.projects.some(project => project.id === story.id));
   const added = stories.filter(story => !missing.includes(story)).flatMap(story => newBeats(state, story));
   const needsWren = stories.some(story => story.beats.some(beat => beat.authorId === WREN_DEMO_USER.id)) && !state.users.some(user => user.id === WREN_DEMO_USER.id);
-  if (!missing.length && !added.length && !needsWren) return state;
+  const renameKessler = state.projects.some(project => project.id === "kessler-night-shift" && project.title === "The Night Shift");
+  const renameSandbox = state.projects.some(project => project.title.trim().toLowerCase() === "testing night shift");
+  if (!missing.length && !added.length && !needsWren && !renameKessler && !renameSandbox) return state;
   const next = structuredClone(state);
+  if (renameKessler) next.projects.find(project => project.id === "kessler-night-shift")!.title = "Kessler Ward";
+  if (renameSandbox) for (const project of next.projects) {
+    if (project.title.trim().toLowerCase() === "testing night shift") project.title = "Sandbox room";
+  }
   if (needsWren) {
     next.users.push({ ...WREN_DEMO_USER });
     next.claims[WREN_DEMO_USER.id] = next.claims[WREN_DEMO_USER.id] ?? 0;

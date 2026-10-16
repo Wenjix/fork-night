@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 import { FetchRequest, formatEther, getAddress, JsonRpcProvider, ZeroAddress } from "ethers";
 import { ReleaseClient } from "../src/lib/onchain/client.ts";
 import { releaseConfig } from "../src/lib/onchain/config.ts";
-import { makerKey, manifestHash, ORIGINAL_ROOM, prepareRelease, projectKey, RELEASE_TERMS, sameAddress, TERMS_HASH } from "../src/lib/onchain/model.ts";
+import { makerKey, manifestHash, ORIGINAL_ROOM, prepareRelease, projectKey, releaseByline, releaseRoom, RELEASE_TERMS, sameAddress, TERMS_HASH } from "../src/lib/onchain/model.ts";
 
 export function prepareReleaseRecord(record, config) {
   if (record?.chainId !== config.chainId || typeof record.contract !== "string" || !sameAddress(record.contract, config.address) || record.terms !== RELEASE_TERMS) {
@@ -11,12 +11,14 @@ export function prepareReleaseRecord(record, config) {
   }
   const scenes = record.manifest?.scenes;
   if (!Array.isArray(scenes) || !scenes.length) throw new Error("The release record has no published path.");
+  const roomId = scenes[0].roomId;
+  if (!releaseRoom(roomId) || scenes.some(scene => scene.roomId !== roomId)) throw new Error("The release record must contain one permitted story room.");
   const moments = scenes.map(scene => ({
     id: scene.id, room_id: scene.roomId, parent_id: scene.parentId, maker_id: scene.makerId,
     maker_label: scene.makerLabel, title: scene.title, panels: scene.panels, created_at: scene.publishedAt,
     source_kind: "prepared", source_idea_id: null, source_idea_label: null, source_idea_body: null,
   }));
-  const prepared = prepareRelease(moments, ORIGINAL_ROOM, moments.at(-1).id, config.curator);
+  const prepared = prepareRelease(moments, roomId, moments.at(-1).id, config.curator);
   if (manifestHash(record.manifest) !== prepared.hash || record.manifestHash !== prepared.hash || record.releaseId !== prepared.id) {
     throw new Error("The release record's ordered scenes, manifest hash or release ID do not match.");
   }
@@ -30,7 +32,7 @@ export async function checkReleaseRehearsal(config, provider, { record, wallets 
   if (prepared) snapshot = await client.load(prepared);
   else await client.verify();
   const block = snapshot?.block ?? await provider.getBlockNumber();
-  const options = { blockTag: block }, projectId = projectKey(config.curator, ORIGINAL_ROOM);
+  const options = { blockTag: block }, projectId = prepared?.projectId ?? projectKey(config.curator, ORIGINAL_ROOM);
   const [project, openingMaker, liability, balance] = await Promise.all([
     client.contract.projects(projectId, options), client.contract.makers(projectId, makerKey(null), options),
     client.contract.liability(options), provider.getBalance(config.address, block),
@@ -66,7 +68,7 @@ export async function checkReleaseRehearsal(config, provider, { record, wallets 
       id: prepared.id, manifestHash: prepared.hash, frozen: state.exists,
       distinctBylines: new Set(prepared.scenes.map(scene => scene.makerId)).size,
       scenes: snapshot.scenes.map((scene, index) => ({ title: prepared.scenes[index].moment.title,
-        makerId: prepared.scenes[index].moment.maker_id, makerLabel: prepared.scenes[index].moment.maker_label,
+        makerId: prepared.scenes[index].moment.maker_id, makerLabel: releaseByline(prepared.scenes[index].moment),
         wallet: scene.maker, registered: scene.registered, matches: scene.matches })),
       receivedWei: state.received.toString(), receivedTestMon: formatEther(state.received),
       paidWei: state.paid.toString(), paidTestMon: formatEther(state.paid), beneficiaries,

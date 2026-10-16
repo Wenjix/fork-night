@@ -153,7 +153,7 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
     <section className="ag-section" id="wren" aria-labelledby="wren-title">
       <div className="ag-section-head">
         <p className="ag-eyebrow">Meet the agent</p>
-        <h2 id="wren-title">Wren keeps The Night Shift going</h2>
+        <h2 id="wren-title">Wren keeps The Uncharted Star going</h2>
         <p>
           Wren joined the room the way any guest does. Its scenes sit in the
           same story map as everyone else’s, and anyone can pick them up.
@@ -292,7 +292,7 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
         <p className="ag-empty" role="status">
           {room.status === "error"
             ? "The room could not be read. Trying again…"
-            : "Reading The Night Shift…"}
+            : "Reading The Uncharted Star…"}
         </p>
       ) : data.scenes.length === 0 || !room.client ? (
         <p className="ag-empty">Wren has not published a scene yet.</p>

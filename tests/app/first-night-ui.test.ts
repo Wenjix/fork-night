@@ -15,8 +15,8 @@ test("selecting the result screen cannot fabricate a published contribution", ()
 
 test("the first-night guide leads to the shared room without a local sample identity", () => {
   const html = renderToStaticMarkup(createElement(FirstNightGuide, { actorId: null }));
-  assert.match(html, /href="\/pilot\?room=paper-moon&amp;moment=10000000-0000-4000-8000-000000000002"/);
-  assert.match(html, /href="\/pilot\?room=paper-moon&amp;moment=10000000-0000-4000-8000-000000000002&amp;firstNight=1&amp;starter=own"/);
+  assert.match(html, /href="\/pilot\?room=kessler-ward&amp;moment=15000000-0000-4000-8000-000000000001"/);
+  assert.match(html, /href="\/pilot\?room=kessler-ward&amp;moment=15000000-0000-4000-8000-000000000001&amp;firstNight=1&amp;starter=own"/);
   assert.doesNotMatch(html, /href="#\/project|userId=|sam|priya/);
   assert.match(html, /aria-label="Hide first-night guide"/);
 });
@@ -31,7 +31,7 @@ test("an invitation waiting for shared data does not promise a ready contributio
 test("a room can guard the guide read action through its own unfinished-work check", () => {
   const html = renderToStaticMarkup(createElement(FirstNightGuide, { actorId: null, onRead: () => undefined }));
   assert.match(html, /data-state="current" aria-current="step"[^>]*><button[^>]*type="button"[^>]*>.*Join a story/);
-  assert.doesNotMatch(html, /href="\/pilot\?room=paper-moon&amp;moment=10000000-0000-4000-8000-000000000002"/);
+  assert.doesNotMatch(html, /href="\/pilot\?room=kessler-ward&amp;moment=15000000-0000-4000-8000-000000000001"/);
 });
 
 test("an idea result opens its actual source moment before reaching the idea list", () => {

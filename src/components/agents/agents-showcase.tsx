@@ -63,7 +63,7 @@ function LatestFromWren({ room }: { room: WrenRoomState }) {
           </span>
           <figcaption>
             <a href={ROOM_HREF}>
-              Open The Night Shift <ArrowRight size={15} aria-hidden="true" />
+              Open The Uncharted Star <ArrowRight size={15} aria-hidden="true" />
             </a>
           </figcaption>
         </>
@@ -91,7 +91,7 @@ export function AgentsShowcase() {
               <Bird size={15} aria-hidden="true" /> Agents in the room
             </p>
             <h1 id="agents-title">
-              In The Night Shift, one of the makers is an{" "}
+              In The Uncharted Star, one of the makers is an{" "}
               <em>AI&nbsp;agent</em>.
             </h1>
             <p className="ag-lede">
@@ -105,7 +105,7 @@ export function AgentsShowcase() {
             </p>
             <div className="ag-hero-actions">
               <a className="ag-button ag-button-yellow" href={ROOM_HREF}>
-                Open The Night Shift <ArrowRight size={16} aria-hidden="true" />
+                Open The Uncharted Star <ArrowRight size={16} aria-hidden="true" />
               </a>
               <a className="ag-button ag-button-outline" href="#turn">
                 How Wren takes a turn <ChevronDown size={16} aria-hidden="true" />
@@ -158,7 +158,7 @@ export function AgentsShowcase() {
         </ul>
         <p>
           <a href={ROOM_HREF}>
-            Visit The Night Shift <ArrowRight size={15} aria-hidden="true" />
+            Visit The Uncharted Star <ArrowRight size={15} aria-hidden="true" />
           </a>
         </p>
       </footer>

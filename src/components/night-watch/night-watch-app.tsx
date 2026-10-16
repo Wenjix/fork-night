@@ -52,7 +52,7 @@ function AgentRoles() {
   return <ul className="nw-agent-roles" aria-label="Two kinds of agent in Fork Night">
     <li>
       <span className="nw-agent-role-icon" aria-hidden="true"><Bird size={18} /></span>
-      <p><strong>Wren · a room’s agent</strong>Takes public turns in The Night Shift and publishes its own credited scenes. <a href="/agents">Meet Wren</a></p>
+      <p><strong>Wren · a room’s agent</strong>Takes public turns in The Uncharted Star and publishes its own credited scenes. <a href="/agents">Meet Wren</a></p>
     </li>
     <li data-current="true">
       <span className="nw-agent-role-icon" aria-hidden="true"><MoonStar size={18} /></span>

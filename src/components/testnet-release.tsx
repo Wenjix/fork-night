@@ -7,9 +7,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../lib/supabase/database.types.ts";
 import type { PilotMoment } from "../lib/pilot.ts";
 import { releaseConfig, type ReleaseConfig } from "../lib/onchain/config.ts";
-import { DEFAULT_SUPPORT_MON, ORIGINAL_ROOM, prepareRelease, RELEASE_TERMS, type PreparedRelease } from "../lib/onchain/model.ts";
-import { ReleaseClient, type WalletProvider, type Operation } from "../lib/onchain/client.ts";
-import { releaseJourney, shortAddress, walletBylines } from "../lib/onchain/journey.ts";
+import { DEFAULT_SUPPORT_MON, prepareRelease, releaseRoom, RELEASE_TERMS, type PreparedRelease } from "../lib/onchain/model.ts";
+import { ReleaseClient, type WalletProvider, type Operation, type Snapshot } from "../lib/onchain/client.ts";
+import { preparedWorkApproval, releaseJourney, shortAddress, walletBylines } from "../lib/onchain/journey.ts";
 import { ReleaseSession } from "../lib/onchain/session.ts";
 import { whileVisible } from "../lib/visible-interval.ts";
 import { ReleaseScenes } from "./release-scenes.tsx";
@@ -25,16 +25,50 @@ export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, cli
   const [open, setOpen] = useState(false);
   const config = useMemo(releaseConfig, []);
   const prepared = useMemo(() => {
-    if (roomId !== ORIGINAL_ROOM || !tipId || !config) return { value: null, error: "" };
+    if (!releaseRoom(roomId) || !tipId || !config) return { value: null, error: "" };
     try { return { value: prepareRelease(moments, roomId, tipId, config.curator), error: "" }; }
     catch (error) { return { value: null, error: error instanceof Error ? error.message : "This story's release could not be prepared." }; }
   }, [roomId, moments, tipId, config]);
-  if (roomId !== ORIGINAL_ROOM || !tipId) return null;
+  if (!releaseRoom(roomId) || !tipId) return null;
   return <section className="pilot-release" aria-label="Story release and support">
     {prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} open={open} onToggle={() => setOpen(!open)} /> : <>
       <button className="pilot-release-toggle" type="button" aria-expanded={open} aria-controls="payout-body" onClick={() => setOpen(!open)}><Layers3 size={21} aria-hidden="true" /><span><strong>Release and support this story</strong><span>Making a moment never requires a wallet.</span></span><ChevronDown size={18} aria-hidden="true" /></button>
       {open && <p id="payout-body" className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>}
     </>}
+  </section>;
+}
+
+export function PreparedWorkWallet({ prepared, snapshot, config, account, blocked, onApprove }: {
+  prepared: PreparedRelease; snapshot: Snapshot; config: ReleaseConfig; account: string; blocked: boolean;
+  onApprove: (index: number, address: string) => Promise<string | undefined>;
+}) {
+  const [wallet, setWallet] = useState("");
+  const [rights, setRights] = useState(false);
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState("");
+  const index = prepared.scenes.findIndex(scene => scene.moment.maker_id === null && scene.moment.source_kind === "fixture");
+  if (!releaseRoom(prepared.scenes[0].moment.room_id)?.preparedLabel || index < 0 ||
+    account.toLowerCase() !== config.curator.toLowerCase() || snapshot.curator.toLowerCase() !== config.curator.toLowerCase() ||
+    snapshot.scenes[index]?.maker !== ZeroAddress) return null;
+  async function approve() {
+    if (blocked || working) return;
+    try {
+      const approval = preparedWorkApproval(prepared, snapshot, account, config.curator, wallet, rights);
+      setWorking(true); setError("");
+      await onApprove(approval.index, approval.address);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "The prepared-work wallet could not be approved."); }
+    finally { setWorking(false); }
+  }
+  return <section className="pilot-my-wallet-request" aria-label="Prepared story wallet" aria-busy={working}>
+    <strong>Prepared story wallet</strong>
+    <p>Sam, Priya, Jules and Wren are sample bylines in this authored opening. They do not represent four verified creators. Approve one actual rights holder’s wallet for the prepared story; its distinct wallet counts once in a release.</p>
+    <p>This permanently binds the prepared-work identity for this project. The approved wallet must accept the terms and register each scene after its parent.</p>
+    <label className="pilot-release-consent"><input type="checkbox" checked={rights} disabled={blocked || working} onChange={event => setRights(event.target.checked)} /><span>I have checked the rights holder and their payout wallet for this prepared story.</span></label>
+    <form onSubmit={event => { event.preventDefault(); void approve(); }}>
+      <label>Rights holder’s EVM wallet<input value={wallet} autoComplete="off" spellCheck={false} maxLength={42} disabled={blocked || working} onChange={event => setWallet(event.target.value)} placeholder="0x…" required /></label>
+      <button className="button secondary" type="submit" disabled={blocked || working || !rights || !wallet.trim()}>{working ? "Waiting for approval…" : "Approve prepared-work wallet"}</button>
+    </form>
+    {error && <p className="pilot-release-error" role="alert">{error}</p>}
   </section>;
 }
 
@@ -112,6 +146,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
       {consentNeeded && <label className="pilot-release-consent"><input type="checkbox" checked={accepted} disabled={walletBusy || pending} onChange={event => session.accept(event.target.checked)} /><span>I can include this original or permitted work and accept equal shares for its registered maker wallets. The curator approves the byline-to-wallet links.</span></label>}
       {snapshot && snapshot.curator === ZeroAddress && <div className="pilot-release-next"><p>{journey.curator ? "Record this original story before approving its maker wallets." : "The curator opens this story for testnet releases."}</p>{journey.curator && <button className="button primary" type="button" disabled={blocked || !accepted} onClick={() => perform("create")}>Start the testnet project</button>}</div>}
       {snapshot && snapshot.curator !== ZeroAddress && <>
+        <PreparedWorkWallet key={prepared.projectId + account} prepared={prepared} snapshot={snapshot} config={config} account={account} blocked={blocked} onApprove={(index, address) => session.perform("approve", index, address)} />
         <details className="pilot-release-makers" key={prepared.id + String(journey.released)} open={!journey.released}>
           <summary><span>The makers in this path</span><span>{journey.registered} of {prepared.scenes.length} scenes registered</span></summary>
           <ReleaseScenes prepared={prepared} snapshot={snapshot} account={account} accepted={accepted} busy={walletBusy} pending={pending} onAction={perform} client={client} onInspect={onInspect} />

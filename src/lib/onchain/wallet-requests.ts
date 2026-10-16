@@ -1,7 +1,7 @@
 import { BrowserProvider, getAddress, isAddress, verifyMessage, ZeroAddress } from "ethers";
 import type { ReleaseConfig } from "./config.ts";
 import type { WalletProvider } from "./client.ts";
-import { ORIGINAL_ROOM, projectKey, sameAddress, TERMS_HASH } from "./model.ts";
+import { ORIGINAL_ROOM, projectKey, releaseRoom, sameAddress, TERMS_HASH } from "./model.ts";
 
 export type WalletRequest = {
   id: string; room_id: string; project_id: string; moment_id: string; maker_id: string;
@@ -16,27 +16,28 @@ export class RequestProblem extends Error {
   status: number;
   constructor(message: string, status = 400) { super(message); this.status = status; }
 }
-export function requestDomain(config: ReleaseConfig) {
-  return `Fork Night\nNetwork: ${config.chainId}\nContract: ${getAddress(config.address)}\nProject: ${projectKey(config.curator, ORIGINAL_ROOM)}\nTerms: ${TERMS_HASH}`;
+export function requestDomain(config: ReleaseConfig, roomId = ORIGINAL_ROOM) {
+  if (!releaseRoom(roomId)) throw new RequestProblem("Choose a permitted release room.");
+  return `Fork Night\nNetwork: ${config.chainId}\nContract: ${getAddress(config.address)}\nProject: ${projectKey(config.curator, roomId)}\nTerms: ${TERMS_HASH}`;
 }
-export function requestMessage(proof: WalletRequestProof, config: ReleaseConfig) {
-  return `${requestDomain(config)}\nAction: Request my payout wallet\nRequest: ${proof.id}\nScene: ${proof.moment_id}\nMaker: ${proof.maker_id}\nWallet: ${getAddress(proof.wallet_address)}\nIssued: ${proof.issued_at}\nThis signature sends a wallet request. It does not spend MON or approve a payout link.`;
+export function requestMessage(proof: WalletRequestProof, config: ReleaseConfig, roomId = ORIGINAL_ROOM) {
+  return `${requestDomain(config, roomId)}\nAction: Request my payout wallet\nRequest: ${proof.id}\nScene: ${proof.moment_id}\nMaker: ${proof.maker_id}\nWallet: ${getAddress(proof.wallet_address)}\nIssued: ${proof.issued_at}\nThis signature sends a wallet request. It does not spend MON or approve a payout link.`;
 }
 export function denialMessage(request: WalletRequest, issuedAt: number, config: ReleaseConfig) {
-  return `${requestDomain(config)}\nAction: Deny this wallet request\nRequest: ${request.id}\nMaker: ${request.maker_id}\nWallet: ${getAddress(request.wallet_address)}\nIssued: ${issuedAt}\nThis decision closes the pending request. It does not revoke an onchain wallet approval.`;
+  return `${requestDomain(config, request.room_id)}\nAction: Deny this wallet request\nRequest: ${request.id}\nMaker: ${request.maker_id}\nWallet: ${getAddress(request.wallet_address)}\nIssued: ${issuedAt}\nThis decision closes the pending request. It does not revoke an onchain wallet approval.`;
 }
 function fresh(issuedAt: unknown, now: number) {
   if (!Number.isSafeInteger(issuedAt) || Number(issuedAt) > now + 30 || Number(issuedAt) < now - 300)
     throw new RequestProblem("This wallet confirmation expired. Review the request and sign again.");
 }
-export function verifyWalletRequest(proof: WalletRequestProof, signature: string, config: ReleaseConfig, actor: string, now = Math.floor(Date.now() / 1000)) {
+export function verifyWalletRequest(proof: WalletRequestProof, signature: string, config: ReleaseConfig, actor: string, now = Math.floor(Date.now() / 1000), roomId = ORIGINAL_ROOM) {
   if (!proof || ![proof.id, proof.moment_id, proof.maker_id].every(value => typeof value === "string" && uuid.test(value)) ||
     typeof proof.wallet_address !== "string" || !isAddress(proof.wallet_address) || sameAddress(proof.wallet_address, ZeroAddress))
     throw new RequestProblem("Choose your published scene and connected wallet before requesting approval.");
   if (proof.maker_id !== actor) throw new RequestProblem("You can only request a wallet for your own published byline.", 403);
   fresh(proof.issued_at, now);
   let signer: string;
-  try { signer = verifyMessage(requestMessage(proof, config), signature); }
+  try { signer = verifyMessage(requestMessage(proof, config, roomId), signature); }
   catch { throw new RequestProblem("The wallet signature could not be verified. Reconnect and try again.", 403); }
   if (!sameAddress(signer, proof.wallet_address)) throw new RequestProblem("The signature belongs to another wallet. Reconnect your requested wallet.", 403);
   return { ...proof, wallet_address: getAddress(proof.wallet_address) };
@@ -57,8 +58,10 @@ export async function signWalletMessage(wallet: WalletProvider, account: string,
   catch { throw new Error("The wallet confirmation did not finish. Review the request and try again."); }
   finally { browser.destroy(); }
 }
-export async function walletRequestApi(input?: unknown, token?: string, signal?: AbortSignal): Promise<WalletRequest[]> {
-  const response = await fetch(`/api/pilot/wallet-requests${input ? "" : `?room=${ORIGINAL_ROOM}`}`, {
+export async function walletRequestApi(input?: unknown, token?: string, signal?: AbortSignal, roomId = ORIGINAL_ROOM): Promise<WalletRequest[]> {
+  if (!releaseRoom(roomId)) throw new RequestProblem("Choose a permitted release room.");
+  const query = input && roomId === ORIGINAL_ROOM ? "" : `?room=${encodeURIComponent(roomId)}`;
+  const response = await fetch(`/api/pilot/wallet-requests${query}`, {
     method: input ? "POST" : "GET", signal, cache: "no-store",
     headers: { ...(input ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     ...(input ? { body: JSON.stringify(input) } : {}),

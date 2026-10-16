@@ -32,7 +32,7 @@ function storage() {
   return { values, setItem: (key: string, value: string) => { values.set(key, value); }, removeItem: (key: string) => { values.delete(key); } };
 }
 
-function handoff(patch: Record<string, unknown> = {}, starter: string | null = "follow-window") {
+function handoff(patch: Record<string, unknown> = {}, starter: string | null = "rooftops") {
   const initial = new URL(firstNightRoomHref(starter), "https://fork-night.invalid");
   initial.searchParams.set("view", "read"); initial.hash = "#opening";
   const notices: string[] = [], drafts: unknown[] = [], starts: unknown[][] = [], replacements: string[] = [], selections: unknown[] = [];
@@ -43,7 +43,7 @@ function handoff(patch: Record<string, unknown> = {}, starter: string | null = "
   };
   const store = storage();
   const env = {
-    firstNightStarter: parseFirstNightStarter(initial.search), account: { loading: false }, busy: false, releaseBusy: false,
+    firstNightStarter: parseFirstNightStarter(initial.search), account: { loading: false }, busy: false, releaseBusy: false, wrenBusy: false, wrenPreviewId: undefined,
     roomId: FIRST_NIGHT_ROOM_ID, loadedRoom: FIRST_NIGHT_ROOM_ID, profileLoadedFor: actor, actorId: actor, profile: { id: actor },
     recoveryScope: { roomId: FIRST_NIGHT_ROOM_ID, actorId: actor }, moments: [root], selected: root,
     draft: undefined, hasActive: false, mutation: { current: false }, parseFirstNightStarter, stripFirstNightParams,

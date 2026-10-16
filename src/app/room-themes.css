@@ -59,3 +59,7 @@
 /* The film page's muted text is tuned for light paper; on the neon night it uses the room's own muted tone. */
 #story-workspace[data-room-theme="neon"] :is(.fn-film-intro p, .fn-film-image-position, .fn-film-images figcaption p, .fn-film-disclosure, .fn-film-invite p) { color: var(--muted); }
 #story-workspace[data-room-theme="neon"] :is(.fn-film-intro h2, .fn-film-section-heading h3, .fn-film-images h4) { color: var(--ink); }
+
+#story-workspace .kessler-shared-invitation { display: grid; gap: 8px; margin-top: 18px; }
+#story-workspace .kessler-shared-invitation .button { width: fit-content; max-width: 100%; min-height: 44px; white-space: normal; }
+#story-workspace .kessler-shared-invitation small { color: var(--muted); font-size: 13px; line-height: 1.5; }

@@ -60,7 +60,9 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
   const [review, setReview] = useState<{ id: string; action: "approve" | "deny"; motion: boolean }>();
   const active = useRef(true), sequence = useRef(0);
   const heading = useRef<HTMLHeadingElement>(null);
-  const context = useRef({ account, makerId, provider }); context.current = { account, makerId, provider };
+  const roomId = prepared.scenes[0].moment.room_id;
+  const context = useRef({ account, makerId, provider, projectId: prepared.projectId }); context.current = { account, makerId, provider, projectId: prepared.projectId };
+  const requestApi = (input?: unknown, token?: string) => walletRequestApi(input, token, undefined, roomId);
   const savedSubmission = useRef<{ action: "submit"; proof: WalletRequestProof; signature: string } | undefined>(undefined);
   const curator = sameAddress(account, config.curator);
   const makerIndex = prepared.scenes.findIndex(scene => scene.moment.maker_id === makerId);
@@ -76,20 +78,20 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
   async function refresh() {
     const version = ++sequence.current;
     try {
-      const result = await walletRequestApi();
+      const result = await requestApi();
       if (active.current && sequence.current === version) { setRequests(result); setError(""); }
     } catch (reason) { if (active.current && sequence.current === version) setError(reason instanceof Error ? reason.message : "Wallet requests could not be checked."); }
     finally { if (active.current && sequence.current === version) setLoading(false); }
   }
   useEffect(() => {
-    active.current = true; void refresh();
+    active.current = true; setRequests([]); setLoading(true); void refresh();
     const stop = whileVisible(() => void refresh(), 8000);
     return () => { active.current = false; sequence.current++; stop(); };
   }, [prepared.projectId]);
   useEffect(() => { onWorking(working); return () => onWorking(false); }, [working, onWorking]);
-  useEffect(() => { setReview(undefined); savedSubmission.current = undefined; }, [account, makerId, provider]);
+  useEffect(() => { setReview(undefined); savedSubmission.current = undefined; }, [account, makerId, provider, prepared.projectId]);
   function stillCurrent(captured: typeof context.current) {
-    if (!active.current || context.current.account !== captured.account || context.current.makerId !== captured.makerId || context.current.provider !== captured.provider)
+    if (!active.current || context.current.account !== captured.account || context.current.makerId !== captured.makerId || context.current.provider !== captured.provider || context.current.projectId !== captured.projectId)
       throw new Error("Your account or wallet changed. Review the request again.");
   }
   async function send() {
@@ -97,21 +99,21 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
     const captured = context.current;
     setWorking(true); setError("");
     try {
-      const fresh = await walletRequestApi();
+      const fresh = await requestApi();
       stillCurrent(captured);
       const pendingOwn = fresh.find(row => row.maker_id === makerId && row.state === "pending");
       if (pendingOwn) { setRequests(fresh); return; }
       let submission = savedSubmission.current;
       if (!submission || submission.proof.maker_id !== makerId || !sameAddress(submission.proof.wallet_address, account) || submission.proof.issued_at < Math.floor(Date.now() / 1000) - 240) {
         const proof: WalletRequestProof = { id: crypto.randomUUID(), maker_id: makerId, moment_id: prepared.scenes[makerIndex].moment.id, wallet_address: getAddress(account), issued_at: Math.floor(Date.now() / 1000) };
-        const signature = await signWalletMessage(provider, account, requestMessage(proof, config), config.chainId);
+        const signature = await signWalletMessage(provider, account, requestMessage(proof, config, roomId), config.chainId);
         stillCurrent(captured);
         submission = { action: "submit", proof, signature }; savedSubmission.current = submission;
       }
       const { data } = await client.auth.getSession();
       stillCurrent(captured);
       if (!data.session || data.session.user.id !== makerId) throw new Error("Return to the account that published this scene before sending a request.");
-      const result = await walletRequestApi(submission, data.session.access_token);
+      const result = await requestApi(submission, data.session.access_token);
       stillCurrent(captured); setRequests(result); savedSubmission.current = undefined;
       onFeedback("Wallet request sent. The curator can review your address in this room.");
     } catch (reason) { if (active.current) setError(reason instanceof Error ? reason.message : "The request could not be confirmed. Check the request before sending again."); }
@@ -129,7 +131,7 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
     const captured = context.current;
     setWorking(true); setError("");
     try {
-      const latest = await walletRequestApi();
+      const latest = await requestApi();
       stillCurrent(captured);
       const row = latest.find(request => request.id === selected.id);
       if (!row || row.state !== "pending" || !sameAddress(row.wallet_address, selected.wallet_address)) {
@@ -139,13 +141,13 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
         if (reviewIndex < 0) throw new Error("Open this maker's published scene before approving its wallet.");
         const hash = await onApprove(reviewIndex, row.wallet_address);
         if (!hash) return;
-        try { const result = await walletRequestApi({ action: "confirm", id: row.id }); if (active.current) setRequests(result); }
+        try { const result = await requestApi({ action: "confirm", id: row.id }); if (active.current) setRequests(result); }
         catch { onFeedback("The wallet approval is recorded onchain. Check the request status again if needed."); }
       } else {
         const issuedAt = Math.floor(Date.now() / 1000);
         const signature = await signWalletMessage(provider, account, denialMessage(row, issuedAt, config), config.chainId);
         stillCurrent(captured);
-        const result = await walletRequestApi({ action: "deny", id: row.id, issuedAt, signature });
+        const result = await requestApi({ action: "deny", id: row.id, issuedAt, signature });
         if (active.current) setRequests(result);
         onFeedback("Wallet request denied. The maker can review it and send a new request.");
       }

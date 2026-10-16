@@ -13,6 +13,34 @@ import { renderFinishedHtml } from "../../src/lib/finished-export.ts";
 const now = Date.UTC(2026, 9, 7, 20);
 const fixture = () => extendFandomDemo(extendSocialDemo(createDemoState()));
 
+test("the Kessler display rename upgrades old saves once and preserves custom names and all saved work", () => {
+  const old = fixture();
+  old.projects.find(project => project.id === "kessler-night-shift")!.title = "The Night Shift";
+  const before = structuredClone(old);
+  const renamed = extendFandomDemo(old);
+  assert.equal(renamed.projects.find(project => project.id === "kessler-night-shift")!.title, "Kessler Ward");
+  assert.deepEqual(old, before);
+  const expected = structuredClone(before);
+  expected.projects.find(project => project.id === "kessler-night-shift")!.title = "Kessler Ward";
+  assert.deepEqual(renamed, expected);
+  assert.strictEqual(extendFandomDemo(renamed), renamed);
+  const custom = structuredClone(old);
+  custom.projects.find(project => project.id === "kessler-night-shift")!.title = "Our blackout story";
+  assert.strictEqual(extendFandomDemo(custom), custom);
+});
+
+test("the explicitly renamed local testing room retains its identity and moments", () => {
+  const old = fixture();
+  const room = old.projects.find(project => project.id === "moon-bus")!;
+  room.title = "testing night shift";
+  const next = extendFandomDemo(old);
+  assert.equal(next.projects.find(project => project.id === room.id)!.title, "Sandbox room");
+  assert.deepEqual(next.moments, old.moments);
+  assert.deepEqual(next.accounts, old.accounts);
+  assert.equal(room.title, "testing night shift");
+  assert.strictEqual(extendFandomDemo(next), next);
+});
+
 test("saved moments accept one through three panels and reject empty or excessive sequences", () => {
   for (const count of [1, 2, 3]) {
     const state = createDemoState();

@@ -1,0 +1,65 @@
+.pilot-shell[data-room-theme="neon"] {
+  --paper: #0d0a12;
+  --surface: #16111f;
+  --ink: #f6f1ff;
+  --muted: #bdb5cf;
+  --line: #382e4c;
+  --line-strong: #6c5b89;
+  --violet: #ff718b;
+  --violet-dark: #ff91a6;
+  --violet-soft: #301523;
+  --yellow: #21e6ff;
+  --success: #81e2b4;
+  --danger: #ff9c9c;
+  color: var(--ink);
+  color-scheme: dark;
+  min-height: 100svh;
+  background: radial-gradient(900px 450px at 100% 0, #ff2e4d23, transparent 75%), #0d0a12;
+}
+.pilot-shell[data-room-theme="neon"] .pilot-intro h1 { color: var(--ink); letter-spacing: -.035em; }
+.pilot-shell[data-room-theme="neon"] .pilot-prepared-note { max-width: 76ch; font-size: 13px; margin-top: 12px; }
+.pilot-shell[data-room-theme="neon"] .button.primary { background: #c91c3b; color: #fff; }
+.pilot-shell[data-room-theme="neon"] .button.primary:hover { background: #aa1631; }
+.pilot-shell[data-room-theme="neon"] :focus-visible { outline-color: #21e6ff; }
+.pilot-shell[data-room-theme="neon"] .pilot-recap-row[aria-current] { background: var(--violet-soft); }
+.pilot-shell[data-room-theme="neon"] .pilot-node { border-radius: 4px; border-color: var(--line-strong); }
+.pilot-shell[data-room-theme="neon"] .pilot-node[aria-pressed="true"] { border-color: #ff718b; box-shadow: 0 0 0 2px #ff718b; }
+.pilot-shell[data-room-theme="neon"] .pilot-map { background: var(--paper); border: 1px solid var(--line); }
+.pilot-shell[data-room-theme="neon"] .pilot-room-capacity { background: #282113; color: #f8dda1; }
+.pilot-shell[data-room-theme="neon"] .pilot-room-capacity strong { color: inherit; }
+.pilot-shell[data-room-theme="neon"] :is(.pilot-sticky, .pilot-carried-idea) { --ink: #211d28; --muted: #574b29; --violet: #6742a3; --violet-soft: #e7dfff; color: #211d28; }
+.pilot-shell[data-room-theme="neon"] :is(.pilot-invitation-link input, .pilot-share-link input) { background: var(--surface); color: var(--ink); }
+.pilot-shell[data-room-theme="neon"] :is(.fn-section-plate, .fn-context-plate) {
+  --plate-surface: var(--surface);
+  --plate-ink: var(--ink);
+  --plate-muted: var(--muted);
+  --plate-edge: var(--line-strong);
+  --plate-accent: #21e6ff;
+  --plate-mount: #11323b;
+  background: var(--surface); color: var(--ink); border-color: var(--line-strong);
+}
+.pilot-shell[data-room-theme="neon"] .fn-plate-mount { color: #21e6ff; background: #11323b; }
+.pilot-shell[data-room-theme="neon"] .fn-plate-description { color: var(--muted); }
+.pilot-shell[data-room-theme="neon"] .pilot-release-error { background: #401b26; color: var(--danger); }
+.pilot-shell[data-room-theme="neon"] :is(.pilot-leave-idea > span, .pilot-note-form > p, .pilot-note-form small) { color: var(--muted); }
+.pilot-shell[data-room-theme="neon"] .pilot-leave-idea:hover { background: #3d1e2d; }
+.pilot-shell[data-room-theme="neon"] .pilot-onboarding-note { color: #675229; }
+.pilot-wren { margin-top: 28px; padding: 24px; border: 1px solid var(--line-strong); border-left: 3px solid #21e6ff; border-radius: 12px; background: var(--paper); min-width: 0; }
+.pilot-wren-heading { display: flex; align-items: flex-start; gap: 12px; }
+.pilot-wren-heading > svg { flex: 0 0 auto; color: #21e6ff; margin-top: 3px; }
+.pilot-wren h2 { margin: 0; font-size: clamp(21px, 2.2vw, 27px); line-height: 1.25; }
+.pilot-wren p { font-size: 14px; line-height: 1.6; margin: 10px 0; color: var(--muted); }
+.pilot-wren .pilot-wren-source { margin: 18px 0; }
+.pilot-wren-source .text-button { min-height: 44px; text-align: left; white-space: normal; }
+.pilot-wren form { display: grid; gap: 12px; }
+.pilot-wren label { font-size: 14px; font-weight: 600; }
+.pilot-wren label span { font-weight: 400; color: var(--muted); }
+.pilot-wren textarea { width: 100%; min-width: 0; resize: vertical; padding: 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.5; }
+.pilot-wren textarea::placeholder { color: var(--muted); }
+.pilot-wren .button { min-height: 44px; white-space: normal; justify-self: start; text-align: center; }
+.pilot-wren .pilot-wren-note { font-size: 12px; margin: 20px 0 0; }
+.pilot-wren [role="alert"] { color: var(--danger); }
+@media (max-width: 640px) {
+  .pilot-wren { padding: 18px 14px; }
+  .pilot-wren .button { width: 100%; }
+}
