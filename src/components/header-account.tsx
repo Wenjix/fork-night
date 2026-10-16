@@ -4,7 +4,6 @@ import { useContext, useEffect, useId, useRef, useState, useSyncExternalStore, t
 import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
 import { ChevronDown, UserRound, Wallet } from "lucide-react";
 import type { Database } from "../lib/supabase/database.types.ts";
-import { startGoogleLogin } from "../lib/supabase/onboarding.ts";
 import { createSignOutRequest, expireCookie, forgetPrivySession, forgetSignedOut, privySessionStored, sessionKey, signedOutHere } from "../lib/supabase/signout-request.ts";
 import { HeaderAccountVisibility } from "./app-header.tsx";
 import "@/app/header-account.css";
@@ -287,6 +286,7 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
     setGoogleBusy(true);
     setError("");
     try {
+      const { startGoogleLogin } = await import("../lib/supabase/onboarding.ts");
       await startGoogleLogin(ready.client, window.location.href, window.sessionStorage, "link");
     } catch (reason) {
       setGoogleBusy(false);

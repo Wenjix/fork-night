@@ -200,11 +200,13 @@ test("after its expiry Wren's allowance reads in the past tense and keeps every 
   const allowance = renderToStaticMarkup(React.createElement(WrenAllowance));
   const steps = renderToStaticMarkup(React.createElement(TurnSteps));
   for (const html of [allowance, steps]) {
-    assert.ok(html.includes(`expired on ${WREN_ALLOWANCE.expiresAt}`), "names when it expired");
     assert.doesNotMatch(html, /Wren can top the room up|Wren buys one top-up|Tops up the room first/);
   }
-  assert.match(allowance, /<small>Expired<\/small>/);
-  assert.match(allowance, /Wren could top the room up/);
+  assert.ok(steps.includes(`expired on ${WREN_ALLOWANCE.expiresAt}`), "the turn steps name when it expired");
+  assert.match(allowance, /Wren paid for more room on Tempo, by itself/);
+  assert.match(allowance, /Machine Payments Protocol \(MPP\) · Tempo Moderato testnet/);
+  assert.match(allowance, /<small>Recorded Oct 12 · allowance has since expired<\/small>/);
+  assert.match(allowance, new RegExp(WREN_ALLOWANCE.expiresAt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.match(steps, /Topped up the room first/);
   for (const fact of [WREN_ALLOWANCE.limit, WREN_ALLOWANCE.limitNote, WREN_ALLOWANCE.allowedCall, WREN_ALLOWANCE.topUp.price, `${WREN_ALLOWANCE.topUp.credits} test credits`, `${WREN_ALLOWANCE.topUp.attempts} guest attempts`])
     assert.ok(allowance.includes(fact), `the allowance keeps: ${fact}`);
