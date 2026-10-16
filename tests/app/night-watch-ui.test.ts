@@ -404,7 +404,7 @@ test("the recap card links the edition, makers and receipts in testnet wording",
   assert.match(text, /Room top-up: 1\.00 test USDC on Base Sepolia · \+5 test credits · 0x47f2…d14d/);
   assert.match(text, /Operator-paid inference: 2 images, ≈\$0\.34/);
   assert.match(text, /Release 0x36ed…2b2f on Monad testnet · 1 test MON support received/);
-  assert.match(text, /Shares delivered and finalized: 1/);
+  assert.match(text, /Shares delivered and checked on-chain: 1/);
   assert.match(model.footer, /Testnet only/);
   const quiet = recapModel({ worldTitle: "W", kitVersion: "1", momentTitle: "M", makerName: "N", pathMakers: [], candidate: null, receipt: null, release: null, claims: [], expense: null, date: "d" });
   assert.deepEqual(quiet.lines, ["World: W · kit v1", "Published by the maker after a Night Watch", "Room top-up: none needed", "Release: not frozen yet"]);

@@ -236,7 +236,7 @@ export function createDemoState(): DemoState {
       {
         id: "paper-moon",
         title: "Paper moon",
-        description: "Another world, the same personal balance.",
+        description: "Another world, your own credits.",
         visibility: "open",
         groupId: null,
         creatorId: "jules",

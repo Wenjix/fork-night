@@ -16,9 +16,9 @@ test("a room loading or switching cannot show another room's recorded treasury",
     assert.equal(renderToStaticMarkup(createElement(PilotRoomFunding, { roomId, loadedRoom })), "");
   const moon = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon" }));
   assert.match(moon, /Guild funding rehearsal/);
-  assert.match(moon, /Squads v4.*2 of 3 steward wallets approved/);
+  assert.match(moon, /2 of 3 guild members approved/);
   assert.match(moon, /Recorded addition: \+5 room credits/);
-  assert.match(moon, /Solana devnet.*founder-operated rehearsal/);
+  assert.match(moon, /Solana devnet.*test run by the founder/);
   assert.doesNotMatch(moon, /<dialog|5 credits available/);
   const monad = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "midnight-signal", loadedRoom: "midnight-signal" }));
   assert.match(monad, /View release contract/);
@@ -90,7 +90,7 @@ test("full accounts can be selected or copied, with devnet links and explicit pr
   assert.match(html, /Copy authorized payer address/);
   assert.match(html, /<details class="guild-funding-disclosure"><summary>Accounts and receipt details/);
   assert.match(html, /What this rehearsal proves/);
-  assert.match(html, /All three steward keys were held by the founder/);
+  assert.match(html, /All three guild-member keys were held by the founder/);
   assert.match(html, /did not restrict that wallet/);
   assert.match(html, /does not identify which credits/);
   assert.match(html, /operator’s approved provider budget/);

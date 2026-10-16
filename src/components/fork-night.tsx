@@ -1499,7 +1499,7 @@ export function ForkNight() {
                           <strong>
                             {account?.kind === "group"
                               ? `${group?.name} cartridge`
-                              : `${user.name}’s personal balance`}
+                              : `${user.name}’s own credits`}
                           </strong>
                           <small>
                             {formatCredits(account?.available ?? 0)} credits
@@ -1534,8 +1534,8 @@ export function ForkNight() {
                         <>
                           <p className="error-message">
                             {account.kind === "group"
-                              ? "This cartridge needs a recharge. Your personal balance will not be charged."
-                              : "Your personal balance needs a top-up."}
+                              ? "This cartridge needs a recharge. Your own credits will not be charged."
+                              : "Your own credits need a top-up."}
                           </p>
                           <button
                             className="button primary full"
@@ -1571,7 +1571,7 @@ export function ForkNight() {
                         in{" "}
                         {account?.kind === "group"
                           ? "the group cartridge"
-                          : "your personal balance"}
+                          : "your own credits"}
                         .
                       </p>
                       <ol className="operation-steps">
@@ -1732,7 +1732,7 @@ export function ForkNight() {
                       <p className="muted">
                         {account.kind === "group"
                           ? `A shared cartridge for ${group?.name ?? "your group"}.`
-                          : "One personal balance, for all open projects."}
+                          : "Your own credits, for all open projects."}
                       </p>
                       {account.kind === "group" ? (
                         <Cartridge

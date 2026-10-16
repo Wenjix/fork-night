@@ -279,8 +279,8 @@ export function reserveFork(
   if (account.available < quote.totalMax)
     throw new Error(
       account.kind === "group"
-        ? "The group needs a recharge. Your personal balance will not be charged."
-        : "Add demo credits to your personal balance before reserving this fork.",
+        ? "The group needs a recharge. Your own credits will not be charged."
+        : "Add demo credits before reserving this fork.",
     );
   if (account.groupId) {
     const member = membershipFor(state, quote.userId, account.groupId);
