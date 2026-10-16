@@ -2,7 +2,7 @@
 
 Brainstorming began on **September 27, 2026**. Fork Night grew out of several rounds of product exploration, then moved into building, demonstrating and refining a collaborative story workspace. This record separates those stages so concept images, audience feedback and working software can each be assessed on their own evidence.
 
-The public Git history groups the current implementation into reviewable commits prepared for publication. Their timestamps record that preparation; the development timeline begins with the September 27 exploration.
+The public Git history groups the implementation into reviewable commits. Dated experiment, demonstration and deployment records provide the development timeline, starting with the September 27 exploration.
 
 ## Early concept exploration
 
@@ -31,6 +31,6 @@ After the demo, work included storyboard review and a companion for comparing a 
 
 ## Verifiable economic mechanism
 
-The hackathon implementation now includes a Monad testnet release contract. For the demo's collaborating group, the disclosed policy gives each distinct registered wallet an equal share of a frozen release's payments. A founder-operated rehearsal registered four scenes, froze a release, received **1.0 test MON** and completed two separate **0.5 test MON** claims with zero remaining liability.
+The hackathon implementation includes a Monad testnet release contract. For the demo's collaborating group, each distinct registered wallet receives an equal share of a frozen release's payments. The first founder-operated rehearsal registered four scenes, received **1.0 test MON** and completed two **0.5 test MON** claims. A later [Privy rehearsal](PRIVY-REHEARSAL.json) registered six scenes across four wallets, including two Privy wallets. It received **1.0 test MON** and completed four **0.25 test MON** claims. Both rehearsals ended with zero remaining liability.
 
-That rehearsal establishes a working registration, payment and claim mechanism. The [testnet proof](ONCHAIN.md) records its scope, contract verification and equal-wallet rule. Public-project sustainability arrangements, guild licensing and other professional or private-group agreements remain distinct future economic policies.
+These rehearsals establish a working registration, payment and claim mechanism. The [testnet proof](ONCHAIN.md) records their scope, contract verification and equal-wallet rule. Public-project sustainability arrangements, guild licensing and other professional or private-group agreements remain distinct future economic policies.

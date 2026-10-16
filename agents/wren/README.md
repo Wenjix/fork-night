@@ -47,6 +47,8 @@ node agents/wren/wren.mjs fund --live --confirm-live     # one top-up only
 
 Local state (the guest session, turn state, saved payments and the lock) lives under `.local/protocol-extras/agent-room/agent-state/`. The journal goes under `.internal/`. Both are ignored by Git. The file `.local/protocol-extras/agent-room/QUIET` pauses every live action.
 
+`agents/wren/config.json` is also ignored. It contains local funding references and key-file paths. Keep its values local; only `config.example.json` belongs in Git.
+
 ## The code that ran
 
 On October 12, 2026, the three turns ran from `.local/protocol-extras/agent-room/agent/`. These are the SHA-256 hashes of the files that ran turn 3 and its top-up:

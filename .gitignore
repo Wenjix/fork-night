@@ -31,10 +31,56 @@ supabase/.temp/
 /CONTEXT.md
 /output/
 
-# Only intentionally curated submission documentation belongs in Git
-/docs/*
+# Keep this documentation selection aligned with config/submission-files.json.
+# New drafts stay ignored until explicitly selected for publication.
+/docs/**
 !/docs/submission/
+!/docs/submission/AGENT-ROOM.md
+!/docs/submission/ARCHITECTURE.md
+!/docs/submission/ARTWORK.md
+!/docs/submission/BOAT-DEMO.md
+!/docs/submission/BRAND-ASSETS.md
+!/docs/submission/CLOUDFLARE.md
+!/docs/submission/DEMO.md
+!/docs/submission/HOSTING.md
+!/docs/submission/MONAD-TESTNET.json
+!/docs/submission/MPP.md
+!/docs/submission/NIGHT-WATCH.md
+!/docs/submission/ONBOARDING.md
+!/docs/submission/ONCHAIN.md
+!/docs/submission/PRIVY-REHEARSAL.json
+!/docs/submission/PROCESS.md
+!/docs/submission/PROJECT.md
+!/docs/submission/REHEARSAL.md
+!/docs/submission/TREASURY-HOPS.md
+!/docs/submission/UI-LICENSES.md
+!/docs/submission/WALLET-REQUESTS.md
+!/docs/submission/X402.md
+!/docs/submission/events/
+!/docs/submission/events/boat-demo-2026-10-05-01.webp
+!/docs/submission/events/boat-demo-2026-10-05-02.webp
+!/docs/submission/process/
+!/docs/submission/process/round-4/
+!/docs/submission/process/round-4/README.md
+!/docs/submission/process/round-4/selection.json
+!/docs/submission/process/round-4/01-baseline-public-story-wall.webp
+!/docs/submission/process/round-4/02-baseline-hold-and-generation-cap.webp
+!/docs/submission/process/round-4/03-baseline-preview-publish-or-discard.webp
+!/docs/submission/process/round-4/04-hand-made-forks-paper-to-panel.webp
+!/docs/submission/process/round-4/05-hand-made-forks-maker-sets-price.webp
+!/docs/submission/process/round-4/06-built-on-you-public-thank-you.webp
+!/docs/submission/process/round-4/07-built-on-you-room-credits.webp
+!/docs/submission/process/round-4/08-canon-call-door-pass-vote.webp
+!/docs/submission/process/round-4/09-heaviest-path-most-built-on.webp
+!/docs/submission/process/round-4/10-matched-night-sponsor-pool.webp
+!/docs/submission/process/round-4/11-guest-artists-priced-art-shelf.webp
+!/docs/submission/process/round-4/12-crossroads-fund-and-generate-live.webp
+!/docs/submission/process/round-4/13-open-feeds-curator-ranking-and-fee.webp
+!/docs/submission/process/round-4/14-made-by-the-room-combined.webp
 /.trigger/
+
+# Local agent settings contain a room funding reference and key-file paths.
+/agents/wren/config.json
 
 # Cloudflare build output and local credentials
 .wrangler/

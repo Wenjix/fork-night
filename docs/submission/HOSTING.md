@@ -2,6 +2,10 @@
 
 The hosted app is [fork-night.vercel.app](https://fork-night.vercel.app), with the [shared Midnight Signal pilot](https://fork-night.vercel.app/pilot?room=midnight-signal). The October 14, 2026 checkpoint at **03:00 UTC** records enabled Production generation, text shaping, room creation and scheduled recovery. The verified Trigger Production version is **20261014.1**. The database migrations, matching web and worker release, and Cloudflare recovery timer are deployed.
 
+**Source and deployment are at different stages.** The live web deployment is `dpl_6FRPvQk3UtAobXqmjMyaczZcZ7dp`, uploaded through the CLI. The [public source checkpoint](https://github.com/Wenjix/fork-night/tree/98c5196ebf58d411b4d5edf3b575c3a8001817a7) preserves its runtime files and the repository's standalone tools. It is not an exact copy of the deployment bundle. Its shared navigation, onboarding and account fixes are deployed.
+
+Later commits add Kessler Ward, durable private Wren requests, capped funding and new entrance and agent-page designs. These changes are tested locally and remain undeployed. Their rollout needs the October 15 Wren, funding and Kessler migrations, matching worker/web source and configured testnet delegation. The procedures below describe the deployed shared-room baseline. Publishing source to GitHub does not complete this later rollout.
+
 The founder confirmed the accepted two-account browser walkthrough. Production logs separately recorded two completed generation runs. Actual Cloudflare minute events also produced completed recovery scans and fresh database checkpoints. These observations do not independently verify every browser action or recovery of an interrupted generation.
 
 At that checkpoint, room creation allowed one room per creator, three rooms total and twelve credits per room. The first new room and invitation had not yet been observed. The existing service needs no repeated activation. The procedures below support a new deployment or a planned upgrade.

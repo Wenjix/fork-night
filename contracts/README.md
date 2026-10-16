@@ -13,9 +13,9 @@ There is no upgrade, administrator withdrawal, wallet reassignment or release-ed
 Install Solidity **0.8.24** and set `SOLC_BIN` to its executable when it is not on PATH. Compilation uses optimization with 200 runs and the Paris EVM target. The compiler script also recognizes a cached svm installation on macOS. Hardhat 3.2.0 supplies the local EVM; it does not download a compiler for these tests.
 
 ```sh
-npm ci
-npm run contracts:compile
-npm run contracts:test
+pnpm install --frozen-lockfile
+pnpm run contracts:compile
+pnpm run contracts:test
 ```
 
 Compilation writes the ABI/runtime commitment into the application and build/verification artifacts into ignored `.local/contracts/`. The tests deploy actual bytecode on a local EVM and exercise ancestry, authorization, namespaces, fixed shares, cumulative rounding, duplicate payments, receiver failure, reentrancy and interrupted wallet responses. Local results do not establish Monad deployment or a security audit.

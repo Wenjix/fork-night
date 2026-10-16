@@ -88,7 +88,9 @@ These conversations provide a starting point for recruitment. We plan to follow 
 
 **Fork Night is a hackathon prototype with a hosted shared pilot.** On October 14 at 03:00 UTC, we confirmed that generation, text shaping, room creation and scheduled recovery were enabled. The founder confirmed a two-account walkthrough. Production logs separately recorded two completed generation runs.
 
-Room creation has a limited allowance. At that checkpoint, the first new room and invitation had not yet been observed. The current source also includes newer navigation and entry designs that await deployment.
+Room creation has a limited allowance. At that checkpoint, the first new room and invitation had not yet been observed.
+
+**This repository also contains work prepared for a later deployment.** Kessler Ward adds shared authored branches and Wren drafts that the requesting maker reviews. Durable Wren requests, capped funding and the latest entrance and agent-page designs are tested locally. Their matching database, worker and web rollout remains pending. The hosted pilot already includes the shared navigation, onboarding and account fixes. See [hosting status](docs/submission/HOSTING.md) for the deployed source checkpoint.
 
 | Surface | What it provides | Current access |
 | --- | --- | --- |
@@ -430,6 +432,8 @@ pnpm run submission:export
 ```
 
 The export uses the [explicit file selection](config/submission-files.json). It writes to a fresh `.local/submission/fork-night` folder. The folder contains app source, tests, runtime assets, selected documentation and license notices. The export excludes local working notes, secrets, source artwork and Git history. It does not publish or push a repository.
+
+Keep working notes, research, design archives and raw receipts in ignored `.internal/` or `.local/` folders. New files under `docs/` are ignored by default. To publish a curated document, add it to both the export selection and the documentation section of [`.gitignore`](.gitignore). Keep Wren's local `config.json` private; commit only its example.
 
 </details>
 

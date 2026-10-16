@@ -22,6 +22,7 @@ test-results/
 coverage/
 .env*
 !.env.example
+agents/wren/config.json
 .dev.vars*
 *.tsbuildinfo
 AGENTS.md
