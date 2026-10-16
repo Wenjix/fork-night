@@ -20,6 +20,7 @@ export type ComposerDraft = {
   roomId: string;
   captions: string[];
   thought?: string;
+  thoughtPlaceholder?: string;
   stage?: "idea" | "preview";
   previewInput?: string;
   undo?: ComposerVersion;
@@ -51,6 +52,8 @@ export function parseComposerDraft(
     (d.undo !== undefined && !validVersion(d.undo)) ||
     (d.thought !== undefined &&
       (typeof d.thought !== "string" || d.thought.length > 2000)) ||
+    (d.thoughtPlaceholder !== undefined &&
+      (typeof d.thoughtPlaceholder !== "string" || d.thoughtPlaceholder.length > 2000)) ||
     (d.submitted !== undefined && typeof d.submitted !== "boolean") ||
     (d.suggestedSecond !== undefined && typeof d.suggestedSecond !== "boolean")
   )

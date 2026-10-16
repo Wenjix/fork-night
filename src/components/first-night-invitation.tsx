@@ -31,7 +31,12 @@ export function FirstNightInvitation({ variant = "lobby" }: { variant?: "lobby" 
   }
 
   const panel = story.panels[0];
-  return <section className="fn-first-invitation" data-variant={variant} aria-labelledby={titleId}>
+  return <>
+    {variant === "lobby" && <div className="fn-first-hero-copy">
+      <h1>Build a story with friends. Every branch credits its makers, and finished stories pay them on Monad.</h1>
+      <p>Pick a moment, add your part, invite the next maker.</p>
+    </div>}
+    <section className="fn-first-invitation" data-variant={variant} aria-labelledby={titleId}>
     <figure className="fn-first-opening">
       <a className="fn-first-opening-art" href={firstNightRoomHref()} aria-label={`Read the opening of ${story.title}`}>
         {client && <PilotImage client={client} panel={panel} allowRetry={false} />}
@@ -52,5 +57,6 @@ export function FirstNightInvitation({ variant = "lobby" }: { variant?: "lobby" 
       <p className="fn-first-reassurance">Read first. You can edit your idea before making a private preview.</p>
       <a className="fn-first-read-first" href={firstNightRoomHref()}>I’ll read the story first</a>
     </div>
-  </section>;
+  </section>
+  </>;
 }

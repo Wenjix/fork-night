@@ -163,6 +163,29 @@
 .fn-first-guide-reopen button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #6c6a9e; border-radius: 8px; background: #222746; color: #faf6ff; font-size: 13px; }
 .fn-first-guide-reopen button:hover { background: #32355e; }
 
+.fn-first-hero-copy {
+  max-width: 920px;
+  margin: 0 auto 24px;
+  color: #f8f6ff;
+  text-align: center;
+}
+.fn-first-hero-copy h1 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(38px, 5vw, 68px);
+  font-weight: 650;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.fn-first-hero-copy p {
+  max-width: 52ch;
+  margin: 16px auto 0;
+  color: #c0c5e0;
+  font-size: clamp(17px, 1.7vw, 22px);
+  line-height: 1.45;
+}
+
 .fn-first-invitation {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(330px, 0.85fr);

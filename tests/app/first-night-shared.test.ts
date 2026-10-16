@@ -65,7 +65,8 @@ test("a recognized invitation opens the normal private editor once with editable
   const draft = h.drafts[0] as Record<string, unknown>;
   assert.equal(draft.parentId, FIRST_NIGHT_MOMENT_ID);
   assert.equal(draft.roomId, FIRST_NIGHT_ROOM_ID);
-  assert.equal(draft.thought, FIRST_NIGHT_STARTERS[0].prompt);
+  assert.equal(draft.thought, "");
+  assert.equal(draft.thoughtPlaceholder, FIRST_NIGHT_STARTERS[0].prompt);
   assert.equal(draft.stage, "idea");
   assert.deepEqual(draft.captions, []);
   assert.equal(draft.submitted, undefined);

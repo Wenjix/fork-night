@@ -413,10 +413,10 @@ export function PilotComposer({
               placeholder={
                 draft.idea
                   ? "Yes, and what if…"
-                  : "A wild turn. A tiny detail. Something you can almost picture…"
+                  : draft.thoughtPlaceholder ?? "A wild turn. A tiny detail. Something you can almost picture…"
               }
             />
-            <PilotVoice
+            {helpers.voice && <PilotVoice
               enabled={helpers.voice}
               disabled={
                 busy || !!draft.submitted || !!shaping || !!draft.pendingSpeech
@@ -427,7 +427,7 @@ export function PilotComposer({
                 update({ pendingSpeech: { text, reason: "interrupted" } })
               }
               onBusy={setSpeaking}
-            />
+            />}
           </div>
           <div
             className="pilot-play-angles"
