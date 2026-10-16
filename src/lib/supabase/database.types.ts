@@ -700,6 +700,7 @@ export type Database = {
       }
     }
     Functions: {
+      pilot_wren_assistance: { Args: { p_room_id: string }; Returns: { moment_id: string; agent_label: string }[] }
       pilot_prepare_judge_room: { Args: { p_grant_id: string; p_room_id: string }; Returns: Json }
       pilot_readiness: { Args: { p_room_id: string }; Returns: Json }
       pilot_review_legacy_job: { Args: { p_review_id: string; p_operation_id: string; p_action: string; p_status: string; p_run_id: string | null; p_reason: string; p_evidence_ref: string }; Returns: undefined }

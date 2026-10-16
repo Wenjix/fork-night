@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { provePilotConcurrency } from "./pilot-db-concurrency.mjs";
+import { proveWrenFundingConcurrency } from "./wren-funding-db-concurrency.mjs";
 
 // A new isolated PostgreSQL cluster; never connects to or changes an existing database.
 // The Auth shim tests database policy, not JWT signature verification or Supabase Auth.
@@ -45,6 +46,7 @@ grant all on storage.objects,storage.buckets to service_role;
   for (const file of [bootstrap, ...migrations, resolve("supabase/seed.sql"), ...proofs])
     await execute("psql", [...args, "-f", file]);
   await provePilotConcurrency(execute, args);
+  await proveWrenFundingConcurrency(execute, args);
   console.log("Pilot database proof passed: guest isolation, immutable authorship, idempotent drafts/publication, valid same-room parents and public reads. Auth is a test shim; no Supabase service or provider call was used.");
 } catch (error) {
   console.error(error.stderr ?? error.message);

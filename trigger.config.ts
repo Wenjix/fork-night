@@ -1,5 +1,6 @@
 import { defineConfig } from "@trigger.dev/sdk";
 import { additionalFiles } from "@trigger.dev/build/extensions/core";
+import { wrenAdapterBuild } from "./scripts/wren-adapter-build.ts";
 
 export default defineConfig({
   project: "proj_mgjcdpmejdtuazlikyzo",
@@ -9,6 +10,10 @@ export default defineConfig({
   // Keep request bodies, images and authorization headers out of task logs.
   build: {
     external: ["sharp"],
-    extensions: [additionalFiles({ files: ["./public/art/*.webp"] })],
+    extensions: [
+      additionalFiles({ files: ["./public/art/*.webp", "./vendor/mpp-adapter/index.mjs", "./vendor/mpp-adapter/wren.mjs",
+        "./vendor/mpp-adapter/package.json", "./vendor/mpp-adapter/pnpm-lock.yaml", "./scripts/package-wren-adapter.mjs"] }),
+      wrenAdapterBuild(),
+    ],
   },
 });

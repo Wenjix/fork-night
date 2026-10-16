@@ -2,6 +2,7 @@ import { schemaTask } from "@trigger.dev/sdk";
 import { executionEnvironment } from "../generation/execution.ts";
 import { reconcileGeneration } from "../generation/reconcile.ts";
 import { parseReconcileTick } from "../generation/reconcile-tick.ts";
+import { reconcileWrenRequests } from "../generation/wren-reconcile.ts";
 
 // Cloudflare sends clock notifications after cutover; no Trigger schedule attaches.
 export const reconcilePilotGeneration = schemaTask({
@@ -15,6 +16,7 @@ export const reconcilePilotGeneration = schemaTask({
     if (ctx.environment.type !== "PRODUCTION" || process.env.PILOT_RECONCILE_ENABLED !== "1")
       return { enabled: false };
     executionEnvironment(ctx.environment.type);
-    return reconcileGeneration();
+    const generation = await reconcileGeneration();
+    return { ...generation, wren: await reconcileWrenRequests({ environment: ctx.environment.type }) };
   },
 });

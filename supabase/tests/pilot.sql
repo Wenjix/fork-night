@@ -26,7 +26,7 @@ select public.pilot_set_display_name('Bob');
 do $$ begin
   if (select count(*) from public.pilot_operations) <> 0 then raise exception 'Another guest draft leaked'; end if;
   if (select count(*) from public.pilot_profiles) <> 1 then raise exception 'Another guest profile leaked'; end if;
-  if (select count(*) from public.pilot_moments) <> 3 then raise exception 'Published seeds not shared'; end if;
+  if (select count(*) from public.pilot_moments where room_id in ('midnight-signal','paper-moon','lantern-archive')) <> 3 then raise exception 'Published seeds not shared'; end if;
 end $$;
 reset role;
 select set_config('test.alice_operation', (select id::text from public.pilot_operations limit 1), false);
@@ -51,7 +51,7 @@ select public.pilot_publish(current_setting('test.alice_operation')::uuid);
 select public.pilot_publish(current_setting('test.alice_operation')::uuid);
 select public.pilot_set_display_name('Alice renamed');
 do $$ begin
-  if (select count(*) from public.pilot_moments) <> 4 then raise exception 'Duplicate publication'; end if;
+  if (select count(*) from public.pilot_moments where room_id in ('midnight-signal','paper-moon','lantern-archive')) <> 4 then raise exception 'Duplicate publication'; end if;
   if (select maker_label from public.pilot_moments where maker_id = auth.uid()) <> 'Alice' then raise exception 'Published credit changed'; end if;
   begin
     update public.pilot_moments set maker_label = 'Stolen';
@@ -74,7 +74,7 @@ end $$;
 reset role;
 set role anon;
 do $$ begin
-  if (select count(*) from public.pilot_rooms) <> 2 then raise exception 'Public room visibility failed'; end if;
+  if (select count(*) from public.pilot_rooms where id in ('midnight-signal','paper-moon','lantern-archive')) <> 2 then raise exception 'Public room visibility failed'; end if;
   begin
     perform public.pilot_set_display_name('Forged');
     raise exception 'Anonymous HTTP role could claim identity';
