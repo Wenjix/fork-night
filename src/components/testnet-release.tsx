@@ -39,9 +39,15 @@ export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, cli
   return <section className="pilot-release" aria-label="Story release and support">
     {prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} pathChoice={pathChoice} open={open} onToggle={() => setOpen(!open)} /> : <>
       <button className="pilot-release-toggle" type="button" aria-expanded={open} aria-controls="payout-body" onClick={() => setOpen(!open)}><Layers3 size={21} aria-hidden="true" /><span><strong>Release and support this story</strong><span>Making a moment never requires a wallet.</span></span><ChevronDown size={18} aria-hidden="true" /></button>
-      {open && <p id="payout-body" className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>}
+      {open && <div id="payout-body"><p className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>{pathChoice && <PathChoice choice={pathChoice} />}</div>}
     </>}
   </section>;
+}
+
+type ReleasePathChoice = { archived: boolean; toggle: () => void };
+
+function PathChoice({ choice, disabled }: { choice: ReleasePathChoice; disabled?: boolean }) {
+  return <p className="pilot-release-path-choice">{choice.archived ? "This is the completed Oct 12 release. Your chosen path continues it with newer scenes." : "This is your chosen path. It continues the completed Oct 12 release."} <button className="text-button" type="button" disabled={disabled} onClick={choice.toggle}>{choice.archived ? "Release the chosen path" : "Show the completed release"}</button></p>;
 }
 
 export function releaseDisplayTipId(roomId: string, moments: PilotMoment[], tipId: string) {
@@ -92,7 +98,7 @@ export function PreparedWorkWallet({ prepared, snapshot, config, account, blocke
 function ReleaseControls({ prepared, config, moments, makerId, makerName, client, onInspect, onChoosePath, onBusyChange, pathChoice, open, onToggle }: {
   prepared: PreparedRelease; config: ReleaseConfig; moments: PilotMoment[]; makerId?: string; makerName?: string;
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
-  pathChoice?: { archived: boolean; toggle: () => void };
+  pathChoice?: ReleasePathChoice;
   open: boolean; onToggle: () => void;
   onChoosePath: (id: string) => void;
 }) {
@@ -133,7 +139,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
     </button>
     <div id="payout-body" hidden={!open} className="pilot-release-body" aria-busy={walletBusy}>
       <div className="pilot-release-heading"><div><h2>{journey.title}</h2><p>Equal shares per distinct registered wallet. The released split stays fixed.</p></div><button className="pilot-icon-button" type="button" disabled={walletBusy} onClick={() => void session.refresh()} aria-label="Refresh onchain release"><RefreshCw size={18} aria-hidden="true" /></button></div>
-      {pathChoice && <p className="pilot-release-path-choice">{pathChoice.archived ? "This is the completed Oct 12 release. Your chosen path continues it with newer scenes." : "This is your chosen path. It continues the completed Oct 12 release."} <button className="text-button" type="button" disabled={walletBusy} onClick={pathChoice.toggle}>{pathChoice.archived ? "Release the chosen path" : "Show the completed release"}</button></p>}
+      {pathChoice && <PathChoice choice={pathChoice} disabled={walletBusy} />}
       <ol className="pilot-release-steps" aria-label="Release stages">{["Wallets", "Scenes", "Release", "Support", "Claims"].map((label, index) => {
         const stage = ["project", "wallets"].includes(journey.stage) ? 0 : journey.stage === "scenes" ? 1 : journey.stage === "release" ? 2 : journey.stage === "support" ? 3 : 4;
         const complete = index === 0 ? !!account && (index < stage || journey.stage === "claimed") : index < stage || journey.stage === "claimed";

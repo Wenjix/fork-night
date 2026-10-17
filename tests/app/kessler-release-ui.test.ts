@@ -63,6 +63,24 @@ test("Midnight Signal lets a descendant path leave the archived release to regis
   }
 });
 
+test("Midnight Signal keeps the path switch when a path cannot be prepared for release", () => {
+  const saved = { address: process.env.NEXT_PUBLIC_MONAD_RELEASE_ADDRESS, curator: process.env.NEXT_PUBLIC_MONAD_CURATOR_ADDRESS };
+  process.env.NEXT_PUBLIC_MONAD_RELEASE_ADDRESS = config.address;
+  process.env.NEXT_PUBLIC_MONAD_CURATOR_ADDRESS = curator;
+  try {
+    const released = { ...moments.at(-1)!, id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID, panels: [{ caption: "A reading-only panel.", imageUrl: "/art/night-city-anime.webp#frame=0" }] };
+    const child = { ...moments.at(-1)!, id: "10000000-0000-4000-8000-000000000099", parent_id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
+    const props = { roomId: "midnight-signal", moments: [...moments.slice(0, -1), released, child], tipId: child.id, onChoosePath: () => {} };
+    const html = renderToStaticMarkup(React.createElement(TestnetRelease, props));
+    assert.match(html, /role="alert"/);
+    assert.match(html, /Release the chosen path/);
+  } finally {
+    for (const [key, value] of [["NEXT_PUBLIC_MONAD_RELEASE_ADDRESS", saved.address], ["NEXT_PUBLIC_MONAD_CURATOR_ADDRESS", saved.curator]]) {
+      if (value === undefined) delete process.env[key!]; else process.env[key!] = value;
+    }
+  }
+});
+
 test("prepared work approval is restricted to its curator, an unapproved prepared identity and explicit rights consent", () => {
   assert.deepEqual(journey.preparedWorkApproval?.(prepared, snapshot, curator, curator, makerWallet, true), { index: 0, address: makerWallet });
   assert.throws(() => journey.preparedWorkApproval(prepared, snapshot, otherWallet, curator, makerWallet, true), /curator/);
