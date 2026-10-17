@@ -50,6 +50,7 @@ import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-g
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
 import { getRecordedGuildFunding } from "@/lib/guild-funding";
+import { featuredStoryLinks, kesslerPowerChips, proofRoomIds } from "@/lib/featured-stories";
 import { KESSLER_ROOM_ID } from "../lib/kessler-room";
 import {
   IDEA_DRAG_TYPE,
@@ -75,6 +76,22 @@ const message = (error: unknown) =>
   error instanceof Error
     ? error.message
     : "Could not connect. Your saved work is still here; please try again.";
+
+function KesslerTurnCard() {
+  return <aside className="pilot-kessler-turn" aria-label="Try Kessler Ward">
+    <div><strong>Your turn.</strong> Kessler Ward is open for new makers tonight.</div>
+    <a className="button secondary" href={featuredStoryLinks.kessler}>Continue in Kessler <ArrowRight size={17} aria-hidden="true" /></a>
+  </aside>;
+}
+
+function KesslerPowerRow() {
+  return <section className="pilot-kessler-power" aria-label="What powers this room">
+    <strong>What powers this room</strong>
+    <div>
+      {kesslerPowerChips.map(chip => <a key={chip.label} href={chip.href}>{chip.label}</a>)}
+    </div>
+  </section>;
+}
 
 export function SharedPilot() {
   const account = usePilotAccount();
@@ -995,6 +1012,7 @@ export function SharedPilot() {
       />
     ) : null;
   const recordedGuildFunding = !!getRecordedGuildFunding(roomId);
+  const proofRoom = proofRoomIds.has(roomId);
   const identityDisabled = !selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || !!account?.loading || !!account?.error && !account.user || (profile ? hasActive || !!draft : false);
 
   if (unavailable) return <><AppHeader current="rooms" guide={false} /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
@@ -1052,10 +1070,12 @@ export function SharedPilot() {
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
         {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">The opening and its two branches are prepared examples. New published scenes carry their storyteller’s byline; Wren’s help is identified separately.</p>}
       </div>
+      {roomId === KESSLER_ROOM_ID && <KesslerPowerRow />}
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
         <details className="pilot-roster"><summary>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></summary><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</details>
         {!joinedRoom && profile && <button className="button secondary" disabled={busy} onClick={() => setJoinOpen(true)}>Join this room</button>}
         {joinedRoom && <span>You joined this room</span>}
+        {proofRoom && <a className="button secondary" href={featuredStoryLinks.kessler}>Continue in Kessler <ArrowRight size={17} aria-hidden="true" /></a>}
         <button className="button secondary" type="button" onClick={() => void invite()}><Share2 size={17} aria-hidden="true" />Invite storytellers</button>
         {invitation && <label className="pilot-invitation-link">Room invitation<input readOnly value={invitation} onFocus={event => event.target.select()} /></label>}
       </section>}
@@ -1314,6 +1334,7 @@ export function SharedPilot() {
                     }}
                   />
                 </div>
+                {proofRoom && !reviewing && <KesslerTurnCard />}
                 {credits && (
                   <p className="pilot-credit-line">
                     <Sparkles size={15} />

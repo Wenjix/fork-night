@@ -1,5 +1,6 @@
 import { PilotExperience } from "@/components/pilot-experience";
 import { PilotAccountProvider } from "@/components/pilot-account";
+import "../featured-stories.css";
 import "./pilot.css";
 import "./rooms.css";
 import "./composer.css";

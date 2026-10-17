@@ -71,6 +71,7 @@ import { StoryArt } from "./story-art";
 import { AppHeader } from "./app-header";
 import { FirstNightGuide } from "./first-night-guide";
 import { FirstNightInvitation } from "./first-night-invitation";
+import { FeaturedStories } from "./featured-stories";
 import { fandomStory, showcaseProjects, storyStyleLabel } from "@/lib/fandom-stories";
 import { fandomImageInStyle, type ArtDirections } from "@/lib/fandom-art-direction";
 import { FandomArtDirection } from "./fandom-art-direction";
@@ -282,7 +283,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
             </button>
           </div>
         )}
-        {route.kind === "lobby" && <FirstNightInvitation variant="lobby" />}
+        {route.kind === "lobby" && <><FeaturedStories /><FirstNightInvitation variant="lobby" /></>}
         {!restored ? (
           <div className="social-loading" role="status">
             <Lamp size={32} />
