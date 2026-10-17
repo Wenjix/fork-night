@@ -11,6 +11,7 @@ import { PilotIdentity } from "./pilot-identity";
 import { AppHeader } from "./app-header";
 import { FirstNightGuide } from "./first-night-guide";
 import { FirstNightInvitation } from "./first-night-invitation";
+import { FeaturedStories } from "./featured-stories";
 import { SectionPlate } from "./visual-plates";
 import { PilotImage } from "./pilot-panels";
 import { pilotPanels } from "../lib/pilot";
@@ -179,6 +180,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
       </form>
     </> : <>
       <h1 className="sr-only">Make a story together.</h1>
+      <FeaturedStories />
       <FirstNightInvitation variant="rooms" />
       <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={18} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={17} aria-hidden="true" /></a></div>
     </>}

@@ -1,4 +1,5 @@
 import "./room-themes.css";
+import "./featured-stories.css";
 import { ForkNight } from "@/components/fork-night";
 
 export default function Page() {
