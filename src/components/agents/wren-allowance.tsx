@@ -5,9 +5,7 @@ import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   CalendarClock,
-  CheckCircle2,
   Coins,
-  ExternalLink,
   KeyRound,
   ShieldCheck,
   Target,
@@ -19,17 +17,17 @@ import {
   WREN_TOP_UPS,
   addressUrl,
   allowanceExpired,
-  shortHex,
   txUrl,
 } from "@/lib/agents/wren";
 import { momentHref } from "./agent-bits";
-import { NetworkBrandMark } from "../room-network-plate";
+import { BrandBadge, BrandStrip } from "../brand-badge";
+import { AddressLink, StepStrip } from "./agent-ui";
 
 const mppSteps = (topUp: typeof WREN_ALLOWANCE.topUp) => [
-  "Wren ran out of credits",
-  `paid ${topUp.price} over MPP`,
-  `room got +${topUp.credits} credits`,
-  "Wren published the next scene",
+  { id: "out", title: "Wren ran out of credits" },
+  { id: "paid", title: `paid ${topUp.price} over MPP` },
+  { id: "credits", title: `room got +${topUp.credits} credits` },
+  { id: "published", title: "Wren published the next scene" },
 ];
 
 /**
@@ -43,22 +41,6 @@ export function useAllowanceExpired() {
     setExpired(allowanceExpired(Date.now()));
   }, []);
   return expired;
-}
-
-function HexLink({ href, value }: { href: string; value: string }) {
-  return (
-    <a
-      className="ag-mono ag-hex"
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      title={value}
-    >
-      <span className="ag-hex-full">{value}</span>
-      <span className="ag-hex-short">{shortHex(value, 8, 6)}</span>
-      <ExternalLink size={13} aria-hidden="true" />
-    </a>
-  );
 }
 
 export function WrenAllowance() {
@@ -78,43 +60,43 @@ export function WrenAllowance() {
       id="allowance"
       aria-labelledby="allowance-title"
     >
-      <SectionPlate className="ag-section-head" icon={Wallet} tone="butter" headingId="allowance-title" title={<span className="fn-network-allowance-heading"><NetworkBrandMark network="tempo" /><span>Wren paid for more room on Tempo, by itself</span></span>}
-        description={<p>
-          Machine Payments Protocol (MPP) · {a.network}
-        </p>} />
+      <SectionPlate className="ag-section-head" icon={Wallet} tone="butter" headingId="allowance-title" title="Wren paid for more room on Tempo, by itself"
+        description={<>
+          <p>
+            Machine Payments Protocol (MPP) · {a.network}
+          </p>
+          <BrandStrip label="Payment tools" className="ag-tools">
+            <BrandBadge brand="tempo" />
+            <BrandBadge brand="mpp" />
+            <BrandBadge brand="pathusd" net="test" />
+          </BrandStrip>
+        </>} />
 
-      <ol className="ag-mpp-strip" aria-label="Wren's recorded MPP top-up flow">
-        {mppSteps(a.topUp).map((step) => (
-          <li key={step}>
-            <CheckCircle2 size={17} aria-hidden="true" />
-            <span>{step}</span>
-            <ArrowRight size={15} aria-hidden="true" />
-          </li>
-        ))}
-      </ol>
+      <StepStrip className="ag-allowance-flow" label="Wren's recorded MPP top-up flow" steps={mppSteps(a.topUp)} />
+
+      <p className="ag-callout" data-tone="success">
+        <ShieldCheck size={20} aria-hidden="true" />
+        <span>
+          <strong>Tempo enforces these rules on chain.</strong> The limit,
+          the allowed call, the recipient and the expiry are checked by
+          the network itself, so they hold even if Wren gets something
+          wrong.
+        </span>
+      </p>
 
       <div className="ag-allowance">
         <div className="ag-rules">
-          <p className="ag-rules-lead">
-            <ShieldCheck size={18} aria-hidden="true" />
-            <span>
-              <strong>Tempo enforces these rules on chain.</strong> The limit,
-              the allowed call, the recipient and the expiry are checked by
-              the network itself, so they hold even if Wren gets something
-              wrong.
-            </span>
-          </p>
           <ul>
             {rules.map(({ icon: Icon, label, value, hint, mono, href }) => (
               <li key={label}>
-                <Icon size={18} aria-hidden="true" />
+                <Icon size={20} aria-hidden="true" />
                 <span>
                   <small>{label}</small>
                   <strong className={mono ? "ag-mono" : undefined}>
                     {value}
                   </strong>
                   {href ? (
-                    <HexLink href={href} value={hint} />
+                    <AddressLink href={href} value={hint} />
                   ) : (
                     hint && <em>{hint}</em>
                   )}
@@ -133,27 +115,27 @@ export function WrenAllowance() {
           <dl>
             <div>
               <dt>
-                <Wallet size={15} aria-hidden="true" /> Steward’s account
+                <Wallet size={16} aria-hidden="true" /> Steward’s account
               </dt>
               <dd>
-                <HexLink href={addressUrl(a.steward)} value={a.steward} />
+                <AddressLink href={addressUrl(a.steward)} value={a.steward} />
               </dd>
             </div>
             <div>
               <dt>
-                <KeyRound size={15} aria-hidden="true" /> Wren’s access key
+                <KeyRound size={16} aria-hidden="true" /> Wren’s access key
               </dt>
               <dd>
-                <HexLink href={addressUrl(a.accessKey)} value={a.accessKey} />
+                <AddressLink href={addressUrl(a.accessKey)} value={a.accessKey} />
               </dd>
             </div>
             <div>
               <dt>
-                <ShieldCheck size={15} aria-hidden="true" /> Authorized
+                <ShieldCheck size={16} aria-hidden="true" /> Authorized
               </dt>
               <dd>
                 <span className="ag-when">{a.authorizedAt}</span>
-                <HexLink href={txUrl(a.authorizationTx)} value={a.authorizationTx} />
+                <AddressLink href={txUrl(a.authorizationTx)} value={a.authorizationTx} />
               </dd>
             </div>
           </dl>
@@ -177,14 +159,14 @@ export function WrenAllowance() {
                       </span>
                     </span>
                     <span className="ag-when">{topUp.at}</span>
-                    <HexLink href={txUrl(topUp.txHash)} value={topUp.txHash} />
+                    <AddressLink href={txUrl(topUp.txHash)} value={topUp.txHash} />
                     {topUp.momentId && (
                       <a
                         className="ag-topup-scene"
                         href={momentHref(WREN.roomId, topUp.momentId)}
                       >
                         The scene from that turn{" "}
-                        <ArrowRight size={14} aria-hidden="true" />
+                        <ArrowRight size={16} aria-hidden="true" />
                       </a>
                     )}
                   </li>

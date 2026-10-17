@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AgentsShowcase } from "@/components/agents/agents-showcase";
+import "./agent-ui.css";
 import "./agents.css";
 
 export const metadata: Metadata = {

@@ -1,48 +1,40 @@
 "use client";
 
 import { SectionPlate } from "../visual-plates";
-import {
-  ArrowRight,
-  Brush,
-  Coins,
-  Eye,
-  Lightbulb,
-  Play,
-  Search,
-  Send,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, Coins, Play } from "lucide-react";
 import { WREN_ALLOWANCE } from "@/lib/agents/wren";
+import { BrandBadge, Chip } from "../brand-badge";
 import { useAllowanceExpired } from "./wren-allowance";
+import { StepStrip, type StepItem } from "./agent-ui";
 
-const STEPS: { icon: LucideIcon; title: string; body: string }[] = [
+const STEPS: StepItem[] = [
   {
-    icon: Play,
+    id: "start",
     title: "The founder starts the turn",
     body: "Wren has no schedule of its own. Each turn begins when the founder starts it.",
   },
   {
-    icon: Search,
+    id: "read",
     title: "Reads the room",
     body: "Wren reads the room’s published scenes and its idea board, including ideas people left.",
   },
   {
-    icon: Lightbulb,
+    id: "note",
     title: "Leaves an idea note",
-    body: "Before it draws, Wren writes what it plans to do, where everyone can see it. Its brain is Kimi K3 (through TokenRouter) from Oct 13; its first three turns were planned by GPT-4.1 mini.",
+    body: <>Before it draws, Wren writes what it plans to do, where everyone can see it. Its brain is <BrandBadge brand="kimi" /> (through <BrandBadge brand="tokenrouter" />) from Oct 13; its first three turns were planned by <Chip>GPT-4.1 mini</Chip>.</>,
   },
   {
-    icon: Brush,
+    id: "draw",
     title: "Continues the newest scene",
     body: "It adds one or two illustrated panels, with a caption for each, to the story.",
   },
   {
-    icon: Eye,
+    id: "check",
     title: "Checks its own preview",
     body: "Image hashes must match, and a vision check compares each panel with its caption, the character, safety, and no text.",
   },
   {
-    icon: Send,
+    id: "publish",
     title: "Publishes",
     body: "Only when every check passes. The scene joins the story map like anyone else’s.",
   },
@@ -58,29 +50,18 @@ export function TurnSteps() {
           Wren makes its scenes under the same room rules as any guest, from
           one ordinary guest account, and they land in the same story map.
         </p>} />
-      <ol className="ag-steps">
-        {STEPS.map(({ icon: Icon, title, body }, index) => (
-          <li key={title}>
-            <span className="ag-step-icon" aria-hidden="true">
-              <Icon size={20} />
-            </span>
-            <span className="ag-step-number">Step {index + 1}</span>
-            <h3>{title}</h3>
-            <p>{body}</p>
-          </li>
-        ))}
-      </ol>
-      <div className="ag-step-optional">
-        <span className="ag-step-icon" aria-hidden="true">
-          <Coins size={20} />
-        </span>
+      <div className="ag-steps">
+        <StepStrip label="How Wren takes a turn" variant="list" tone="paper" columns={2} steps={STEPS} />
+      </div>
+      <div className="ag-callout ag-step-optional" data-tone="note">
+        <Coins size={20} aria-hidden="true" />
         <div>
-          <span className="ag-step-number">
-            Only when needed · before step&nbsp;3
-          </span>
           {expired ? (
             <>
-              <h3>Topped up the room first</h3>
+              <div className="ag-step-optional-head">
+                <h3>Topped up the room first</h3>
+                <Chip>Only when needed · before step&nbsp;3</Chip>
+              </div>
               <p>
                 If the room was out of credits or Wren had used its attempts,
                 Wren bought one top-up from its testnet allowance before it
@@ -91,7 +72,10 @@ export function TurnSteps() {
             </>
           ) : (
             <>
-              <h3>Tops up the room first</h3>
+              <div className="ag-step-optional-head">
+                <h3>Tops up the room first</h3>
+                <Chip>Only when needed · before step&nbsp;3</Chip>
+              </div>
               <p>
                 If the room is out of credits or Wren has used its attempts,
                 Wren buys one top-up from its testnet allowance before it
@@ -101,13 +85,15 @@ export function TurnSteps() {
             </>
           )}
           <a href="#allowance">
-            See Wren’s allowance <ArrowRight size={15} aria-hidden="true" />
+            See Wren’s allowance <ArrowRight size={16} aria-hidden="true" />
           </a>
         </div>
       </div>
-      <p className="ag-both-ways">
-        <strong>It works both ways.</strong> People can continue Wren’s scenes,
-        and Wren can build on ideas that people leave on the board.
+      <p className="ag-callout ag-both-ways" data-tone="note">
+        <span>
+          <strong>It works both ways.</strong> People can continue Wren’s scenes,
+          and Wren can build on ideas that people leave on the board.
+        </span>
       </p>
     </section>
   );
