@@ -265,11 +265,12 @@ svg {
 }
 .button.secondary {
   background: var(--surface);
-  border-color: var(--line);
+  border-color: var(--edge);
+  color: var(--ink);
 }
-.button.secondary:hover {
-  background: var(--violet-soft);
-  border-color: #c3b4ed;
+.button.secondary:where(:hover):not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 .button.subtle {
   background: transparent;
@@ -280,8 +281,12 @@ svg {
   color: var(--danger);
 }
 .button.danger {
-  color: white;
-  background: var(--danger);
+  color: var(--on-accent);
+  background: var(--danger-fill);
+  border-color: var(--danger);
+}
+.button.danger:where(:hover):not(:disabled) {
+  background: color-mix(in srgb, var(--danger-fill) 84%, #000);
 }
 .button.full {
   width: 100%;
