@@ -109,6 +109,8 @@ export function SharedPilot() {
   const [operation, setOperation] = useState<GenerationOperation>();
   const [draft, setDraft] = useState<Draft>();
   const [draftRecovery, setDraftRecovery] = useState(false);
+  const draftRef = useRef<Draft | undefined>(undefined);
+  draftRef.current = draft;
 
   const [releaseBusy, setReleaseBusy] = useState(false);
   const [wrenBusy, setWrenBusy] = useState(false);
@@ -271,8 +273,10 @@ export function SharedPilot() {
           roomId,
         );
         if (saved) {
+          // A draft already open in memory (e.g. just saved by join) is not a recovery.
+          const alreadyOpen = draftRef.current?.requestId === saved.requestId;
           setDraft(saved);
-          setDraftRecovery(true);
+          setDraftRecovery(!alreadyOpen);
           setComposing(true);
         }
       } catch {
@@ -912,6 +916,12 @@ export function SharedPilot() {
       setNotice("Your generation is still in progress. Review or discard it before starting fresh.");
       setDraftRecovery(false);
       setComposing(true);
+      return;
+    }
+    if (wrenBusy || wrenPreviewId) { setNotice("Wren has your saved fork. Check its request before starting another continuation."); return; }
+    if (releaseBusy) { setNotice("Finish the current wallet action before starting a new continuation."); return; }
+    if (!selected || pilotPath(moments, roomId, selected.id).length >= 13) {
+      setNotice("This path has reached the pilot’s length limit. Choose an earlier moment before starting fresh. Your draft is still saved.");
       return;
     }
     if (draft.submitted && !window.confirm("This continuation may already have generation in progress. Start fresh anyway?")) return;

@@ -95,6 +95,7 @@ export function PilotComposer({
   const previewHeading = useRef<HTMLHeadingElement>(null);
   const panelFields = useRef<(HTMLTextAreaElement | null)[]>([]);
   current.current = draft;
+  const [rebuildChoice, setRebuildChoice] = useState(false);
   const frozen = busy || !!draft.submitted || !!shaping || speaking;
   const preview =
     draft.stage === "preview" ||
@@ -193,15 +194,26 @@ export function PilotComposer({
       );
     return result;
   }
-  function previewOwnWords() {
+  function keepEditedPanels() {
+    setRebuildChoice(false);
+    update({ stage: "preview" });
+    focusPreview();
+  }
+  function previewOwnWords(rebuild = false) {
     if (frozen || draft.pendingSpeech) return;
     setError("");
     setNotice("");
+    setRebuildChoice(false);
     const d = current.current;
     const signature = previewSignature(d);
     if (d.captions.some(Boolean) && d.previewInput === signature) {
       update({ stage: "preview" });
       focusPreview();
+      return;
+    }
+    // Existing panels would be replaced: let the maker choose instead of silently overwriting.
+    if (!rebuild && d.captions.some(Boolean)) {
+      setRebuildChoice(true);
       return;
     }
     try {
@@ -410,6 +422,7 @@ export function PilotComposer({
               onChange={(event) => {
                 update({ thought: event.target.value });
                 setTwists([]);
+                setRebuildChoice(false);
               }}
               placeholder={
                 draft.idea
@@ -467,7 +480,7 @@ export function PilotComposer({
               type="button"
               className="button primary"
               disabled={frozen || !!draft.pendingSpeech || !hasWords}
-              onClick={previewOwnWords}
+              onClick={() => previewOwnWords()}
             >
               Preview my idea <ArrowRight size={17} />
             </button>
@@ -485,6 +498,20 @@ export function PilotComposer({
               </button>
             )}
           </div>
+          {rebuildChoice && (
+            <div className="pilot-draft-recovery" role="status">
+              <strong>You edited these panels.</strong>
+              <p>Keep your edits or rebuild the panels from your new idea?</p>
+              <div className="button-row">
+                <button type="button" className="button primary" disabled={frozen} onClick={keepEditedPanels}>
+                  Keep my panels
+                </button>
+                <button type="button" className="button secondary" disabled={frozen} onClick={() => previewOwnWords(true)}>
+                  Rebuild panels
+                </button>
+              </div>
+            </div>
+          )}
           <p className="pilot-helper-copy">
             Previewing uses your words. Images come later, when you choose.
           </p>

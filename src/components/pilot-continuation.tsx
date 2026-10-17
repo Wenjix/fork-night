@@ -57,7 +57,7 @@ export function PilotContinuation({ client, selected, moments, profile, authenti
         <button type="button" className="text-button" disabled={busy} onClick={actions.cancel}>Cancel continuation</button>
       </div>
     </form> : operation ? <>
-      {!finalStates.has(operation.status) && <PilotGenerationStatus operation={operation} interrupted={interrupted} />}
+      {!finalStates.has(operation.status) && <PilotGenerationStatus operation={operation} interrupted={interrupted} starting={busy} />}
       <p className="pilot-parent">Building on <strong>{moments.find(moment => moment.id === operation.parent_id)?.title}</strong></p>
       {operation.status === "discarded" && <PilotPanels client={client} panels={pilotPanels(operation.panels)} />}
       {operation.status === "delivered" ? <>

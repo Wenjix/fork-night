@@ -1,8 +1,10 @@
 import { Check, CircleAlert, Clock3, RefreshCw, Sparkles } from "lucide-react";
 import { generationStatus, roomActivity, type GenerationOperation, type PilotCredits } from "../lib/pilot-generation.ts";
 
-export function PilotGenerationStatus({ operation, interrupted = false }: { operation: GenerationOperation; interrupted?: boolean }) {
-  const status = generationStatus(operation);
+export function PilotGenerationStatus({ operation, interrupted = false, starting = true }: { operation: GenerationOperation; interrupted?: boolean; starting?: boolean }) {
+  const status = operation.status === "draft" && !starting
+    ? { phase: "draft", step: -1, title: "Not started yet", detail: "Your panel plan is saved, but image generation did not start. Try again to start it.", reserved: 0 }
+    : generationStatus(operation);
   const active = (status.phase === "generating" || status.phase === "starting") && !interrupted;
   const Icon = status.phase === "ready" ? Check : status.phase === "generating" || status.phase === "starting" ? RefreshCw : status.phase === "checking" ? CircleAlert : Clock3;
   return <div className="pilot-generation-status" data-phase={status.phase} role="status" aria-live="polite" aria-atomic="true">
