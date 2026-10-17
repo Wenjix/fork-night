@@ -206,13 +206,14 @@ export function PilotComposer({
     setRebuildChoice(false);
     const d = current.current;
     const signature = previewSignature(d);
-    if (d.captions.some(Boolean) && d.previewInput === signature) {
+    const hasPanels = d.captions.some(Boolean);
+    if (hasPanels && (d.previewInput === signature || !(d.thought?.trim() || d.idea?.body.trim()))) {
       update({ stage: "preview" });
       focusPreview();
       return;
     }
     // Existing panels would be replaced: let the maker choose instead of silently overwriting.
-    if (!rebuild && d.captions.some(Boolean)) {
+    if (!rebuild && hasPanels) {
       setRebuildChoice(true);
       return;
     }
@@ -479,7 +480,7 @@ export function PilotComposer({
             <button
               type="button"
               className="button primary"
-              disabled={frozen || !!draft.pendingSpeech || !hasWords}
+              disabled={frozen || !!draft.pendingSpeech || (!hasWords && !draft.captions.some(Boolean))}
               onClick={() => previewOwnWords()}
             >
               Preview my idea <ArrowRight size={17} />
