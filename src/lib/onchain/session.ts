@@ -4,7 +4,7 @@ import type { ReleaseConfig } from "./config.ts";
 import { DEFAULT_SUPPORT_MON, sameAddress, supportAmount, type PreparedRelease } from "./model.ts";
 
 type Client = Pick<ReleaseClient, "load" | "verify" | "connect" | "execute" | "recover" | "retry" | "destroy">;
-type Ports = { wallet: () => WalletProvider | undefined; storage: () => StoragePort };
+type Ports = { wallet: () => WalletProvider | undefined; storage: () => StoragePort; account?: () => string };
 export type ReleaseState = {
   releaseId: string; snapshot?: Snapshot; account: string; accepted: boolean;
   loading: boolean; busy: Operation | "connect" | "recover" | "retry" | null;
@@ -32,6 +32,7 @@ export class ReleaseSession {
   private loadError = "";
   private wallet?: WalletProvider;
   private walletVersion = 0;
+  private accountVersion = 0;
   private inFlight = false;
   private disposal?: ReturnType<typeof setTimeout>;
   private config: ReleaseConfig;
@@ -55,6 +56,7 @@ export class ReleaseSession {
     clearTimeout(this.disposal);
     this.active = true;
     this.bindWallet(this.ports.wallet());
+    void this.syncAccount(this.ports.account?.() ?? "");
     void this.refresh();
   }
   private bindWallet(wallet: WalletProvider | undefined) {
@@ -77,13 +79,40 @@ export class ReleaseSession {
   }
   private walletChanged = () => {
     this.walletVersion++;
-    this.update({ account: "", accepted: false, pending: false, receipt: "", notice: "Wallet changed. Connect the selected wallet here, then review its role and release terms." });
+    const account = this.ports.account?.() ?? "";
+    this.update({ account: "", accepted: false, pending: false, receipt: "", notice: account ? "Wallet changed. Checking the signed-in wallet for this release." : "Wallet changed. Sign in again before sending a release action." });
+    void this.syncAccount(account, true);
   };
-  syncWallet() {
+  private async syncAccount(account: string, fresh = false) {
+    const next = account.trim();
+    const version = ++this.accountVersion;
+    if (!next) {
+      this.update({ account: "", accepted: false, pending: false, receipt: fresh ? "" : this.state.receipt });
+      return;
+    }
+    const wallet = this.wallet;
+    try {
+      if (wallet) {
+        const accounts = await wallet.request({ method: "eth_accounts" });
+        if (version !== this.accountVersion || wallet !== this.wallet) return;
+        if (Array.isArray(accounts) && accounts.length && !accounts.some(value => typeof value === "string" && sameAddress(value, next))) {
+          this.update({ account: "", accepted: false, pending: false, notice: "Choose the wallet you signed in with before sending a release action." });
+          return;
+        }
+      }
+      this.update({ account: next, pending: this.pending(next), error: this.state.error === "Reconnect your wallet to continue." ? "" : this.state.error });
+    } catch {
+      // Some embedded wallets do not expose eth_accounts until their bridge is ready. The
+      // page-level account still identifies the role; sending will require a provider.
+      if (version === this.accountVersion) this.update({ account: next, pending: this.pending(next) });
+    }
+  }
+  syncWallet(account = this.ports.account?.() ?? "") {
     const next = this.ports.wallet();
-    if (next === this.wallet) return;
+    const changed = next !== this.wallet;
     this.bindWallet(next);
-    this.walletChanged();
+    if (changed && this.state.account && !account) this.walletChanged();
+    else void this.syncAccount(account);
   }
   setPrepared(prepared: PreparedRelease) {
     this.prepared = prepared;

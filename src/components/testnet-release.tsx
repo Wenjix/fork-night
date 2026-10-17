@@ -7,7 +7,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../lib/supabase/database.types.ts";
 import { pilotPath, type PilotMoment } from "../lib/pilot.ts";
 import { releaseConfig, type ReleaseConfig } from "../lib/onchain/config.ts";
-import { DEFAULT_SUPPORT_MON, prepareRelease, releaseRoom, RELEASE_TERMS, type PreparedRelease } from "../lib/onchain/model.ts";
+import { DEFAULT_SUPPORT_MON, prepareRelease, releaseByline, releaseRoom, RELEASE_TERMS, sameAddress, TERMS_HASH, type PreparedRelease } from "../lib/onchain/model.ts";
 import { MIDNIGHT_SIGNAL_RELEASE_TIP_ID } from "../lib/onchain/records.ts";
 import { ReleaseClient, type WalletProvider, type Operation, type Snapshot } from "../lib/onchain/client.ts";
 import { preparedWorkApproval, releaseJourney, shortAddress, walletBylines } from "../lib/onchain/journey.ts";
@@ -16,40 +16,36 @@ import { whileVisible } from "../lib/visible-interval.ts";
 import { ReleaseScenes } from "./release-scenes.tsx";
 import { browserWallet, usePilotAccount } from "./pilot-account.tsx";
 import { WalletRequests } from "./wallet-requests.tsx";
-import { PrivyMark } from "./auth-branding.tsx";
+import { GoogleButton, PrivyMark } from "./auth-branding.tsx";
+import { PilotDialog } from "./pilot-dialog.tsx";
+import { walletAccountIdentity } from "../lib/supabase/wallet-login.ts";
 
 export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, client, onInspect, onChoosePath, onBusyChange }: {
   roomId: string; moments: PilotMoment[]; tipId: string; makerId?: string; makerName?: string;
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
   onChoosePath: (id: string) => void;
 }) {
-  const [open, setOpen] = useState(roomId === "midnight-signal");
+  const [open, setOpen] = useState(false);
   const config = useMemo(releaseConfig, []);
-  const displayTipId = releaseDisplayTipId(roomId, moments, tipId);
-  useEffect(() => setOpen(roomId === "midnight-signal"), [roomId]);
+  useEffect(() => setOpen(false), [roomId]);
   const prepared = useMemo(() => {
-    if (!releaseRoom(roomId) || !displayTipId || !config) return { value: null, error: "" };
-    try { return { value: prepareRelease(moments, roomId, displayTipId, config.curator), error: "" }; }
+    if (!releaseRoom(roomId) || !tipId || !config) return { value: null, error: "" };
+    try { return { value: prepareRelease(moments, roomId, tipId, config.curator), error: "" }; }
     catch (error) { return { value: null, error: error instanceof Error ? error.message : "This story's release could not be prepared." }; }
-  }, [roomId, moments, displayTipId, config]);
+  }, [roomId, moments, tipId, config]);
   if (!releaseRoom(roomId) || !tipId) return null;
+  const controls = prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} open={roomId === "midnight-signal" || open} /> : <p className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>;
   return <section className="pilot-release" aria-label="Story release and support">
-    {prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} open={open} onToggle={() => setOpen(!open)} /> : <>
+    {roomId === "midnight-signal" ? controls : <>
       <button className="pilot-release-toggle" type="button" aria-expanded={open} aria-controls="payout-body" onClick={() => setOpen(!open)}><Layers3 size={21} aria-hidden="true" /><span><strong>Release and support this story</strong><span>Making a moment never requires a wallet.</span></span><ChevronDown size={18} aria-hidden="true" /></button>
-      {open && <p id="payout-body" className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>}
+      <div id="payout-body" className="pilot-release-body" hidden={!open}>{controls}</div>
     </>}
   </section>;
 }
 
 export function releaseDisplayTipId(roomId: string, moments: PilotMoment[], tipId: string) {
-  if (roomId !== "midnight-signal" || !tipId || !moments.some(moment => moment.id === MIDNIGHT_SIGNAL_RELEASE_TIP_ID)) return tipId;
-  try {
-    return pilotPath(moments, roomId, tipId).some(moment => moment.id === MIDNIGHT_SIGNAL_RELEASE_TIP_ID)
-      ? MIDNIGHT_SIGNAL_RELEASE_TIP_ID
-      : tipId;
-  } catch {
-    return tipId;
-  }
+  void roomId; void moments; void MIDNIGHT_SIGNAL_RELEASE_TIP_ID; void pilotPath;
+  return tipId;
 }
 
 export function PreparedWorkWallet({ prepared, snapshot, config, account, blocked, onApprove }: {
@@ -86,28 +82,37 @@ export function PreparedWorkWallet({ prepared, snapshot, config, account, blocke
   </section>;
 }
 
-function ReleaseControls({ prepared, config, moments, makerId, makerName, client, onInspect, onChoosePath, onBusyChange, open, onToggle }: {
+function ReleaseControls({ prepared, config, moments, makerId, makerName, client, onInspect, onChoosePath, onBusyChange, open }: {
   prepared: PreparedRelease; config: ReleaseConfig; moments: PilotMoment[]; makerId?: string; makerName?: string;
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
-  open: boolean; onToggle: () => void;
+  open: boolean;
   onChoosePath: (id: string) => void;
 }) {
   const identity = usePilotAccount();
-  const selectedProvider = identity?.walletMode === "embedded" ? identity.wallet.provider : identity ? identity.externalProvider : browserWallet();
+  const signInWallet = walletAccountIdentity(identity?.user);
+  const sharedAccount = identity?.walletMode === "embedded"
+    ? identity.wallet.address
+    : signInWallet?.chain === "ethereum" ? signInWallet.address : "";
+  const selectedProvider = identity?.walletMode === "embedded" ? identity.wallet.provider : identity?.externalProvider ?? browserWallet();
   const walletRef = useRef<WalletProvider | undefined>(selectedProvider);
+  const accountRef = useRef(sharedAccount);
   walletRef.current = selectedProvider;
-  const session = useMemo(() => new ReleaseSession(prepared, config, new ReleaseClient(config), { wallet: () => walletRef.current, storage: () => window.localStorage }), [config, prepared.projectId]);
+  accountRef.current = sharedAccount;
+  const session = useMemo(() => new ReleaseSession(prepared, config, new ReleaseClient(config), { wallet: () => walletRef.current, storage: () => window.localStorage, account: () => accountRef.current }), [config, prepared.projectId]);
   const current = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot);
   const state = current.releaseId === prepared.id ? current : { ...current, snapshot: undefined, accepted: false, loading: true };
-  const { snapshot, account, accepted, loading, busy, pending, receipt, notice, error } = state;
+  const { snapshot, account, loading, busy, pending, receipt, notice, error } = state;
   const [amount, setAmount] = useState(DEFAULT_SUPPORT_MON);
+  const [confirm, setConfirm] = useState<{ operation: Operation; index: number; address?: string; title: string; body: string; terms: boolean } | null>(null);
+  const [confirmTerms, setConfirmTerms] = useState(false);
+  const [signInWorking, setSignInWorking] = useState(false);
   const [requestWorking, setRequestWorking] = useState(false);
   const journey = releaseJourney(prepared, snapshot, account, config.curator, makerId);
   const approvedWallets = [...new Set(snapshot?.scenes.filter(scene => scene.maker !== ZeroAddress).map(scene => scene.maker.toLowerCase()))];
   const walletBusy = !!busy || requestWorking;
   const blocked = walletBusy || pending || !snapshot;
   useEffect(() => { session.start(); return () => session.stop(); }, [session]);
-  useEffect(() => { session.syncWallet(); }, [session, selectedProvider]);
+  useEffect(() => { session.syncWallet(sharedAccount); }, [session, selectedProvider, sharedAccount]);
   useEffect(() => { session.setPrepared(prepared); }, [session, prepared.id]);
   useEffect(() => {
     if (!open) return;
@@ -116,74 +121,146 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   }, [session, open]);
   useEffect(() => { onBusyChange?.(walletBusy); return () => onBusyChange?.(false); }, [walletBusy, onBusyChange]);
   const perform = (operation: Operation, index = 0, address = "") => { void session.perform(operation, index, address, amount); };
-  const ownUnregistered = snapshot?.scenes.some(scene => !scene.registered && account && scene.maker.toLowerCase() === account.toLowerCase());
-  const consentNeeded = !journey.released && !!account && (ownUnregistered || journey.role === "Maker approval pending" || journey.curator && snapshot?.curator === ZeroAddress);
+  const ownUnregisteredIndex = snapshot?.scenes.findIndex(scene => !scene.registered && !!account && sameAddress(scene.maker, account)) ?? -1;
+  const allRegistered = !!snapshot && journey.registered === prepared.scenes.length;
+  const rememberedTerms = account ? releaseTermsAccepted(account) : false;
+  useEffect(() => { setConfirmTerms(false); }, [confirm?.operation, account]);
   function download() {
     const blob = new Blob([JSON.stringify({ manifest: prepared.manifest, manifestHash: prepared.hash, releaseId: prepared.id, chainId: config.chainId, contract: config.address, terms: RELEASE_TERMS }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob), link = document.createElement("a");
     link.href = url; link.download = "fork-night-release.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+  async function signInWithGoogle() {
+    if (!identity || signInWorking) return;
+    setSignInWorking(true);
+    try { await identity.signIn("return"); }
+    catch (reason) { session.feedback("", reason instanceof Error ? reason.message : "Google sign-in could not start. Try again."); setSignInWorking(false); }
+  }
+  const requiresProvider = account && !selectedProvider && !pending;
+  const progress = `${journey.registered} of ${prepared.scenes.length} scenes registered`;
+  const progressPercent = prepared.scenes.length ? Math.round(journey.registered / prepared.scenes.length * 100) : 0;
+  const ownScene = ownUnregisteredIndex >= 0 ? prepared.scenes[ownUnregisteredIndex] : undefined;
+  const nextAction = !account
+    ? { label: "Sign in to take part", onClick: () => void signInWithGoogle(), disabled: !identity?.enabled || signInWorking }
+    : requiresProvider
+      ? { label: "Sign in with Google (no extension needed)", onClick: () => void signInWithGoogle(), disabled: !identity?.enabled || signInWorking }
+      : pending
+        ? { label: "Check saved action", onClick: () => void session.recover(), disabled: walletBusy }
+        : !snapshot
+          ? { label: "Reading release state…", onClick: () => void session.refresh(true), disabled: true }
+          : snapshot.curator === ZeroAddress && journey.curator
+            ? { label: "Open release on Monad", onClick: () => setConfirm(confirmCopy("create", 0, prepared)), disabled: blocked }
+            : ownScene
+              ? { label: "Register my scene", onClick: () => setConfirm(confirmCopy("register", ownUnregisteredIndex, prepared)), disabled: blocked }
+              : !journey.released && journey.curator && allRegistered
+                ? { label: "Lock this release", onClick: () => setConfirm(confirmCopy("release", 0, prepared)), disabled: blocked }
+                : snapshot.release.exists && journey.ownShare?.claimable
+                  ? { label: `Claim my ${formatEther(journey.ownShare.claimable)} test MON`, onClick: () => setConfirm(confirmCopy("claim", 0, prepared, account)), disabled: blocked }
+                  : snapshot.release.exists
+                    ? { label: "Support this release", onClick: () => setConfirm(confirmCopy("support", 0, prepared)), disabled: blocked }
+                    : { label: "Add a scene to join the next release", onClick: () => onChoosePath(prepared.scenes.at(-1)!.moment.id), disabled: false };
+  async function confirmAction() {
+    if (!confirm || !account) return;
+    if (confirm.terms && !rememberedTerms && !confirmTerms) return;
+    if (confirm.terms && !rememberedTerms) rememberReleaseTerms(account);
+    session.accept(true);
+    perform(confirm.operation, confirm.index, confirm.address ?? "");
+    setConfirm(null);
+  }
   return <>
-    <button className="pilot-release-toggle" type="button" aria-expanded={open} aria-controls="payout-body" onClick={onToggle}>
-      <Layers3 size={21} aria-hidden="true" /><span><strong>{journey.released ? "Support this released story" : "Release and support this story"}</strong><span>{prepared.scenes.length} {prepared.scenes.length === 1 ? "scene" : "scenes"} in the chosen path · {walletBusy ? "Wallet action in progress" : "Monad testnet"}</span></span><ChevronDown size={18} aria-hidden="true" />
-    </button>
-    <div id="payout-body" hidden={!open} className="pilot-release-body" aria-busy={walletBusy}>
-      <div className="pilot-release-heading"><div><h2>{journey.title}</h2><p>Equal shares per distinct registered wallet. The released split stays fixed.</p></div><button className="pilot-icon-button" type="button" disabled={walletBusy} onClick={() => void session.refresh()} aria-label="Refresh onchain release"><RefreshCw size={18} aria-hidden="true" /></button></div>
-      <ol className="pilot-release-steps" aria-label="Release stages">{["Wallets", "Scenes", "Release", "Support", "Claims"].map((label, index) => {
-        const stage = ["project", "wallets"].includes(journey.stage) ? 0 : journey.stage === "scenes" ? 1 : journey.stage === "release" ? 2 : journey.stage === "support" ? 3 : 4;
-        const complete = index === 0 ? !!account && (index < stage || journey.stage === "claimed") : index < stage || journey.stage === "claimed";
-        return <li key={label} aria-current={stage === index ? "step" : undefined} data-complete={complete}>{complete ? <Check size={14} aria-hidden="true" /> : <span aria-hidden="true">{index + 1}</span>}{label}</li>;
-      })}</ol>
-      <div className="pilot-release-wallet">
-        <Wallet size={21} aria-hidden="true" /><div><strong>{journey.role}</strong><span>{account ? <span title={account}>{shortAddress(account)} · {config.name}</span> : "A wallet is only needed for testnet actions."}{makerName && <span>Making as {makerName}</span>}</span></div>
-        <div className="pilot-wallet-connect">
-        {identity?.user?.is_anonymous === false && <div className="pilot-wallet-options" role="group" aria-label="Choose a release wallet">
-          <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "embedded"} onClick={() => identity.chooseWallet("embedded")}>In-app wallet <PrivyMark /></button>
-          <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "external"} onClick={() => identity.chooseWallet("external")}>Use a browser wallet</button>
-        </div>}
-        {identity?.walletMode === "external" && !!identity.browserWallets?.some(wallet => wallet.chain === "ethereum") && <label className="pilot-release-provider">Browser wallet
-          <select disabled={walletBusy || pending} value={identity.browserWallets.find(wallet => wallet.chain === "ethereum" && wallet.provider === selectedProvider)?.id ?? ""} onChange={event => {
-            const choice = identity.browserWallets?.find(wallet => wallet.id === event.target.value);
-            if (choice?.chain === "ethereum") identity.selectBrowserWallet?.(choice);
-          }}><option value="" disabled>Choose an EVM wallet</option>{identity.browserWallets.filter(wallet => wallet.chain === "ethereum").map(wallet => <option value={wallet.id} key={wallet.id}>{wallet.name}</option>)}</select>
-        </label>}
-        <button className={`button ${account ? "secondary" : "primary"}`} type="button" disabled={walletBusy || identity?.walletMode === "embedded" && !selectedProvider} onClick={() => void session.connect()}>{busy === "connect" ? "Connecting…" : account ? "Reconnect wallet" : identity?.walletMode === "embedded" ? "Use my in-app wallet" : "Connect testnet wallet"}</button>
-        {identity?.walletMode === "embedded" && !selectedProvider && <small role="status">{identity.wallet.error || "Preparing your in-app wallet…"}</small>}
+    <div className="pilot-release-card" aria-busy={walletBusy}>
+      <div className="pilot-release-card-top">
+        <div>
+          <p className="pilot-release-kicker">Story release on Monad</p>
+          <h2>{journey.ownShare?.claimable ? "Your next step" : journey.released ? "Story release on Monad" : ownScene ? "Your next step" : releaseRoom(prepared.scenes[0].moment.room_id)?.title}</h2>
+          <div className="pilot-release-badges"><span>Monad testnet</span>{account && <span title={account}>Signed in · {shortAddress(account)}</span>}{makerName && <span>Making as {makerName}</span>}</div>
         </div>
+        <button className="pilot-icon-button" type="button" disabled={walletBusy} onClick={() => void session.refresh(true)} aria-label="Refresh onchain release"><RefreshCw size={18} aria-hidden="true" /></button>
       </div>
-      {account && <p className="pilot-release-wallet-help">Reconnecting or changing wallets keeps your storyteller identity.</p>}
-      {error && <p role="alert" className="pilot-release-error">{error}</p>}
-      {notice && <p role="status" className="pilot-release-notice"><Check size={16} aria-hidden="true" />{notice}</p>}
-      {busy && <p role="status" className="pilot-release-working"><RefreshCw size={16} aria-hidden="true" />Wallet action in progress. Check your wallet for confirmation.</p>}
+      <p className="pilot-release-progress-copy">{progress} · then Lock → Support → Claim</p>
+      <div className="pilot-release-progress" aria-hidden="true"><span style={{ width: `${progressPercent}%` }} /></div>
+      <p className="pilot-release-card-copy">{actionCopy({ journey, snapshot, ownScene, prepared })}</p>
+      <div className="pilot-release-actions"><button className="button primary" type="button" disabled={nextAction.disabled} onClick={nextAction.onClick}>{nextAction.label}</button><a href={config.explorer ? `${config.explorer}/address/${config.address}` : "#"} target={config.explorer ? "_blank" : undefined} rel={config.explorer ? "noreferrer" : undefined}>Details on MonadScan <ExternalLink size={14} aria-hidden="true" /></a></div>
+      {identity?.user?.is_anonymous === false && <div className="pilot-wallet-options" role="group" aria-label="Choose release wallet">
+        <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "embedded"} onClick={() => identity.chooseWallet("embedded")}>In-app wallet <PrivyMark /></button>
+        <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "external"} onClick={() => identity.chooseWallet("external")}>Use browser sign-in wallet</button>
+      </div>}
+      {identity?.walletMode === "embedded" && account && !selectedProvider && <p role="status" className="pilot-release-loading">{identity.wallet.error || "Preparing your in-app wallet…"}</p>}
       {loading && <p role="status" className="pilot-release-loading">Reading the recorded path…</p>}
-      {pending && <div className="pilot-release-recovery"><strong>Check your saved action first</strong><p>It may already be recorded. A retry keeps the original payment key.</p><div className="button-row"><button className="button secondary" type="button" disabled={walletBusy} onClick={() => void session.recover()}>Check saved action</button><button className="text-button" type="button" disabled={walletBusy} onClick={() => void session.recover(true)}>Retry saved action</button></div></div>}
-      {open && account && <WalletRequests prepared={prepared} snapshot={snapshot} config={config} moments={moments} account={account} makerId={makerId} provider={selectedProvider} client={client} blocked={!!busy || pending || !snapshot || snapshot.curator === ZeroAddress} sessionError={error} onApprove={(index, address) => session.perform("approve", index, address)} onChoosePath={onChoosePath} onWorking={setRequestWorking} onFeedback={message => session.feedback(message)} />}
-      {consentNeeded && <label className="pilot-release-consent"><input type="checkbox" checked={accepted} disabled={walletBusy || pending} onChange={event => session.accept(event.target.checked)} /><span>I can include this original or permitted work and accept equal shares for its registered maker wallets. The curator approves the byline-to-wallet links.</span></label>}
-      {snapshot && snapshot.curator === ZeroAddress && <div className="pilot-release-next"><p>{journey.curator ? "Record this original story before approving its maker wallets." : "The curator opens this story for testnet releases."}</p>{journey.curator && <button className="button primary" type="button" disabled={blocked || !accepted} onClick={() => perform("create")}>Start the testnet project</button>}</div>}
-      {snapshot && snapshot.curator !== ZeroAddress && <>
-        <PreparedWorkWallet key={prepared.projectId + account} prepared={prepared} snapshot={snapshot} config={config} account={account} blocked={blocked} onApprove={(index, address) => session.perform("approve", index, address)} />
-        <details className="pilot-release-makers" key={prepared.id + String(journey.released)} open={!journey.released}>
-          <summary><span>The makers in this path</span><span>{journey.registered} of {prepared.scenes.length} scenes registered</span></summary>
-          <ReleaseScenes prepared={prepared} snapshot={snapshot} account={account} accepted={accepted} busy={walletBusy} pending={pending} onAction={perform} client={client} onInspect={onInspect} explorer={config.explorer} />
-        </details>
-        {!journey.released && <div className="pilot-release-next"><p>{journey.registered === prepared.scenes.length ? `${journey.wallets} registered wallets will share this release equally.` : "Each approved wallet registers its scenes after their parents."}</p>{journey.curator ? <button className="button primary" type="button" disabled={blocked || journey.registered !== prepared.scenes.length} onClick={() => perform("release")}>Freeze this release</button> : <span>The curator freezes the release once every scene is registered.</span>}</div>}
-      </>}
-      {snapshot?.release.exists && <section className="pilot-release-support" aria-labelledby="support-title">
-        {journey.ownShare && <div className="pilot-release-claim"><div><strong>Your registered wallet's share</strong><span>{formatEther(journey.ownShare.claimed)} test MON claimed so far</span></div><button className={`button ${journey.ownShare.claimable > 0n ? "primary" : "secondary"}`} type="button" disabled={blocked || journey.ownShare.claimable === 0n} onClick={() => perform("claim", 0, account)}>{journey.ownShare.claimable > 0n ? `Claim my ${formatEther(journey.ownShare.claimable)} test MON` : "No share waiting to claim"}</button></div>}
-        <div className="pilot-release-section-title"><h3 id="support-title">Support the story</h3><span>{formatEther(snapshot.release.received)} test MON received</span></div>
-        <p>One equal share for each of these {snapshot.release.beneficiaries.length} wallets. Curating or funding alone earns no share.</p>
-        <ul>{snapshot.release.beneficiaries.map(item => <li key={item.address}><div><strong>{walletBylines(prepared, snapshot, item.address).join(", ")}</strong><span title={item.address}>{shortAddress(item.address)}</span></div><span>{formatEther(item.claimable)} test MON claimable</span></li>)}</ul>
-        <form onSubmit={event => { event.preventDefault(); perform("support"); }}><label>Test MON amount<input inputMode="decimal" value={amount} onChange={event => setAmount(event.target.value)} required disabled={blocked} /></label><button className={`button ${journey.ownShare?.claimable ? "secondary" : "primary"}`} type="submit" disabled={blocked || !account}>Support this release</button></form>
-      </section>}
-      <details className="pilot-release-details"><summary>Terms, addresses and release record</summary><p>{RELEASE_TERMS}</p><p>Amounts and claims come from the contract. Wallets can belong to the same person. Test MON has no redemption value.</p>
+      {busy && <p role="status" className="pilot-release-working"><RefreshCw size={16} aria-hidden="true" />{operationLabel(busy)} on Monad… You can keep reading.</p>}
+      {receipt && config.explorer && <a className="pilot-release-receipt" href={`${config.explorer}/tx/${receipt}`} target="_blank" rel="noreferrer">View transaction on MonadScan <ExternalLink size={14} aria-hidden="true" /></a>}
+      {notice && <p role="status" className="pilot-release-notice"><Check size={16} aria-hidden="true" />{notice}</p>}
+      {error && !/Ethereum-compatible wallet/.test(error) && <p role="alert" className="pilot-release-error">{error}</p>}
+      {pending && <div className="pilot-release-recovery"><strong>Still waiting for Monad?</strong><p>Check again resumes the saved action and never sends twice.</p><div className="button-row"><button className="button secondary" type="button" disabled={walletBusy} onClick={() => void session.recover()}>Check again</button><button className="text-button" type="button" disabled={walletBusy} onClick={() => void session.recover(true)}>Retry saved action</button></div></div>}
+      <details className="pilot-release-details"><summary>Details</summary><p>{RELEASE_TERMS}</p><p>Amounts and claims come from the contract. Wallets can belong to the same person. Test MON has no redemption value.</p>
         <dl className="pilot-release-addresses">
           {account && <div><dt>Connected wallet</dt><dd><code>{account}</code></dd></div>}
           <div><dt>Configured curator</dt><dd><code>{config.curator}</code></dd></div>
           <div><dt>Payout contract</dt><dd><code>{config.address}</code></dd></div>
           {snapshot && approvedWallets.map(address => <div key={address}><dt>{walletBylines(prepared, snapshot, address).join(", ")} · approved wallet</dt><dd><code>{getAddress(address)}</code></dd></div>)}
         </dl>
+        {account && <WalletRequests prepared={prepared} snapshot={snapshot} config={config} moments={moments} account={account} makerId={makerId} provider={selectedProvider} client={client} blocked={!!busy || pending || !snapshot || snapshot.curator === ZeroAddress} sessionError={error} onApprove={(index, address) => session.perform("approve", index, address)} onChoosePath={onChoosePath} onWorking={setRequestWorking} onFeedback={message => session.feedback(message)} />}
+        {snapshot && snapshot.curator !== ZeroAddress && <><PreparedWorkWallet key={prepared.projectId + account} prepared={prepared} snapshot={snapshot} config={config} account={account} blocked={blocked} onApprove={(index, address) => session.perform("approve", index, address)} />
+          <details className="pilot-release-makers" key={prepared.id + String(journey.released)}>
+            <summary><span>The makers in this path</span><span>{journey.registered} of {prepared.scenes.length} scenes registered</span></summary>
+            <ReleaseScenes prepared={prepared} snapshot={snapshot} account={account} accepted={true} busy={true} pending={pending} onAction={() => {}} client={client} onInspect={onInspect} explorer={config.explorer} actions={false} />
+          </details></>}
+        {snapshot?.release.exists && <section className="pilot-release-support" aria-labelledby="support-title">
+          <div className="pilot-release-section-title"><h3 id="support-title">Support and claims</h3><span>{formatEther(snapshot.release.received)} test MON received</span></div>
+          <p>One equal share for each of these {snapshot.release.beneficiaries.length} wallets. Curating or funding alone earns no share.</p>
+          <ul>{snapshot.release.beneficiaries.map(item => <li key={item.address}><div><strong>{walletBylines(prepared, snapshot, item.address).join(", ")}</strong><span title={item.address}>{shortAddress(item.address)}</span></div><span>{formatEther(item.claimable)} test MON claimable · {formatEther(item.claimed)} claimed</span></li>)}</ul>
+          <form onSubmit={event => { event.preventDefault(); setConfirm(confirmCopy("support", 0, prepared)); }}><label>Test MON amount<input inputMode="decimal" value={amount} onChange={event => setAmount(event.target.value)} required disabled={blocked} /></label><button className="button secondary" type="submit" disabled={blocked || !account}>Support this release</button></form>
+        </section>}
         <div className="pilot-release-record"><button className="button secondary" type="button" onClick={download}><Download size={16} aria-hidden="true" />Download exact release record</button>{config.explorer && <a href={`${config.explorer}/address/${config.address}`} target="_blank" rel="noreferrer">Payout contract <ExternalLink size={14} aria-hidden="true" /></a>}</div></details>
-      {receipt && config.explorer && <a className="pilot-release-receipt" href={`${config.explorer}/tx/${receipt}`} target="_blank" rel="noreferrer">View last transaction <ExternalLink size={14} aria-hidden="true" /></a>}
     </div>
+    {confirm && <PilotDialog title={confirm.title} className="pilot-release-confirm" dismissible={!walletBusy} onClose={() => { if (!walletBusy) setConfirm(null); }}>
+      <p>{confirm.body}</p>
+      {confirm.terms && !rememberedTerms ? <label className="pilot-release-consent"><input type="checkbox" checked={confirmTerms} onChange={event => setConfirmTerms(event.target.checked)} /><span>I made this scene or have permission to use it, and I accept the <a href="#release-terms">release terms</a>.</span></label> : confirm.terms ? <p className="pilot-release-notice"><Check size={16} aria-hidden="true" />Release terms already accepted for this wallet.</p> : null}
+      <p className="pilot-release-loading">Network fee uses test MON · Wallet {account ? shortAddress(account) : "not signed in"}</p>
+      <footer className="button-row"><button className="button primary" type="button" disabled={walletBusy || confirm.terms && !rememberedTerms && !confirmTerms} onClick={() => void confirmAction()}>{operationButton(confirm.operation)}</button><button className="button secondary" type="button" disabled={walletBusy} onClick={() => setConfirm(null)}>Cancel</button></footer>
+    </PilotDialog>}
   </>;
+}
+
+function releaseTermsKey(account: string) {
+  return `fork-night:release-terms:${TERMS_HASH}:${account.toLowerCase()}`;
+}
+function releaseTermsAccepted(account: string) {
+  if (typeof window === "undefined") return false;
+  try { return window.localStorage.getItem(releaseTermsKey(account)) === "1"; }
+  catch { return false; }
+}
+function rememberReleaseTerms(account: string) {
+  try { window.localStorage.setItem(releaseTermsKey(account), "1"); }
+  catch { /* A blocked store just means the next confirmation will ask again. */ }
+}
+function operationLabel(operation: ReleaseStateOperation) {
+  return operation === "register" ? "Registering" : operation === "release" ? "Locking release" : operation === "support" ? "Supporting" : operation === "claim" ? "Claiming" : operation === "create" ? "Opening release" : "Checking";
+}
+type ReleaseStateOperation = Operation | "connect" | "recover" | "retry";
+function operationButton(operation: Operation) {
+  return operation === "register" ? "Register on Monad" : operation === "release" ? "Lock on Monad" : operation === "support" ? "Support on Monad" : operation === "claim" ? "Claim on Monad" : "Open on Monad";
+}
+function confirmCopy(operation: Operation, index: number, prepared: PreparedRelease, address = "") {
+  const scene = prepared.scenes[index];
+  if (operation === "register") return {
+    operation, index, title: "Register this scene on Monad?",
+    body: `"${scene.moment.title}" by ${releaseByline(scene.moment)}. This can't be undone. Each wallet that registers a scene in this path gets an equal share of support.`,
+    terms: true,
+  };
+  if (operation === "release") return { operation, index, title: "Lock this release on Monad?", body: "This freezes the registered scene list and the equal-wallet split for this story.", terms: true };
+  if (operation === "create") return { operation, index, title: "Open this story on Monad?", body: "This creates the release project so maker wallets can register their scenes.", terms: true };
+  if (operation === "claim") return { operation, index, address, title: "Claim your share?", body: "The claim goes to the registered wallet for this release. Anyone can submit the transaction, but the destination cannot be changed.", terms: false };
+  return { operation, index, title: "Support this release?", body: "Your test MON support is split equally across the registered wallet list for this frozen release.", terms: false };
+}
+function actionCopy({ journey, snapshot, ownScene, prepared }: {
+  journey: ReturnType<typeof releaseJourney>; snapshot?: Snapshot; ownScene?: PreparedRelease["scenes"][number]; prepared: PreparedRelease;
+}) {
+  if (!snapshot) return "Reading the story's Monad release record.";
+  if (ownScene) return `"${ownScene.moment.title}" is ready to register. Register it and the story can move toward lock, support and claims.`;
+  if (snapshot.curator === ZeroAddress && journey.curator) return "Open the release project before approving maker wallets.";
+  if (!journey.released && journey.curator && journey.registered === prepared.scenes.length) return `${journey.wallets} registered wallets will share this release equally.`;
+  if (journey.ownShare?.claimable) return "Your registered wallet has a claim ready.";
+  if (snapshot.release.exists) return "This release is locked. Supporters can send test MON and registered wallets can claim their shares.";
+  return "Once every scene in this selected path is on Monad, the story can be locked and supported.";
 }
