@@ -77,8 +77,8 @@ export function WrenHeroMaker({ titleId, byline, sceneSrc, sceneDescription }: {
       <div className="wh-panel-top">
         <h2 id={`${ids}-heading`} className="wh-heading">Dress your Wren</h2>
         <div className="wh-actions">
-          <button type="button" className="wh-icon" onClick={() => apply(randomLook(look.name))}><Dices size={17} aria-hidden="true" /><span>Surprise me</span></button>
-          <button type="button" className="wh-icon wh-icon-quiet" onClick={() => apply(DEFAULT_LOOK)}><RotateCcw size={15} aria-hidden="true" /><span>Start over</span></button>
+          <button type="button" className="wh-icon" onClick={() => apply(randomLook(look.name))}><Dices size={16} aria-hidden="true" /><span>Surprise me</span></button>
+          <button type="button" className="wh-icon wh-icon-quiet" onClick={() => apply(DEFAULT_LOOK)}><RotateCcw size={16} aria-hidden="true" /><span>Start over</span></button>
         </div>
       </div>
       <label className="wh-name"><span>Name</span>
