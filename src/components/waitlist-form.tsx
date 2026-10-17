@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, LoaderCircle } from "lucide-react";
 
 export function WaitlistForm({ source, configured }: { source: "demo" | "signup"; configured: boolean }) {
   const [email, setEmail] = useState("");
@@ -41,7 +41,7 @@ export function WaitlistForm({ source, configured }: { source: "demo" | "signup"
     <label htmlFor="waitlist-email">Email address</label>
     <input id="waitlist-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="you@example.com" required maxLength={254} value={email} onChange={event => { setEmail(event.target.value); setError(""); }} disabled={state === "saving"} aria-describedby={`signup-permission${error ? " signup-error" : ""}`} aria-invalid={!!error} />
     <div className="signup-trap" aria-hidden="true"><label htmlFor="waitlist-website">Leave this field empty</label><input id="waitlist-website" name="website" tabIndex={-1} autoComplete="off" /></div>
-    <button className="signup-button" disabled={!configured || state === "saving"} type="submit">{state === "saving" ? "Saving your place…" : "Join the waitlist"}<ArrowRight size={20} aria-hidden="true" /></button>
+    <button className="signup-button" disabled={!configured || state === "saving"} aria-busy={state === "saving"} type="submit">{state === "saving" ? "Saving your place…" : "Join the waitlist"}{state === "saving" ? <LoaderCircle className="signup-spin" size={20} aria-hidden="true" /> : <ArrowRight size={20} aria-hidden="true" />}</button>
     <p id="signup-permission" className="signup-small">By joining, you agree to receive occasional Fork Night launch and playtest emails. Your address stays private.</p>
     {!configured && <p className="signup-error" role="status">Signups aren’t connected yet. Please check back shortly.</p>}
     {error && <p className="signup-error" id="signup-error" role="alert">{error}</p>}

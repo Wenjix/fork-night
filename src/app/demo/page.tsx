@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import { signupUrl } from "@/lib/waitlist";
 import { waitlistSettings } from "@/server/waitlist-settings";
 import { DemoControls } from "@/components/demo-controls";
+import { ForkNightMark } from "@/components/fork-night-mark";
 import "../signup/signup.css";
 
 export const dynamic = "force-dynamic";
@@ -21,14 +22,14 @@ export default async function DemoPage() {
   const signupPath = url ?? "/signup?source=demo";
   return <div className="signup-shell demo-screen">
     <header className="signup-header">
-      <a className="signup-brand" href="/demo" aria-label="Fork Night">fork night<span>.</span></a>
+      <ForkNightMark href="/demo" aria-label="Fork Night" size="sm" />
       <DemoControls url={url} />
     </header>
     <main className="demo-main">
       <div className="demo-invitation">
         <h1>Good stories<br />need <span>company.</span></h1>
         <p>Make something strange together.<br />Join the Fork Night waitlist.</p>
-        <a className="signup-button" href={signupPath}>Join the waitlist <ArrowRight size={22} aria-hidden="true" /></a>
+        <a className="signup-button" href={signupPath}>Join the waitlist <ArrowRight size={24} aria-hidden="true" /></a>
       </div>
       <figure className="demo-code">
         {svg ? <>
@@ -39,7 +40,7 @@ export default async function DemoPage() {
         </> : <div className="demo-setup">
           <h2>The invitation is almost ready.</h2>
           <p>The QR appears here when a public address is connected. You can preview the signup on this device now.</p>
-          <a href="/signup?source=demo">Preview the signup <ArrowRight size={18} aria-hidden="true" /></a>
+          <a href="/signup?source=demo">Preview the signup <ArrowRight size={20} aria-hidden="true" /></a>
         </div>}
       </figure>
     </main>
