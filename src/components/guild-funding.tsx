@@ -203,6 +203,7 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
             <ul className="fn-network-list">
               {getRoomNetworkShowcase(record.roomId).map((demo) => {
                 const brand = NETWORK_BRANDS[demo.network];
+                const labelIncludesExternalGlyph = demo.proof.label.includes("↗");
                 return (
                   <li key={demo.network} className="fn-network-row">
                     <NetworkBrandMark network={demo.network} />
@@ -219,7 +220,7 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
                           </span>
                           <span className="fn-network-summary">
                             {demo.summary}{" "}
-                            <span className="fn-network-proof-label">{demo.proof.label} <ExternalLink size={16} aria-hidden="true" /></span>
+                            <span className="fn-network-proof-label">{demo.proof.label} {!labelIncludesExternalGlyph && <ExternalLink size={16} aria-hidden="true" />}</span>
                             <span className="sr-only"> (opens in a new tab)</span>
                           </span>
                         </a>

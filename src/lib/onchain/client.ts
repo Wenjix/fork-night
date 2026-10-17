@@ -1,6 +1,7 @@
 import { AbstractProvider, BrowserProvider, Contract, getAddress, id, JsonRpcProvider, keccak256, ZeroAddress, ZeroHash, type Eip1193Provider } from "ethers";
 import { releaseAbi, releaseRuntimeHash } from "./abi.ts";
 import { MAX_SUPPORT_WEI, POLICY_HASH, sameAddress, sourceKey, TERMS_HASH, type PreparedRelease } from "./model.ts";
+import { registrationTransaction } from "./records.ts";
 import type { ReleaseConfig } from "./config.ts";
 
 export type WalletProvider = Eip1193Provider & { on?: (event: string, listener: (...args: unknown[]) => void) => void; removeListener?: (event: string, listener: (...args: unknown[]) => void) => void };
@@ -9,7 +10,7 @@ export type Operation = "create" | "approve" | "register" | "release" | "support
 export type PendingTransaction = { version: 1; chainId: number; address: string; account: string; projectId: string;
   operation: Operation; args: string[]; value: string; calldataHash: string; hash?: string; claimedBefore?: string };
 export type Snapshot = { block: number; curator: string; root: string; termsMatch: boolean;
-  scenes: { id: string; maker: string; registered: boolean; matches: boolean }[];
+  scenes: { id: string; maker: string; registered: boolean; matches: boolean; transactionHash?: string }[];
   release: { exists: boolean; received: bigint; paid: bigint; beneficiaries: { address: string; claimable: bigint; claimed: bigint }[] } };
 const bytes32 = /^0x[a-f0-9]{64}$/i;
 // Multicall3 at its canonical address, deployed on Monad testnet. Reads use it wherever it is deployed.
@@ -83,7 +84,7 @@ export class ReleaseClient {
     const block = await this.provider.getBlockNumber();
     const [project, release, ...sceneReads] = await this.read([["projects", [prepared.projectId]], ["getRelease", [prepared.id]],
       ...prepared.scenes.flatMap((scene): Read[] => [["moments", [scene.id]], ["makers", [prepared.projectId, scene.makerId]]])], block);
-    const scenes = prepared.scenes.map((scene, index) => {
+    const scenes: Snapshot["scenes"] = prepared.scenes.map((scene, index) => {
       const moment = sceneReads[2 * index], maker = sceneReads[2 * index + 1];
       const registered = moment.beneficiary !== ZeroAddress;
       const matches = registered && moment.projectId === prepared.projectId && moment.parentId === scene.parentId &&
@@ -95,6 +96,10 @@ export class ReleaseClient {
     }
     if (project.curator !== ZeroAddress && project.root !== prepared.scenes[0].id) throw new Error("The recorded opening differs from this story. Keep the registered version and review the source before continuing.");
     if (scenes.some(scene => scene.registered && !scene.matches)) throw new Error("A registered scene differs from this published version. Its payout record has been preserved; select the registered version.");
+    for (const scene of scenes) {
+      const transactionHash = scene.registered ? registrationTransaction(this.config.chainId, this.config.address, scene.id) : undefined;
+      if (transactionHash) scene.transactionHash = transactionHash;
+    }
     const exists = release.projectId !== ZeroHash;
     if (exists && (release.projectId !== prepared.projectId || release.tipId !== prepared.tipId || release.manifestHash !== prepared.hash)) throw new Error("The release does not match this selected path.");
     const addresses: string[] = [...release.beneficiaries];

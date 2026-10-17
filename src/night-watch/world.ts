@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { pilotAdmin } from "../generation/client.ts";
 import { pilotPath, type PilotMoment } from "../lib/pilot.ts";
+import { MIDNIGHT_SIGNAL_RELEASE_TIP_ID } from "../lib/onchain/records.ts";
 import type { Database, Json } from "../lib/supabase/database.types.ts";
 import { NIGHT_WATCH_ROOM, type WorldKitView, type WorldMoment, type WorldPanel, type WorldResponse } from "./api-types.ts";
 import { NightWatchError } from "./http.ts";
@@ -16,7 +17,7 @@ import { CURRENT_KIT, kitDigest, type WorldKit } from "./world-kit.ts";
  */
 
 /** The newest moment of the path already registered on Monad testnet; every ancestor is registered too. */
-export const RELEASE_PATH_TIP = "a386d392-f289-4b4e-a901-d6cfd827edd5";
+export const RELEASE_PATH_TIP = MIDNIGHT_SIGNAL_RELEASE_TIP_ID;
 const MEDIA_BUCKET = "pilot-media";
 const SIGNED_URL_SECONDS = 3_600;
 const STORAGE_PATH = /^[a-f0-9-]{36}\/[123]\.webp$/;
