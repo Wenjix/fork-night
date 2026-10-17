@@ -175,6 +175,13 @@
   letter-spacing: -0.025em;
   line-height: 1.25;
 }
+.pilot-ideas-sign {
+  align-items: flex-start;
+}
+.pilot-ideas-sign h2 {
+  font-size: 24px;
+  overflow-wrap: normal;
+}
 .pilot-recap-sign {
   margin-bottom: 14px;
 }

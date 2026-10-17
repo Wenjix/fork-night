@@ -49,6 +49,7 @@ import { PilotRoomFunding } from "./guild-funding";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
+import { getRecordedGuildFunding } from "@/lib/guild-funding";
 import { KESSLER_ROOM_ID } from "../lib/kessler-room";
 import {
   IDEA_DRAG_TYPE,
@@ -127,6 +128,7 @@ export function SharedPilot() {
   const [firstNightStarter, setFirstNightStarter] = useState<ReturnType<typeof parseFirstNightStarter>>(null);
   const mutation = useRef(false);
   const taskHeading = useRef<HTMLHeadingElement>(null);
+  const [focusNameEntry, setFocusNameEntry] = useState(false);
   const actorId = account?.loading ? null : account?.user?.id ?? null;
   const firstNightJourney = useFirstNightJourney({ roomId: roomId || undefined, actorId });
 
@@ -447,6 +449,15 @@ export function SharedPilot() {
   }, [firstNightStarter, roomId, loadedRoom, moments, recoveryScope, profileLoadedFor, actorId, account?.loading, draft, operation, busy, releaseBusy]);
 
   useEffect(() => {
+    if (!focusNameEntry || profile || view !== "read" || !composing) return;
+    const target = document.querySelector<HTMLInputElement>("[data-pilot-storyteller-name]");
+    if (!target) return;
+    target.scrollIntoView({ block: "center" });
+    target.focus({ preventScroll: true });
+    setFocusNameEntry(false);
+  }, [focusNameEntry, profile, view, composing, draft, operation]);
+
+  useEffect(() => {
     if (!selected || loadedRoom !== roomId || visit.current?.roomId !== roomId)
       return;
     try {
@@ -708,7 +719,8 @@ export function SharedPilot() {
       roomId,
       captions: [],
       stage: "idea",
-      thought: invitation?.prompt ?? "",
+      thought: "",
+      thoughtPlaceholder: invitation?.prompt || undefined,
       idea: idea
         ? {
             id: idea.id,
@@ -807,6 +819,19 @@ export function SharedPilot() {
     if (busy || releaseBusy || account?.loading || loadedRoom !== roomId || profileLoadedFor !== actorId || profile && profile.id !== actorId ||
       recoveryScope?.roomId !== roomId || recoveryScope.actorId !== (profile?.id ?? null)) return;
     start();
+  }
+  function focusStorytellerName() {
+    if (!selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || account?.loading) return;
+    setJoinOpen(false);
+    setView("read");
+    if (draft || hasActive) {
+      select(draft?.parentId ?? operation!.parent_id);
+      setComposing(true);
+    } else if (pilotPath(moments, roomId, selected.id).length >= 13) {
+      setJoinOpen(true);
+      return;
+    } else start();
+    setFocusNameEntry(true);
   }
   function changeDraft(next: Draft) {
     setDraft(next);
@@ -907,6 +932,8 @@ export function SharedPilot() {
         onSaved={(idea) => recordFirstNightResult({ roomId: idea.room_id, actorId: idea.maker_id, kind: "idea", id: idea.id, parentId: idea.moment_id })}
       />
     ) : null;
+  const recordedGuildFunding = !!getRecordedGuildFunding(roomId);
+  const identityDisabled = !selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || !!account?.loading || !!account?.error && !account.user || (profile ? hasActive || !!draft : false);
 
   if (unavailable) return <><AppHeader current="rooms" guide={false} /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
 
@@ -947,7 +974,7 @@ export function SharedPilot() {
           </select>
         </label>
         <div className="pilot-header-actions">
-          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || hasActive || !!draft || !!account?.loading} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={() => setJoinOpen(true)} />
+          <PilotIdentity profile={profile} disabled={identityDisabled} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={profile ? () => setJoinOpen(true) : focusStorytellerName} />
           <button
             className="button secondary pilot-map-toggle"
             onClick={() => setView(view === "map" ? "read" : "map")}
@@ -979,7 +1006,7 @@ export function SharedPilot() {
         {error && <p role="alert">{error}</p>}
         <button className="button primary" disabled={busy || (!profile && !joinName.trim())} onClick={() => void act(async () => { if (profile) await joinRoom(); else { await join(joinName); setJoinOpen(false); } })}>{busy ? "Joining…" : "Join this room"}</button>
       </PilotDialog>}
-      <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />
+      {!recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />}
       {loadedRoom === roomId && credits && <PilotRoomActivity credits={{ ...credits, ...activity }} interrupted={!!syncError} />}
       {(error || syncError || pathError || account?.error) && (
         <div className="pilot-notice" role="alert">
@@ -1156,6 +1183,7 @@ export function SharedPilot() {
                     },
                   }}
                 />
+                {recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
                 {!reviewing && !(operation?.status === "published" && operation.published_moment_id === selected.id) && (
                   <div
                     className="pilot-story-actions"
@@ -1298,11 +1326,14 @@ export function SharedPilot() {
           </div>
         </>
       ) : (
-        <div className="pilot-loading" role="status">
-          {pathError
-            ? "Reconnect to read the complete path."
-            : "Opening the shared story…"}
-        </div>
+        <>
+          <div className="pilot-loading" role="status">
+            {pathError
+              ? "Reconnect to read the complete path."
+              : "Opening the shared story…"}
+          </div>
+          {recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
+        </>
       )}
       <footer className="pilot-footer">
         <span>{room?.description}</span>

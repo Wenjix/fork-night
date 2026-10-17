@@ -14,7 +14,10 @@ const history = () => renderToStaticMarkup(createElement(GuildFundingHistory, { 
 test("a room loading or switching cannot show another room's recorded treasury", () => {
   for (const [roomId, loadedRoom] of [["paper-moon", ""], ["midnight-signal", "paper-moon"], ["paper-moon", "midnight-signal"], ["", ""]])
     assert.equal(renderToStaticMarkup(createElement(PilotRoomFunding, { roomId, loadedRoom })), "");
-  const moon = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon" }));
+  const moon = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon", creditsAvailable: 30 }));
+  assert.match(moon, /Funded by a 3-person guild · added 5 credits · 30 room credits left · <strong>See how →<\/strong>/);
+  assert.match(renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon" })), /Funded by a 3-person guild · added 5 credits · <strong>See how →<\/strong>/);
+  assert.match(moon, /<details class="guild-funding-drawer"/);
   assert.match(moon, /Guild funding rehearsal/);
   assert.match(moon, /Squads v4.*2 of 3 steward wallets approved/);
   assert.match(moon, /Recorded addition: \+5 room credits/);
@@ -27,7 +30,7 @@ test("a room loading or switching cannot show another room's recorded treasury",
 });
 
 test("Squads stays first and the branded Solana and Base funding rows remain visible together", () => {
-  const html = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon" }));
+  const html = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon", creditsAvailable: 30 }));
   assert.match(html, /<section class="guild-funding-other" aria-label="Other recorded funding">/);
   assert.doesNotMatch(html, /<details class="guild-funding-other"/);
   assert.match(html, /2YHSYXPTzJUMmaoV2MHKHxzW5Lwx44zvhgaKnrQWq9F5vAHcdA6fhvBVjifVmP7B9fzWktG4k9eqLDJztTQ1BfSJ/);
@@ -42,7 +45,7 @@ test("Squads stays first and the branded Solana and Base funding rows remain vis
 });
 
 test("funding history opens from a primary button with explicit dialog semantics", () => {
-  const html = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon" }));
+  const html = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon", creditsAvailable: 30 }));
   const trigger = html.match(/<button[^>]*class="[^"]*guild-funding-open[^"]*"[^>]*>[\s\S]*?<\/button>/)?.[0];
   assert.ok(trigger);
   assert.match(trigger, /data-variant="default"/);

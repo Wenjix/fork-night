@@ -42,7 +42,7 @@ export function PilotContinuation({ client, selected, moments, profile, authenti
     {!profile ? <form className="pilot-onboarding" onSubmit={event => { event.preventDefault(); (authenticated ? actions.join : actions.google ?? actions.join)(name); }} aria-busy={busy}>
       {!authenticated && <div className="pilot-wallet-entry"><WalletSignInButton disabled={busy} /><p>Sign in with an EVM or Solana wallet. No gas is used.</p></div>}
       <p>{authenticated ? "You’re signed in. Choose the name that will appear beside your published moments." : "Choose the name that will appear beside your published moments. No wallet needed."}</p>
-      <label>Your storyteller name<input required maxLength={60} autoComplete="nickname" value={name} onChange={event => setName(event.target.value)} /></label>
+      <label>Your storyteller name<input data-pilot-storyteller-name required maxLength={60} autoComplete="nickname" value={name} onChange={event => setName(event.target.value)} /></label>
       <div className="pilot-auth-actions">
         {!authenticated && actions.google && <GoogleButton type="submit" disabled={busy || !name.trim()}>{busy ? "Opening sign-in…" : "Continue with Google"}</GoogleButton>}
         <button type={!authenticated && actions.google ? "button" : "submit"} className={`button ${!authenticated && actions.google ? "secondary" : "primary"}`} disabled={busy} onClick={!authenticated && actions.google ? event => { if (event.currentTarget.form?.reportValidity()) actions.join(name); } : undefined}>{authenticated ? "Save my storyteller name" : "Join as a guest"}</button>
