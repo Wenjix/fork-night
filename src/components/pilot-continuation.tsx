@@ -73,7 +73,10 @@ export function PilotContinuation({ client, selected, moments, profile, authenti
       </> : finalStates.has(operation.status) ? <>
         <p>{operation.status === "discarded" ? `Kept off the public story. Complete delivery used ${operation.charged_units} room ${operation.charged_units === 1 ? "credit" : "credits"}.` : operation.generation_error ?? "This moment could not be completed. No room credit was used."}</p>
         <button className="button secondary" disabled={busy} onClick={actions.continue}>Try a new idea</button>
-      </> : operation.status === "draft" ? <small>{pilotCreditCost(Array.isArray(operation.requested_captions) ? operation.requested_captions.length : 2)} room {pilotCreditCost(Array.isArray(operation.requested_captions) ? operation.requested_captions.length : 2) === 1 ? "credit" : "credits"} reserved when generation starts.</small> : <div className="pilot-progress"><button className="button secondary" disabled={busy} onClick={actions.check}><RefreshCw size={16} aria-hidden="true" />Check saved result</button><small>Checking never buys a recorded panel again.</small></div>}
+      </> : operation.status === "draft" ? <>
+        <small>{pilotCreditCost(Array.isArray(operation.requested_captions) ? operation.requested_captions.length : 2)} room {pilotCreditCost(Array.isArray(operation.requested_captions) ? operation.requested_captions.length : 2) === 1 ? "credit" : "credits"} reserved when generation starts.</small>
+        {!busy && <div className="button-row"><button className="button secondary" onClick={actions.check}><RefreshCw size={16} aria-hidden="true" />Try again</button></div>}
+      </> : <div className="pilot-progress"><button className="button secondary" disabled={busy} onClick={actions.check}><RefreshCw size={16} aria-hidden="true" />Check saved result</button><small>Checking never buys a recorded panel again.</small></div>}
     </> : draft && composerVisible ? recoveredDraft ? <div className="pilot-draft-recovery" role="status">
       <strong>You have an unfinished draft. Continue it or start fresh.</strong>
       <p>We found a draft saved in this browser for this room.</p>

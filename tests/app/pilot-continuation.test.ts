@@ -40,6 +40,16 @@ test("publication invites a peer on its own moment without leaving stale actions
   assert.equal(visibleContinuation({ ...operation, status: "discarded" }, moments[2].id)?.status, "discarded");
   assert.equal(visibleContinuation({ ...operation, status: "discarded" }, moments[3].id), undefined);
 });
+test("a saved idea whose generation never started can be retried, but not while a start is in flight", () => {
+  const saved = { ...operation, status: "draft" };
+  const idle = renderToStaticMarkup(createElement(PilotContinuation, { ...props, operation: saved }));
+  assert.match(idle, /reserved when generation starts/);
+  assert.match(idle, /Try again<\/button>/);
+  assert.doesNotMatch(idle, /Generate saved idea/);
+  const starting = renderToStaticMarkup(createElement(PilotContinuation, { ...props, operation: saved, busy: true }));
+  assert.match(starting, /Starting your panel/);
+  assert.doesNotMatch(starting, /Try again/);
+});
 test("guest entry and wallet identity remain separate and do not promise that a name selects a payout", () => {
   const join = renderToStaticMarkup(createElement(PilotContinuation, { ...props, profile: undefined, composing: true }));
   assert.match(join, /Your storyteller name/);

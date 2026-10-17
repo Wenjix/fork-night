@@ -908,13 +908,13 @@ export function SharedPilot() {
   }
   function startFreshDraft() {
     if (!draft) return;
-    if ((draft.submitted || hasActive) && !window.confirm("This continuation may already have generation in progress. Start fresh anyway?")) return;
     if (hasActive) {
       setNotice("Your generation is still in progress. Review or discard it before starting fresh.");
       setDraftRecovery(false);
       setComposing(true);
       return;
     }
+    if (draft.submitted && !window.confirm("This continuation may already have generation in progress. Start fresh anyway?")) return;
     if (profile) {
       try {
         localStorage.removeItem(pendingKey(profile.id, roomId));

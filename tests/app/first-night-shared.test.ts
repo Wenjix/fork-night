@@ -170,6 +170,44 @@ test("guide completion follows only a confirmed public moment belonging to this 
   }
 });
 
+function startingFresh(patch: Record<string, unknown> = {}) {
+  const confirms: string[] = [], notices: string[] = [], starts: unknown[][] = [], store = storage();
+  const env = {
+    draft: { requestId: resultId, submitted: true }, hasActive: false, profile: { id: actor }, roomId: FIRST_NIGHT_ROOM_ID,
+    pendingKey: (id: string, room: string) => `${id}:${room}`, localStorage: store,
+    window: { confirm: (text: string) => { confirms.push(text); return true; } },
+    setNotice: (notice: string) => { notices.push(notice); }, setDraft() {}, setDraftRecovery() {}, setComposing() {}, setError() {},
+    start: (...args: unknown[]) => { starts.push(args); }, ...patch,
+  };
+  return { startFresh: run(shared("startFreshDraft"), env), confirms, notices, starts, store };
+}
+
+test("start fresh explains active generation instead of asking first, and asks once before dropping a submitted draft", () => {
+  const active = startingFresh({ hasActive: true });
+  active.startFresh();
+  assert.deepEqual(active.confirms, []);
+  assert.deepEqual(active.starts, []);
+  assert.match(active.notices.at(-1)!, /still in progress/);
+
+  const declined = startingFresh({ window: { confirm: () => false } });
+  declined.store.setItem(`${actor}:${FIRST_NIGHT_ROOM_ID}`, "saved draft");
+  declined.startFresh();
+  assert.deepEqual(declined.starts, []);
+  assert.equal(declined.store.values.size, 1, "a declined confirmation keeps the saved draft");
+
+  const accepted = startingFresh();
+  accepted.store.setItem(`${actor}:${FIRST_NIGHT_ROOM_ID}`, "saved draft");
+  accepted.startFresh();
+  assert.equal(accepted.confirms.length, 1);
+  assert.equal(accepted.store.values.size, 0);
+  assert.deepEqual(accepted.starts, [[undefined, undefined, { replaceDraft: true }]]);
+
+  const unsent = startingFresh({ draft: { requestId: resultId } });
+  unsent.startFresh();
+  assert.deepEqual(unsent.confirms, [], "a draft that was never submitted needs no confirmation");
+  assert.equal(unsent.starts.length, 1);
+});
+
 function posting(response: unknown, visitor = false) {
   const records: unknown[] = [], store = storage(), errors: string[] = [];
   const post = run(ideas("post"), {
