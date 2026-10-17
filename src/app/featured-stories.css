@@ -1,0 +1,200 @@
+@property --fn-featured-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.fn-featured-stories {
+  --featured-night: #11182b;
+  --featured-panel: #1b2440;
+  --featured-muted: #b9c0d5;
+  --featured-yellow: #f1cd58;
+  --featured-purple: #836ef9;
+  --featured-green: #14f195;
+  margin: 0 auto 28px;
+  padding: 24px;
+  border-radius: 18px;
+  background: var(--featured-night);
+  color: #fff;
+  font-family: var(--font-interface), sans-serif;
+}
+.fn-featured-heading {
+  margin-bottom: 18px;
+}
+.fn-featured-heading p {
+  margin: 0;
+  color: var(--featured-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.fn-featured-heading h2 {
+  margin: 0 0 4px;
+  color: #fff;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.fn-featured-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(250px, 0.8fr);
+  gap: 18px;
+  align-items: stretch;
+}
+.fn-featured-card {
+  position: relative;
+  min-width: 0;
+  border-radius: 18px;
+  padding: 3px;
+}
+.fn-featured-card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 312px;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 15px;
+  background: var(--featured-panel);
+  overflow: hidden;
+}
+.fn-featured-animated {
+  overflow: hidden;
+}
+.fn-featured-animated::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  background: conic-gradient(from var(--fn-featured-angle, 0deg), var(--fn-featured-stops));
+  animation: fn-featured-rotate 8s linear infinite;
+}
+.fn-featured-animated:hover::before {
+  animation-play-state: paused;
+}
+.fn-featured-monad {
+  --fn-featured-stops: var(--featured-purple), #c9bdff, var(--featured-purple) 40%, #2b2450 60%, var(--featured-purple);
+}
+.fn-featured-tempo {
+  --fn-featured-stops: var(--featured-green), #9945ff, #fff 35%, #05070d 55%, var(--featured-green);
+}
+.fn-featured-kessler {
+  padding: 0;
+  border: 1.5px dashed #ffffff80;
+}
+.fn-featured-kessler .fn-featured-card-inner {
+  min-height: 318px;
+  background: transparent;
+}
+.fn-featured-art {
+  width: 100%;
+  height: 120px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 24% 22%, #f1cd5840, transparent 22%),
+    linear-gradient(135deg, #2a3866, #5b4a8a);
+}
+.fn-featured-art-tempo {
+  background:
+    radial-gradient(circle at 28% 28%, #14f19540, transparent 24%),
+    linear-gradient(135deg, #123a3a, #2c2a5a);
+}
+.fn-featured-pill {
+  position: absolute;
+  top: 24px;
+  left: 26px;
+  max-width: calc(100% - 52px);
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #05070dcc;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.fn-featured-card strong {
+  color: #fff;
+  font-family: var(--font-display), sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+.fn-featured-copy,
+.fn-featured-note {
+  display: block;
+  margin-top: 7px;
+  color: #e3e7f8;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.fn-featured-note {
+  color: var(--featured-muted);
+  font-size: 13px;
+}
+.fn-featured-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.fn-featured-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 3px 9px;
+  border: 1px solid #ffffff45;
+  border-radius: 999px;
+  background: #ffffff1a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+.fn-featured-chip:hover {
+  background: #ffffff2a;
+}
+.fn-featured-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: var(--featured-yellow);
+  color: #172235;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+}
+.fn-featured-cta:hover {
+  background: #ffe692;
+  color: #172235;
+}
+
+@keyframes fn-featured-rotate {
+  to {
+    --fn-featured-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fn-featured-animated::before {
+    animation: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .fn-featured-row {
+    grid-template-columns: 1fr;
+  }
+  .fn-featured-card-inner,
+  .fn-featured-kessler .fn-featured-card-inner {
+    min-height: 260px;
+  }
+}

@@ -472,6 +472,25 @@
   justify-self: start;
   align-self: center;
 }
+.pilot-kessler-turn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  line-height: 1.5;
+}
+.pilot-kessler-turn strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 20px;
+}
+.pilot-kessler-turn .button {
+  flex-shrink: 0;
+}
 .pilot-credit-line {
   display: flex;
   gap: 6px;
