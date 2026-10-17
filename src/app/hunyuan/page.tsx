@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { Metadata } from "next";
 import { HunyuanArticle } from "@/components/hunyuan/hunyuan-article";
 import { COPY, DEMO_VIDEO, langFrom } from "@/components/hunyuan/copy";
+import { ArticleLinks } from "@/components/kimi/article-links";
 import "./hunyuan.css";
 
 type Props = { searchParams: Promise<{ lang?: string | string[] }> };
@@ -24,5 +25,5 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function HunyuanPage({ searchParams }: Props) {
   // Drop the recorded walkthrough at public/hunyuan/ and redeploy; until then a labelled placeholder shows.
   const hasVideo = existsSync(join(process.cwd(), "public", DEMO_VIDEO));
-  return <HunyuanArticle hasVideo={hasVideo} initialLang={langFrom((await searchParams).lang)} />;
+  return <HunyuanArticle hasVideo={hasVideo} initialLang={langFrom((await searchParams).lang)} closing={<ArticleLinks current="hunyuan" className="hy-more" />} />;
 }

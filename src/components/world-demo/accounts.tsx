@@ -40,7 +40,7 @@ export function AccountSwitcher({ demo }: { demo: DemoController }) {
         const joined = role === "curator" || demo.state!.members.some(item => item.role === role);
         return <li key={role}><button type="button" aria-current={current ? "true" : undefined} disabled={demo.busy || !!demo.pending || current} onClick={() => void change(role)}>
           <RoleIdentity role={role} name={name(role)} detail={accountRoles[role]} />
-          {current ? <Check size={17} aria-label="Current account" /> : <small>{joined ? "Switch" : "Join"}</small>}
+          {current ? <Check size={16} aria-label="Current account" /> : <small>{joined ? "Switch" : "Join"}</small>}
         </button></li>;
       })}</ul><small>{demo.hostedHere ? "Each account keeps its own private drafts." : "This guest account is available in this browser. Open other accounts where they joined."}</small>
     </div>}

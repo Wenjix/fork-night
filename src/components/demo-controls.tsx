@@ -26,8 +26,8 @@ export function DemoControls({ url }: { url: string | null }) {
     } catch { setNotice("Fullscreen is unavailable in this browser."); }
   }
   return <div className="demo-controls">
-    {url && <button type="button" onClick={() => void copy()}>{copied ? <Check size={17} aria-hidden="true" /> : <Copy size={17} aria-hidden="true" />} {copied ? "Copied" : "Copy signup link"}</button>}
-    {canFullscreen && <button type="button" onClick={() => void toggleFullscreen()}>{fullscreen ? <Minimize size={17} aria-hidden="true" /> : <Maximize size={17} aria-hidden="true" />} {fullscreen ? "Exit fullscreen" : "Fullscreen"}</button>}
+    {url && <button type="button" onClick={() => void copy()}>{copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} {copied ? "Copied" : "Copy signup link"}</button>}
+    {canFullscreen && <button type="button" onClick={() => void toggleFullscreen()}>{fullscreen ? <Minimize size={16} aria-hidden="true" /> : <Maximize size={16} aria-hidden="true" />} {fullscreen ? "Exit fullscreen" : "Fullscreen"}</button>}
     <span className="signup-sr-only" role="status">{notice}</span>
   </div>;
 }
