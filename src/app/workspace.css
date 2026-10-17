@@ -1,19 +1,114 @@
+/* The local room, from its toolbar to its footer. One element carries the room's skin (data-room-theme), so a themed
+   room has no cream edge. Colours come from the theme contract (--accent*, --signal*, --edge, --focus-ring, --selection)
+   and from the base tokens a skin remaps (--paper, --surface, --ink, --muted, --line). */
+.story-room {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+.story-room > main {
+  flex: 1 0 auto;
+}
+.story-room ::selection {
+  background: var(--selection);
+  color: var(--ink);
+}
+.story-room :is(a, button, input, select, textarea, summary):focus-visible {
+  outline-color: var(--focus-ring);
+}
+.story-room .button.primary {
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+.story-room .button.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-fill), #000 14%);
+}
+.story-room .button.secondary {
+  border-color: var(--edge);
+}
+.story-room .button.secondary:hover {
+  border-color: var(--accent);
+}
+.story-room :is(input, textarea, select) {
+  border-color: var(--edge);
+}
+/* In a themed room a plate wears the room's own surface, ink and signal colours. */
+.story-room[data-room-theme] .fn-section-plate {
+  --plate-surface: var(--surface);
+  --plate-ink: var(--ink);
+  --plate-muted: var(--muted);
+  --plate-edge: var(--edge);
+  --plate-accent: var(--signal);
+  --plate-mount: var(--paper);
+}
+.fn-inline-arrow {
+  margin-inline: 2px 4px;
+}
+
+/* Toolbar: switch story, make one together, and the balance. */
 .story-room-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 20px;
-  padding: 12px 32px;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--gutter);
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
 .story-room-toolbar .project-navigation { margin-left: 0; }
-.story-room-toolbar .nav-button { min-height: 44px; }
-@media (max-width: 819px) {
-  .story-room-toolbar { padding: 10px 16px; gap: 8px 12px; }
-  .story-room-toolbar > .button { order: 3; flex-basis: 100%; }
-  .story-room-toolbar .balance-button { margin-left: auto; min-height: 44px; }
-  .story-room-toolbar .project-menu { left: 0; right: auto; width: min(310px, calc(100vw - 32px)); }
+.story-room-toolbar .nav-button { min-height: var(--control-h); padding: 10px 10px 10px 0; }
+.story-room-toolbar .project-menu { left: 0; border: 1px solid color-mix(in srgb, var(--edge) 55%, transparent); }
+.story-room-toolbar > .button { margin-left: auto; }
+.story-room-toolbar .balance-button svg { flex: none; }
+
+/* Chips: one family (src/components/brand-badge.tsx), tuned here for the rows they sit in. */
+.fn-badge.agent-mark {
+  background: var(--agent);
+  color: var(--agent-ink);
+}
+.fn-badge.seed-chip {
+  display: flex;
+  width: max-content;
+  margin: 13px auto 0;
+  color: var(--accent-strong);
+}
+.moment-card .fn-badge {
+  --badge-h: 20px;
+  --badge-tile: 14px;
+  --badge-gap: 4px;
+  --badge-font: var(--text-xs);
+  padding: 1px 7px 1px 2px;
+}
+.detail-heading .fn-badge.version-chip {
+  --badge-h: 24px;
+  --badge-font: var(--text-xs);
+  padding: 1px 8px;
+  font-variant-numeric: tabular-nums;
+}
+.detail-heading .author-inline {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+.detail-heading .avatar.small {
+  width: 28px;
+  height: 28px;
+  font-size: var(--text-xs);
+}
+.credit-row > span:first-child .fn-badge {
+  --badge-h: 22px;
+  --badge-tile: 16px;
+  --badge-font: var(--text-xs);
+  margin-left: var(--space-2);
+  padding: 1px 8px 1px 2px;
+}
+.reader-title p .fn-badge {
+  --badge-h: 22px;
+  --badge-tile: 16px;
+  --badge-font: var(--text-xs);
+  margin-left: var(--space-2);
+  padding: 1px 8px 1px 2px;
 }
 
 .map-region {
@@ -24,8 +119,8 @@
   display: flex;
   justify-content: space-between;
   gap: 8px 20px;
-  padding: 0 25px;
-  font-size: 13px;
+  padding: 0 var(--gutter);
+  font-size: var(--text-sm);
   color: var(--muted);
   flex-wrap: wrap;
 }
@@ -35,12 +130,16 @@
   gap: 6px;
 }
 .map-description > span:last-child {
-  color: var(--violet);
+  color: var(--accent);
 }
 .map-scroller {
   overflow: auto;
-  height: clamp(240px, calc(100svh - 200px), 760px);
+  /* As tall as the screen allows, and no taller than the map it holds. */
+  height: min(clamp(240px, calc(100svh - 200px), 760px), calc(var(--map-world-height, 9999px) + 10px));
   padding: 0 10px 10px;
+  /* Cards cut by the top edge fade out instead of ending mid-picture. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--space-5));
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--space-5));
 }
 .story-canvas-viewport {
   cursor: grab;
@@ -49,10 +148,10 @@
   touch-action: pan-x pan-y pinch-zoom;
   overscroll-behavior: auto;
   overflow-anchor: none;
-  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-color: var(--edge) transparent;
 }
 .story-canvas-viewport:focus-visible {
-  outline: 3px solid var(--violet);
+  outline: 3px solid var(--focus-ring);
   outline-offset: -3px;
 }
 .story-canvas-viewport[data-panning="true"],
@@ -65,9 +164,9 @@
   -webkit-user-drag: none;
 }
 .map-navigation-help {
-  margin: 8px 25px 10px;
+  margin: 8px var(--gutter) 10px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .map-world {
@@ -84,38 +183,67 @@
   position: absolute;
   width: 180px;
 }
+/* Where the next moment would go, above a selected moment nothing is built on yet. */
+.map-slot {
+  position: absolute;
+  width: 180px;
+  height: 145px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px dashed var(--edge);
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+}
+.map-slot svg {
+  color: var(--accent);
+}
+.map-slot p {
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
 .moment-card {
   display: block;
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 0;
-  border: 1px solid #c7c4d6;
+  border: 1px solid var(--edge);
   background: var(--surface);
   text-align: left;
   overflow: hidden;
   height: 145px;
   transition:
-    border-color 0.16s,
-    transform 0.18s;
+    border-color var(--dur-fast),
+    background-color var(--dur-fast),
+    transform var(--dur-fast);
 }
 .moment-card:hover {
-  border-color: var(--violet);
+  border-color: var(--accent);
   transform: translateY(-2px);
 }
+/* Selection is a tint and a 2px edge. The outline belongs to keyboard focus, so the two never look alike. */
 .moment-card.selected {
-  outline: 3px solid var(--violet);
-  outline-offset: 3px;
-  border-color: var(--violet);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.story-room .moment-card:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 5px;
 }
 .moment-card .story-art {
-  height: 85px;
+  height: 74px;
 }
 .moment-card-body {
   display: block;
-  padding: 8px 9px;
+  padding: 7px 9px 6px;
 }
 .moment-card strong {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 650;
   display: block;
   white-space: nowrap;
@@ -125,40 +253,36 @@
   font-family: var(--font-display), sans-serif;
   line-height: 1.25;
 }
+/* Two rows: who made it, then what it costs to build on. */
 .moment-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 3px;
-  margin-top: 3px;
-  font-size: 11px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  margin-top: 2px;
+  font-size: var(--text-xs);
   color: var(--muted);
   line-height: 1.25;
 }
 .moment-meta .author-inline {
   gap: 5px;
+  max-width: 100%;
+  min-height: 22px;
+}
+.moment-card .avatar.tiny {
+  width: 22px;
+  height: 22px;
+  font-size: var(--text-xs);
 }
 .moment-meta > span:last-child {
-  text-align: right;
   color: var(--ink);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .fee-label {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--muted);
   font-weight: 450;
-}
-.seed-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--violet);
-  background: var(--violet-soft);
-  border-radius: 5px;
-  padding: 5px 9px;
-  width: max-content;
-  margin: 13px auto 0;
 }
 .map-controls {
   border-top: 1px solid var(--line);
@@ -166,21 +290,21 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 20px;
-  padding: 10px 25px;
+  padding: 10px var(--gutter);
   margin-top: 8px;
 }
 .map-controls > span {
   margin-left: auto;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 .map-controls .text-button {
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 .story-reader {
   max-width: 850px;
   margin-inline: auto;
-  padding: 25px 44px 45px;
+  padding: 25px var(--gutter) 45px;
 }
 .reader-intro {
   display: flex;
@@ -188,14 +312,14 @@
   gap: 13px;
   padding: 3px 0 25px;
   border-bottom: 1px solid var(--line);
-  color: var(--violet);
+  color: var(--accent);
 }
 .reader-intro p {
   font-size: 15px;
   font-weight: 600;
 }
 .reader-intro p span {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--muted);
   font-weight: 450;
 }
@@ -210,19 +334,19 @@
   margin-bottom: 20px;
 }
 .reader-title h2 {
-  font-size: 26px;
+  font-size: var(--text-section);
   line-height: 1.25;
 }
 .reader-title p {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--text-sm);
   margin-top: 5px;
 }
 .sequence-number {
-  font-size: 13px;
-  color: var(--violet);
-  border: 1px solid #cbbbeb;
-  border-radius: 6px;
+  font-size: var(--text-sm);
+  color: var(--accent);
+  border: 1px solid var(--violet-line);
+  border-radius: var(--radius-xs);
   padding: 5px 9px;
   margin-top: 2px;
 }
@@ -245,13 +369,17 @@
   .map-controls > span {
     display: none;
   }
-  .story-reader {
-    padding-inline: 26px;
-  }
 }
 @media (max-width: 819px) {
+  .story-room-toolbar { gap: var(--space-2) var(--space-3); padding-block: 6px 10px; }
+  .story-room-toolbar .project-navigation { order: 1; margin-right: auto; }
+  .story-room-toolbar .balance-button { order: 2; }
+  /* The call to action fills what is left of the row, and takes a row of its own when it does not fit beside the rest. */
+  .story-room-toolbar > .button { order: 3; flex: 1 1 14rem; margin-left: 0; padding-block: 10px; }
+  .story-room-toolbar .project-menu { left: 0; right: auto; width: min(310px, calc(100vw - 32px)); }
+  .story-room .icon-button { min-width: var(--control-h); min-height: var(--control-h); }
   .map-description {
-    padding: 3px 22px 14px;
+    padding: 3px var(--gutter) 14px;
   }
   .map-scroller {
     display: none;
@@ -263,7 +391,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 22px 28px;
+    padding: 10px var(--gutter) 28px;
     min-height: 445px;
   }
   .mobile-children {
@@ -278,7 +406,7 @@
     display: flex;
     gap: 13px;
     overflow: auto;
-    padding: 5px;
+    padding: 8px;
     justify-content: safe center;
   }
   .mobile-children > div > div {
@@ -290,30 +418,31 @@
     margin-top: 4px;
   }
   .mobile-selected .moment-card {
-    height: 160px;
+    height: 172px;
   }
   .mobile-selected .story-art {
-    height: 99px;
+    height: 98px;
   }
   .mobile-selected .moment-card strong {
-    font-size: 14px;
+    font-size: var(--text-base);
   }
   .mobile-path-arrow {
-    color: var(--violet);
+    color: var(--accent);
     margin: 16px 0 12px;
   }
   .selection-label {
     display: block;
     text-align: center;
-    font-size: 13px;
-    color: var(--violet);
+    font-size: var(--text-sm);
+    color: var(--accent);
     margin-top: 12px;
   }
   .earlier-moment {
     background: var(--surface);
+    min-height: var(--control-h);
     padding: 11px 15px;
-    border: 1px solid var(--line);
-    border-radius: 9px;
+    border: 1px solid var(--edge);
+    border-radius: var(--radius-md);
     display: inline-flex;
     align-items: center;
     gap: 9px;
@@ -324,28 +453,28 @@
   }
   .earlier-moment span {
     display: block;
-    font-size: 13px;
+    font-size: var(--text-sm);
     text-align: left;
     color: var(--muted);
   }
   .earlier-moment strong {
     display: block;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink);
   }
   .map-controls {
-    padding-inline: 22px;
+    padding-inline: var(--gutter);
     margin-top: 0;
   }
   .map-controls > span {
     display: block;
-    font-size: 12px;
+    font-size: var(--text-xs);
   }
   .story-reader {
-    padding: 25px 22px 35px;
+    padding: 25px var(--gutter) 35px;
   }
   .reader-title h2 {
-    font-size: 26px;
+    font-size: var(--text-section);
   }
   .story-reader .panel-pair {
     grid-template-columns: 1fr;
@@ -354,6 +483,9 @@
   .reader-moment {
     padding-block: 28px;
   }
+}
+@media (pointer: coarse) {
+  .story-room .icon-button { min-width: var(--control-h); min-height: var(--control-h); }
 }
 
 @media (min-width: 820px) {

@@ -30,11 +30,17 @@ export function layoutMoments<
     return x;
   }
   visit(seedId, 0);
-  const deepest = Math.max(2, ...nodes.map((node) => node.depth));
+  // Room above the seed: two tiers for a story that has begun to branch, one (the slot for the next moment) for a lone seed.
+  const deepest = Math.max(nodes.length > 1 ? 2 : 1, ...nodes.map((node) => node.depth));
   for (const node of nodes) node.y = 30 + (deepest - node.depth) * 180;
+  // The world is never narrower than 680px. A small story sits in the middle of it, not against its left edge.
+  const content = leaf * 224 + 16;
+  const width = Math.max(680, content);
+  const inset = (width - content) / 2;
+  for (const node of nodes) node.x += inset;
   return {
     nodes,
-    width: Math.max(680, leaf * 224 + 16),
+    width,
     height: 215 + deepest * 180,
   };
 }

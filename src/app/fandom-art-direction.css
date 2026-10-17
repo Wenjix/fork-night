@@ -55,15 +55,12 @@
 }
 .workspace-art-direction {
   margin-top: -4px;
-  padding-inline: 36px;
+  padding-inline: var(--gutter);
 }
 .moment-card .malfoy-map-art .story-art-frame {
   transform: translateY(-35%);
 }
 @media (max-width: 760px) {
-  .workspace-art-direction {
-    padding-inline: 20px;
-  }
   .fandom-art-options button {
     min-height: 44px;
   }
