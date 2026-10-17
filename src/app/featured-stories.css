@@ -27,10 +27,6 @@
   font-size: 14px;
   line-height: 1.45;
 }
-.fn-featured-heading p:first-child {
-  margin-bottom: 8px;
-  font-size: 13px;
-}
 .fn-featured-heading h2 {
   margin: 0 0 4px;
   color: #fff;

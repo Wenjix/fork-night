@@ -14,7 +14,6 @@ export function FeaturedStories() {
   return (
     <section className="fn-featured-stories" aria-labelledby="fn-featured-title">
       <div className="fn-featured-heading">
-        <p>Fork Night · Lobby · Shared rooms · Agents</p>
         <h2 id="fn-featured-title">Two stories running tonight</h2>
         <p>Step into one. Then add your own scene in Kessler.</p>
       </div>
@@ -52,7 +51,6 @@ export function FeaturedStories() {
           <span className="fn-featured-card-inner">
             <strong>Kessler Ward</strong>
             <span className="fn-featured-copy">Open to new makers tonight. Add a scene alongside people and Wren.</span>
-            <span className="fn-featured-note">Plain, with no animation. Kessler is the destination when it is live; this link uses the shared Kessler room config.</span>
             <a className="fn-featured-cta" href={featuredStoryLinks.kessler}>Add a scene <ArrowRight size={16} aria-hidden="true" /></a>
           </span>
         </article>
