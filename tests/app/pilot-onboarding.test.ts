@@ -90,6 +90,14 @@ test("saving a guest with Google links the verified UUID instead of creating ano
   checkGoogleLink({ ...h.state.user!, is_anonymous: false }, h.storage);
   assert.equal(h.storage.getItem(GOOGLE_LINK_KEY), null);
 });
+test("linking an account that is already saved starts no redirect and says so", async () => {
+  const h = fixture(); h.state.user!.is_anonymous = false;
+  assert.equal(await startGoogleLogin(h.client, "http://localhost:3005/pilot", h.storage, "link"), "saved");
+  assert.deepEqual(h.calls, []);
+  assert.equal(h.storage.getItem(GOOGLE_LINK_KEY), null);
+  h.state.user!.is_anonymous = true;
+  assert.equal(await startGoogleLogin(h.client, "http://localhost:3005/pilot", h.storage, "link"), undefined, "a guest is sent to Google");
+});
 test("linking failures preserve the guest and never fall back to signing into a different account", async () => {
   const h = fixture(); h.state.linkError = true;
   await assert.rejects(startGoogleLogin(h.client, "http://localhost:3005/pilot", h.storage, "link"), /guest work is preserved/);

@@ -48,6 +48,8 @@
 .fn-header .fn-account-signin:hover { border-color: var(--fn-header-current); background: rgb(151 120 255 / 14%); }
 
 /* Signed in: the account's menu. "Signed in" over the name sets it apart from a demo persona switcher. */
+.fn-header .fn-account-ready { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
+.fn-header .fn-account-ready.fn-account-guest { display: grid; gap: 2px; justify-items: start; }
 .fn-header .fn-account-menu { min-width: 0; max-width: 100%; }
 .fn-header .fn-account-menu > summary {
   display: flex;
@@ -67,6 +69,14 @@
 .fn-header .fn-account-menu > summary::-webkit-details-marker { display: none; }
 .fn-header .fn-account-menu > summary:hover,
 .fn-header .fn-account-menu[open] > summary { border-color: var(--fn-header-current); background: rgb(151 120 255 / 14%); }
+.fn-header .fn-account-menu[data-guest] > summary {
+  height: 27px;
+  padding: 0 4px 0 0;
+  border-color: transparent;
+  background: transparent;
+}
+.fn-header .fn-account-menu[data-guest] > summary:hover,
+.fn-header .fn-account-menu[data-guest][open] > summary { border-color: transparent; background: transparent; }
 .fn-header .fn-account-avatar {
   display: grid;
   flex: none;
@@ -80,12 +90,46 @@
   font-weight: 750;
   line-height: 1;
 }
+.fn-header .fn-account-menu[data-guest] .fn-account-avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
 .fn-header .fn-account-text { display: grid; min-width: 0; line-height: 1.2; text-align: left; }
 .fn-header .fn-account-eyebrow { color: var(--fn-header-muted); font-size: 11px; font-weight: 600; }
 .fn-header .fn-account-name { overflow: hidden; font-size: 14px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.fn-header .fn-account-menu[data-guest] .fn-account-name { font-size: 13px; }
 .fn-header .fn-account-pending { width: 64px; height: 10px; margin: 4px 0 3px; border-radius: 5px; background: rgb(192 197 224 / 28%); }
 .fn-header .fn-account-chevron { flex: none; color: var(--fn-header-muted); transition: transform 150ms ease; }
 .fn-header .fn-account-menu[open] .fn-account-chevron { transform: rotate(180deg); }
+.fn-header .fn-account-save-google {
+  margin-left: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fn-header-current);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.fn-header .fn-account-save-google:disabled { color: var(--fn-header-muted); }
+/* On phones the inline action is hidden, so the menu carries it. */
+.fn-header .fn-account-save-google-menu {
+  display: none;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fn-header-current);
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.fn-header .fn-account-save-google-menu:disabled { color: var(--fn-header-muted); }
 
 /* The menu opens under the chip, against its right edge, and never wider than the screen allows. */
 .fn-header .fn-account-panel {
@@ -146,9 +190,11 @@
 /* Phones keep a 44px circle: the name stays in the accessible name and in the menu. */
 @media (max-width: 640px) {
   .fn-header .fn-account { width: 44px; }
+  .fn-header .fn-account-ready.fn-account-guest { display: flex; justify-content: flex-end; }
   .fn-header .fn-account-signin { width: 44px; padding: 0; }
   .fn-header .fn-account-menu > summary { justify-content: center; width: 44px; padding: 0; }
   .fn-header .fn-account-text { position: absolute; }
+  .fn-header .fn-account-menu[data-guest] > summary { width: 44px; height: 44px; padding: 0; }
   .fn-header :is(.fn-account-signin-label, .fn-account-name) {
     position: absolute;
     width: 1px;
@@ -159,6 +205,9 @@
   }
   .fn-header :is(.fn-account-eyebrow, .fn-account-chevron) { display: none; }
   .fn-header .fn-account-avatar { width: 32px; height: 32px; }
+  .fn-header .fn-account-menu[data-guest] .fn-account-avatar { width: 32px; height: 32px; }
+  .fn-header .fn-account-save-google { display: none; }
+  .fn-header .fn-account-save-google-menu { display: block; }
   /* Without the "Signed in" eyebrow, a demo persona's portrait beside the chip's avatar would read as a second account. */
   .fn-header .fn-header-actions .social-user .social-avatar { display: none; }
 }

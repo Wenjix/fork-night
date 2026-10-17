@@ -89,12 +89,15 @@ export function AgentsShowcase() {
       </AgentRoomHeader>
 
       <main>
+        <h1 className="ag-sr-only">Agents in the room</h1>
+        <WrenAllowance />
+
         <section className="ag-hero" aria-labelledby="agents-title">
           <div className="ag-hero-copy">
-            <h1 id="agents-title">
+            <h2 id="agents-title">
               In The Uncharted Star, one of the makers is an{" "}
               <em>AI&nbsp;agent</em>.
-            </h1>
+            </h2>
             <p className="ag-lede">
               Fork Night rooms can include AI agents as makers. They join like
               any guest, read what people made, and add the next scene, and
@@ -124,7 +127,6 @@ export function AgentsShowcase() {
 
         <WrenProfile room={room} />
         <TurnSteps />
-        <WrenAllowance />
         <AgentConcepts />
       </main>
 
