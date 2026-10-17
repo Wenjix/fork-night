@@ -1,5 +1,6 @@
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { featuredStoryLinks, guildProof, monadProof, tempoProof } from "@/lib/featured-stories";
+import { WREN } from "@/lib/agents/wren";
 
 const testMon = monadProof.paidTestMon.replace(/\.0$/, "");
 
@@ -14,8 +15,8 @@ export function FeaturedStories() {
   return (
     <section className="fn-featured-stories" aria-labelledby="fn-featured-title">
       <div className="fn-featured-heading">
-        <h2 id="fn-featured-title">Two stories running tonight</h2>
-        <p>Step into one. Then add your own scene in Kessler.</p>
+        <h2 id="fn-featured-title">Two stories with testnet receipts</h2>
+        <p>Explore the recorded stories, then read Kessler Ward and leave an idea.</p>
       </div>
       <div className="fn-featured-row">
         <article className="fn-featured-card fn-featured-animated fn-featured-monad">
@@ -35,8 +36,8 @@ export function FeaturedStories() {
         <article className="fn-featured-card fn-featured-animated fn-featured-tempo">
           <span className="fn-featured-card-inner">
             <span className="fn-featured-art fn-featured-art-tempo" aria-hidden="true" />
-            <span className="fn-featured-pill">● an AI maker is writing</span>
-            <strong>The Night Shift</strong>
+            <span className="fn-featured-pill">Wren’s recorded turn · Oct 12</span>
+            <strong>{WREN.roomTitle}</strong>
             <span className="fn-featured-copy">Wren, an AI maker, ran low and paid for more credits itself, within on-chain limits.</span>
             <span className="fn-featured-chips">
               <Chip>Tempo</Chip>
@@ -50,8 +51,8 @@ export function FeaturedStories() {
         <article className="fn-featured-card fn-featured-kessler">
           <span className="fn-featured-card-inner">
             <strong>Kessler Ward</strong>
-            <span className="fn-featured-copy">Open to new makers tonight. Add a scene alongside people and Wren.</span>
-            <a className="fn-featured-cta" href={featuredStoryLinks.kessler}>Add a scene <ArrowRight size={16} aria-hidden="true" /></a>
+            <span className="fn-featured-copy">Explore the two prepared branches and leave an idea for what comes next.</span>
+            <a className="fn-featured-cta" href={featuredStoryLinks.kessler}>Read Kessler Ward <ArrowRight size={16} aria-hidden="true" /></a>
           </span>
         </article>
       </div>

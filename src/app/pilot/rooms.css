@@ -55,20 +55,6 @@
 .pilot-room-grant { padding: 16px; border-radius: 8px; background: #fff0a6; }
 .pilot-room-sign { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; border-block: 1px solid #cfc6ce; padding: 16px 0; margin: 0 32px 24px; }
 .pilot-shell > .fn-network-plate, .pilot-shell > .guild-funding-summary { margin: 0 32px 20px; }
-.pilot-kessler-power {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  margin: 0 32px 20px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-.pilot-kessler-power > strong { font-family: var(--font-display), sans-serif; font-size: 19px; }
-.pilot-kessler-power > div { display: flex; flex-wrap: wrap; gap: 8px; }
-.pilot-kessler-power a { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border-radius: 999px; background: var(--violet-soft); color: var(--violet); font-size: 13px; font-weight: 700; text-decoration: none; }
 .pilot-roster { flex: 1; min-width: 180px; }
 .pilot-roster summary { cursor: pointer; font-weight: 700; padding: 10px 0; }
 .pilot-roster-preview { display: block; font-size: 14px; font-weight: 400; margin-top: 6px; }
@@ -96,7 +82,7 @@
   .pilot-explore-more a + a { border-top: 1px solid var(--line); }
 }
 @media (max-width: 760px) {
-  .pilot-room-sign, .pilot-kessler-power, .pilot-shell > .fn-network-plate, .pilot-shell > .guild-funding-summary { margin-inline: 20px; }
+  .pilot-room-sign, .pilot-shell > .fn-network-plate, .pilot-shell > .guild-funding-summary { margin-inline: 20px; }
 }
 @media (max-width: 640px) {
   .pilot-entrance { padding: 0 16px 32px; }

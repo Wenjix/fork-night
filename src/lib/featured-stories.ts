@@ -2,8 +2,9 @@ import privyRehearsal from "../../docs/submission/PRIVY-REHEARSAL.json";
 import monadDeployment from "../../docs/submission/MONAD-TESTNET.json";
 import { WREN, WREN_TOP_UPS, txUrl } from "./agents/wren";
 import { getRecordedGuildFunding, fundingExplorerUrl } from "./guild-funding";
+import { KESSLER_ROOM_ID } from "./kessler-room";
 
-export const KESSLER_CTA_ROOM_ID = WREN.roomId;
+export const KESSLER_CTA_ROOM_ID = KESSLER_ROOM_ID;
 
 export const featuredStoryLinks = {
   midnight: "/pilot?room=midnight-signal",
@@ -38,12 +39,5 @@ export const guildProof = guild
       solanaReceiptUrl: fundingExplorerUrl(guild.receipts.payment.signature),
     }
   : undefined;
-
-export const kesslerPowerChips = [
-  { label: "MONAD releases", href: featuredStoryLinks.midnight },
-  { label: "TEMPO agent top-ups", href: tempoProof?.receiptUrl ?? featuredStoryLinks.nightShift },
-  { label: "SOLANA guild funding", href: guildProof?.roomUrl ?? featuredStoryLinks.paperMoonGuild },
-  { label: "PRIVY wallets", href: featuredStoryLinks.midnight },
-] as const;
 
 export const proofRoomIds = new Set(["midnight-signal", "paper-moon", WREN.roomId]);

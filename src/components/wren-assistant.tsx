@@ -104,22 +104,23 @@ export function WrenAssistant({ client, actorId, parent, moments, initialBrief =
   }
   const sourceId = request?.parentId ?? intent?.parentId ?? parent.id;
   const source = moments.find(moment => moment.id === sourceId);
+  const unavailable = !actorId || enabled === false && !request && !intent;
   return <section className="pilot-wren" aria-labelledby={id}>
-    <div className="pilot-wren-heading"><Sparkles size={21} aria-hidden="true" /><div><h2 id={id}>Make the next scene with Wren</h2><p>Choose a fork. Give Wren a direction. The preview stays private until you publish.</p></div></div>
-    <p className="pilot-wren-source">Continuing <button type="button" className="text-button" onClick={() => onInspect(sourceId)}>{source?.title ?? "your saved fork"}</button></p>
-    {!actorId ? <><p>Join as a guest or sign in with your wallet, then choose your storyteller name.</p><button type="button" className="button secondary" disabled={blocked} onClick={onJoin}>Join to ask Wren</button></> : <>
+    <div className="pilot-wren-heading"><Sparkles size={21} aria-hidden="true" /><div><h2 id={id}>{unavailable ? "Wren, your scene assistant" : "Make the next scene with Wren"}</h2><p>{unavailable ? "When the host enables Wren, it can prepare a private scene for your review. You choose what to publish." : "Choose a fork. Give Wren a direction. The preview stays private until you publish."}</p></div></div>
+    {!unavailable && <p className="pilot-wren-source">Continuing <button type="button" className="text-button" onClick={() => onInspect(sourceId)}>{source?.title ?? "your saved fork"}</button></p>}
+    {!actorId ? <button type="button" className="button secondary" disabled={blocked} onClick={onJoin}>Join the story</button> : <>
       {request ? <div className="pilot-wren-progress"><p role="status">{request.message}</p>{request.state === "ready" && <p>Review your scene above, then choose Publish or Discard.</p>}{wrenFinished(request) && <button type="button" className="button secondary" disabled={blocked || working} onClick={another}>Ask for another scene</button>}</div>
-        : <form onSubmit={event => { event.preventDefault(); void ask(); }}>
+        : !unavailable && <form onSubmit={event => { event.preventDefault(); void ask(); }}>
           <label htmlFor={`${id}-brief`}>What should happen next? <span>(optional)</span></label>
           <textarea id={`${id}-brief`} rows={3} maxLength={500} placeholder="A new obstacle, a small act of help, a different ending…" value={intent?.brief ?? brief} disabled={working || !!intent} onChange={event => setBrief(event.target.value)} />
           <button type="submit" className="button primary" disabled={blocked || checking || working || enabled === false}>{working ? "Sending your request…" : intent ? "Retry this saved request" : "Ask Wren for a private scene"}</button>
         </form>}
       {checking && <p role="status">Checking your saved Wren request…</p>}
-      {enabled === false && !active && <p role="status">Wren is being set up. You can write your own continuation in the meantime.</p>}
+      {enabled === false && !active && <p role="status">Wren is not active in this room yet. Read either branch and leave an idea for what comes next.</p>}
       {blocked && !active && <p>Finish your current continuation or wallet action before starting another scene.</p>}
       {error && <p role="alert">{error}</p>}
       {(error || intent && !request) && <button type="button" className="text-button" disabled={working || checking} onClick={() => { setChecking(true); setRefresh(value => value + 1); }}>Check saved request</button>}
     </>}
-    <p className="pilot-wren-note">Wren uses the room’s test credits and the host’s inference allowance. If credits run low, Wren can top up within its testnet allowance. No payment is taken from your wallet.</p>
+    {!unavailable && <p className="pilot-wren-note">Wren uses the room’s test credits and the host’s inference allowance. If credits run low, Wren can top up within its testnet allowance. No payment is taken from your wallet.</p>}
   </section>;
 }

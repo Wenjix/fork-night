@@ -50,8 +50,8 @@ import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-g
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
 import { getRecordedGuildFunding } from "@/lib/guild-funding";
-import { featuredStoryLinks, kesslerPowerChips, proofRoomIds } from "@/lib/featured-stories";
-import { KESSLER_ROOM_ID } from "../lib/kessler-room";
+import { featuredStoryLinks, proofRoomIds } from "@/lib/featured-stories";
+import { KESSLER_OPENING_ID, KESSLER_ROOM_ID } from "../lib/kessler-room";
 import {
   IDEA_DRAG_TYPE,
   parseComposerDraft,
@@ -79,18 +79,9 @@ const message = (error: unknown) =>
 
 function KesslerTurnCard() {
   return <aside className="pilot-kessler-turn" aria-label="Try Kessler Ward">
-    <div><strong>Your turn.</strong> Kessler Ward is open for new makers tonight.</div>
+    <div><strong>Your turn.</strong> Read Kessler Ward and leave an idea for what comes next.</div>
     <a className="button secondary" href={featuredStoryLinks.kessler}>Continue in Kessler <ArrowRight size={17} aria-hidden="true" /></a>
   </aside>;
-}
-
-function KesslerPowerRow() {
-  return <section className="pilot-kessler-power" aria-label="What powers this room">
-    <strong>What powers this room</strong>
-    <div>
-      {kesslerPowerChips.map(chip => <a key={chip.label} href={chip.href}>{chip.label}</a>)}
-    </div>
-  </section>;
 }
 
 export function SharedPilot() {
@@ -359,17 +350,20 @@ export function SharedPilot() {
             "That shared moment is unavailable. Showing a saved moment from this room.",
           );
         const initial = first;
+        const entryId = roomId === KESSLER_ROOM_ID && story.data.some(item => item.id === KESSLER_OPENING_ID)
+          ? KESSLER_OPENING_ID
+          : story.data.at(-1)?.id ?? "";
         setSelectedId((current) =>
           story.data.some((item) => item.id === (target ?? current))
             ? (target ?? current)
-            : initial ? (story.data.at(-1)?.id ?? "") : current,
+            : initial ? entryId : current,
         );
         setTipId((current) =>
           target && story.data.some((item) => item.id === target)
             ? target
             : story.data.some((item) => item.id === current)
               ? current
-              : initial ? (story.data.at(-1)?.id ?? "") : current,
+              : initial ? entryId : current,
         );
         if (target) sharedTarget.current = null;
         first = false;
@@ -1068,9 +1062,8 @@ export function SharedPilot() {
       <div className="pilot-intro">
         <h1>{room?.title ?? "Opening the shared story…"}</h1>
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
-        {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">The opening and its two branches are prepared examples. New published scenes carry their storyteller’s byline; Wren’s help is identified separately.</p>}
+        {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">Explore two prepared branches, then leave an idea at any scene. Each new published scene keeps its storyteller’s byline.</p>}
       </div>
-      {roomId === KESSLER_ROOM_ID && <KesslerPowerRow />}
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
         <details className="pilot-roster"><summary>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></summary><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</details>
         {!joinedRoom && profile && <button className="button secondary" disabled={busy} onClick={() => setJoinOpen(true)}>Join this room</button>}
@@ -1088,8 +1081,11 @@ export function SharedPilot() {
         {error && <p role="alert">{error}</p>}
         <button className="button primary" disabled={busy || (!profile && !joinName.trim())} onClick={() => void act(async () => { if (profile) await joinRoom(); else { await join(joinName); setJoinOpen(false); } })}>{busy ? "Joining…" : "Join this room"}</button>
       </PilotDialog>}
-      {!recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />}
+      {!recordedGuildFunding && (roomId === KESSLER_ROOM_ID
+        ? <details className="pilot-network-details"><summary>About testnet releases</summary><PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} /></details>
+        : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />)}
       {loadedRoom === roomId && credits && <PilotRoomActivity credits={{ ...credits, ...activity }} interrupted={!!syncError} />}
+      {roomId === KESSLER_ROOM_ID && loadedRoom === roomId && credits && credits.available === 0 && <p className="pilot-reading-status">Reading and ideas are open. New images need room credits.</p>}
       {(error || syncError || pathError || account?.error) && (
         <div className="pilot-notice" role="alert">
           <p>{error || syncError || pathError || account?.error}</p>
@@ -1162,7 +1158,7 @@ export function SharedPilot() {
                 visible
               />
               <p className="pilot-map-foot">
-                Read any branch. Violet marks your selected path.
+                Read any branch. Highlighted moments mark your selected path.
               </p>
             </section>
           )}
@@ -1211,16 +1207,16 @@ export function SharedPilot() {
                         ) : parent ? (
                           <>
                             {" "}
-                            built on{" "}
+                            {roomId === KESSLER_ROOM_ID && !selected.maker_id ? "continues" : "built on"}{" "}
                             <button
                               className="text-button"
                               onClick={() => select(parent.id)}
                             >
-                              {parent.maker_label}
+                              {roomId === KESSLER_ROOM_ID && !selected.maker_id ? parent.title : parent.maker_label}
                             </button>
                           </>
                         ) : (
-                          " started this story"
+                          roomId === KESSLER_ROOM_ID && !selected.maker_id ? " · opening scene" : " started this story"
                         )}
                       </p>
                     </div>
@@ -1334,7 +1330,6 @@ export function SharedPilot() {
                     }}
                   />
                 </div>
-                {proofRoom && !reviewing && <KesslerTurnCard />}
                 {credits && (
                   <p className="pilot-credit-line">
                     <Sparkles size={15} />
@@ -1354,9 +1349,10 @@ export function SharedPilot() {
                     onRefill={() => setRefresh((current) => current + 1)}
                   />
                 )}
+                {proofRoom && !reviewing && <KesslerTurnCard />}
                 <details className="pilot-credits" id="pilot-contribution-credits" tabIndex={-1}>
                   <summary>
-                    Made together by{" "}
+                    {roomId === KESSLER_ROOM_ID ? "Scenes and credits" : <>Made together by{" "}
                     {
                       new Set(
                         path.map((item) => item.maker_id ?? item.maker_label),
@@ -1366,7 +1362,7 @@ export function SharedPilot() {
                       path.map((item) => item.maker_id ?? item.maker_label),
                     ).size === 1
                       ? "storyteller"
-                      : "storytellers"}
+                      : "storytellers"}</>}
                   </summary>
                   <ol>
                     {path.map((item) => (
