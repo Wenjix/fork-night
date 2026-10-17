@@ -320,7 +320,7 @@ function chipMenu(user: object, saved: Record<string, string>, failures: { signO
     steps.push("forgetPrivySession");
   };
   const handlers = run(`() => { ${lift("signOut")}\n${lift("requestSignOut")}\nreturn { signOut, requestSignOut }; }`, {
-    ready: { status: "ready", client, account, named: true }, busy: false, account, savedHere: memory(saved), window, createSignOutRequest,
+    ready: { status: "ready", client, account, named: true }, busy: false, googleBusy: false, account, savedHere: memory(saved), window, createSignOutRequest,
     forgetPrivySession, expireCookie,
     needsPilotTrip: (who: unknown, storage: unknown) => needsPilotTrip(who, storage, true),
     load: async (path: string) => { steps.push(`load ${path}`); return modules[path]; },
@@ -647,7 +647,7 @@ test("the agents page's header link is named by its words, with an arrow that sc
 });
 
 test("Save with Google gives the button back when the account was already saved elsewhere, and keeps it busy while Google opens", async () => {
-  async function save(result: "saved" | undefined | Error) {
+  async function save(result: "saved" | undefined | Error, state: { busy?: boolean; confirming?: boolean } = {}) {
     const steps: string[] = [];
     const client = { auth: { refreshSession: async () => { steps.push("refreshSession"); return { data: {}, error: null }; } } };
     const onboarding = { startGoogleLogin: async (used: unknown, href: string, storage: unknown, mode: string) => {
@@ -658,7 +658,7 @@ test("Save with Google gives the button back when the account was already saved 
     } };
     const menu = { current: { open: false } };
     const saveWithGoogle = run(`() => { ${lift("saveWithGoogle")}\nreturn saveWithGoogle; }`, {
-      ready: { status: "ready", client }, googleBusy: false, menu,
+      ready: { status: "ready", client }, googleBusy: false, busy: !!state.busy, confirming: !!state.confirming, menu,
       window: { location: { href: `${SITE}/agents` }, sessionStorage: memory() },
       load: async (path: string) => { assert.equal(path, "../lib/supabase/onboarding.ts"); return onboarding; },
       setGoogleBusy: (value: boolean) => steps.push(`googleBusy ${value}`), setError: (value: string) => { if (value) steps.push(`error ${value}`); },
@@ -673,4 +673,19 @@ test("Save with Google gives the button back when the account was already saved 
   const failed = await save(new Error("Google could not be linked."));
   assert.deepEqual(failed.steps, ["googleBusy true", "startGoogleLogin", "googleBusy false", "error Google could not be linked.", "open true"]);
   assert.equal(failed.menu.current.open, true, "the menu opens to show the error");
+  assert.deepEqual((await save(undefined, { confirming: true })).steps, [], "not while the unrecoverable-guest warning is open");
+  assert.deepEqual((await save(undefined, { busy: true })).steps, [], "not once sign-out has begun");
+});
+
+test("sign-out and Save with Google never run at once", async () => {
+  const source = await readFile("src/components/header-account.tsx", "utf8");
+  assert.equal(source.match(/\{saveable && !confirming && <button/g)?.length, 2, "both Google actions leave while the guest confirms sign-out");
+  assert.equal(source.match(/disabled=\{googleBusy \|\| busy\}/g)?.length, 2, "and wait while sign-out runs");
+  assert.match(source, /className="fn-account-signout" disabled=\{busy \|\| googleBusy\}/, "sign-out waits while Google opens");
+  const steps: string[] = [];
+  const signOut = run(`() => { ${lift("signOut")}\nreturn signOut; }`, {
+    ready: { status: "ready" }, busy: false, googleBusy: true, setBusy: (value: boolean) => steps.push(`busy ${value}`), setError: () => {},
+  })();
+  await signOut();
+  assert.deepEqual(steps, [], "no sign-out while Google is opening");
 });

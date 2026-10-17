@@ -223,3 +223,14 @@ test("Wren's card and the mock steward controls are named groups, not landmarks"
   const concepts = renderToStaticMarkup(React.createElement(AgentConcepts));
   assert.match(concepts, /<div class="ag-mock-controls" role="group" aria-label="Steward controls \(concept, disabled\)">/);
 });
+
+test("the page's h1 comes first, before the Tempo proof's h2, and the hero is a section heading", () => {
+  const page = read("src/components/agents/agents-showcase.tsx");
+  const main = page.slice(page.indexOf("<main>"));
+  assert.match(main, /^<main>\s*<h1 className="ag-sr-only">Agents in the room<\/h1>\s*<WrenAllowance \/>/, "a visually hidden h1 opens main");
+  assert.equal(page.match(/<h1\b/g)?.length, 1, "one h1 on the page");
+  assert.match(page, /<h2 id="agents-title">/);
+  const css = read("src/app/agents/agents.css");
+  assert.match(css, /\.ag-sr-only \{[^}]*position: absolute;[^}]*clip: rect\(0, 0, 0, 0\);/);
+  assert.doesNotMatch(css, /\.ag-hero h1\b/, "the hero's type follows its heading");
+});
