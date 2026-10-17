@@ -8,7 +8,9 @@ import type { PilotMoment } from "../../lib/pilot.ts";
 import type { EditionResponse, MeResponse, WorldResponse } from "../../night-watch/api-types.ts";
 import { NIGHT_WATCH_ROOM } from "../../night-watch/api-types.ts";
 import { pollWhileVisible } from "../../lib/visible-interval.ts";
+import { BrandBadge } from "../brand-badge";
 import { TestnetRelease } from "../testnet-release.tsx";
+import { CardHeading } from "./card-heading";
 import { ActHeading, MomentImage } from "./world-panel.tsx";
 import { IdentityCard } from "./identity-card.tsx";
 import { RecapCard } from "./recap-card.tsx";
@@ -143,18 +145,17 @@ export function EditionPanel({ api, tip, world, me, job, client }: {
     {heading}
     <div className="nw-morning">
       <article className="nw-card nw-front-page" aria-labelledby={`${ids}-moment`}>
-        <p className="nw-card-eyebrow"><Newspaper size={15} aria-hidden="true" />Published moment</p>
         <div className="nw-front">
           <div className="nw-front-art">{moment ? <MomentImage panel={moment.panels[0]} /> : <span className="nw-image-placeholder">Opening the published image…</span>}</div>
           <div className="nw-front-copy">
-            <h3 id={`${ids}-moment`}>{headline.heading}</h3>
+            <CardHeading id={`${ids}-moment`} title={headline.heading} kind="Published moment" icon={Newspaper} />
             <p className="nw-moment-maker">by {makerLabel}</p>
             {headline.body && <p className="nw-front-caption">{headline.body}</p>}
             <ul className="nw-front-facts">
-              {nightWatch && <li><MoonStar size={15} aria-hidden="true" />Prepared by a Night Watch from kit v{nightWatch.kitVersion} · candidate {candidateLetter(nightWatch.candidate)}</li>}
-              {frontFacts.map((fact) => <li key={fact}><BrainCircuit size={15} aria-hidden="true" />{fact}</li>)}
-              <li><Check size={15} aria-hidden="true" />Published by its maker, not by the Night Watch</li>
-              {edition && <li><BadgeCheck size={15} aria-hidden="true" />{edition.moments.length} scenes on this path, from the original opening</li>}
+              {nightWatch && <li><MoonStar size={16} aria-hidden="true" />Prepared by a Night Watch from kit v{nightWatch.kitVersion} · candidate {candidateLetter(nightWatch.candidate)}</li>}
+              {frontFacts.map((fact) => <li key={fact}><BrainCircuit size={16} aria-hidden="true" />{fact}</li>)}
+              <li><Check size={16} aria-hidden="true" />Published by its maker, not by the Night Watch</li>
+              {edition && <li><BadgeCheck size={16} aria-hidden="true" />{edition.moments.length} scenes on this path, from the original opening</li>}
             </ul>
           </div>
         </div>
@@ -172,7 +173,8 @@ export function EditionPanel({ api, tip, world, me, job, client }: {
       {edition && <section className="nw-card nw-shares" aria-labelledby={`${ids}-shares`}>
         <div className="nw-card-head">
           <h3 id={`${ids}-shares`}><HandCoins size={20} aria-hidden="true" />Deliver a share with the Night Watch helper</h3>
-          <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Refresh the release and claims" onClick={() => setVersion((value) => value + 1)}><RefreshCw size={18} aria-hidden="true" /></button>
+          <BrandBadge brand="monad" />
+          <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Refresh the release and claims" onClick={() => setVersion((value) => value + 1)}><RefreshCw size={20} aria-hidden="true" /></button>
         </div>
         <p className="nw-fine">The helper is an app-funded wallet that pays the gas to call <code>claim</code> on the release contract. The contract sends each share only to its frozen recipient, so the helper can deliver a share but never redirect it. A delivery counts once Monad testnet has settled it.</p>
         {!release || !release.exists
@@ -189,9 +191,9 @@ export function EditionPanel({ api, tip, world, me, job, client }: {
                     <code title={share.address}>{shortHex(share.address, 8, 6)}</code>
                     <span>{formatMon(share.claimableWei)} waiting · {formatMon(share.claimedWei)} delivered so far</span>
                     {share.claim && <span className="nw-claim-state" data-state={share.claim.state}>
-                      {share.claim.state === "finalized" ? <Check size={14} aria-hidden="true" /> : null}
+                      {share.claim.state === "finalized" ? <Check size={16} aria-hidden="true" /> : null}
                       {CLAIM_STATE_LABELS[share.claim.state]}{share.claim.claimedWei ? ` · ${formatMon(share.claim.claimedWei)}` : ""}
-                      {claimHref && <a href={claimHref} target="_blank" rel="noreferrer">{shortHex(share.claim.hash)} <ExternalLink size={13} aria-hidden="true" /></a>}
+                      {claimHref && <a href={claimHref} target="_blank" rel="noreferrer">{shortHex(share.claim.hash)} <ExternalLink size={16} aria-hidden="true" /></a>}
                     </span>}
                   </div>
                   {(() => {

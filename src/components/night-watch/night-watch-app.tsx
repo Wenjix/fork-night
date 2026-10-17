@@ -10,7 +10,8 @@ import { usePilotAccount } from "../pilot-account.tsx";
 import { PilotIdentity } from "../pilot-identity.tsx";
 import { AgentRoomHeader } from "../agents/agent-room-header";
 import { HeaderAccountVisibility } from "../app-header";
-import { NightWatchIntro } from "./night-watch-intro";
+import { Disclosure } from "../disclosure";
+import { NightWatchFooter, NightWatchIntro } from "./night-watch-intro";
 import { NightWatchAccountProvider } from "./night-watch-account.tsx";
 import { ActHeading, WorldPanel } from "./world-panel.tsx";
 import { DeskPanel, SignInButton } from "./desk-panel.tsx";
@@ -51,11 +52,11 @@ function scrollToAct(id: string) {
 function AgentRoles() {
   return <ul className="nw-agent-roles" aria-label="Two kinds of agent in Fork Night">
     <li>
-      <span className="nw-agent-role-icon" aria-hidden="true"><Bird size={18} /></span>
+      <span className="nw-agent-role-icon" aria-hidden="true"><Bird size={20} /></span>
       <p><strong>Wren · a room’s agent</strong>Takes public turns in The Uncharted Star and publishes its own credited scenes. <a href="/agents">Meet Wren</a></p>
     </li>
     <li data-current="true">
-      <span className="nw-agent-role-icon" aria-hidden="true"><MoonStar size={18} /></span>
+      <span className="nw-agent-role-icon" aria-hidden="true"><MoonStar size={20} /></span>
       <p><strong>Night Watch · your agent</strong>Works only for you while you’re away, can read the room with Kimi K3 before it draws, and stays inside limits you sign. You choose what gets published.</p>
     </li>
   </ul>;
@@ -76,9 +77,7 @@ function Frame({ account, children, privyDemo = false }: { account: ReactNode; c
       </section>
       {children}
     </main>
-    <footer className="nw-footer">
-      <p>Fork Night · testnet only. Test USDC, test MON and test credits have no redemption value. Images are operator-paid inference.</p>
-    </footer>
+    <NightWatchFooter />
   </div>;
 }
 
@@ -112,7 +111,7 @@ function AccountMenu({ me }: { me: MeResponse | null }) {
 function LockedAct({ id, act, title, text }: { id: string; act: string; title: string; text: string }) {
   return <section id={id} className={`nw-act${id === "morning" ? " nw-act-dawn" : " nw-act-night"}`} aria-labelledby={`${id}-title`}>
     <ActHeading act={act} id={`${id}-title`} title={title} />
-    <div className="nw-card nw-empty"><Lock size={22} aria-hidden="true" /><p>{text}</p></div>
+    <div className="nw-card nw-empty"><Lock size={24} aria-hidden="true" /><p>{text}</p></div>
   </section>;
 }
 
@@ -274,7 +273,7 @@ function NightWatchExperience({ privyDemo, accountSlot }: { privyDemo: boolean; 
     {createPortal(<AccountMenu me={me} />, accountSlot)}
     {account.error && <p role="alert" className="nw-error nw-on-night nw-page-alert">{account.error}</p>}
     {privyDemo
-      ? <details className="nw-privy-context"><summary>Story context: {world?.room.title ?? "The Midnight Signal"}</summary>{worldPanel}</details>
+      ? <Disclosure className="nw-privy-context" summary={`Story context: ${world?.room.title ?? "The Midnight Signal"}`}>{worldPanel}</Disclosure>
       : worldPanel}
     {privyDemo && <PrivyPermissionCaption />}
     <DeskPanel api={api} world={world} me={me} meError={meError} signedIn={signedIn} accountLoading={account.loading}
@@ -286,7 +285,7 @@ function NightWatchExperience({ privyDemo, accountSlot }: { privyDemo: boolean; 
       : <LockedAct id="away" act="Act 3" title="While you were away" text="Sign in to read your Night Watch log, its receipt and the private candidates it prepared for you." />}
     {privyDemo && <PrivyControlCaption />}
     {privyDemo
-      ? <details className="nw-privy-context nw-privy-bonus"><summary>Optional demo: a Privy wallet delivers a Monad share</summary><PrivyHelperCaption />{editionPanel}</details>
+      ? <Disclosure className="nw-privy-context nw-privy-bonus" summary="Optional demo: a Privy wallet delivers a Monad share"><PrivyHelperCaption />{editionPanel}</Disclosure>
       : editionPanel}
   </>;
 }

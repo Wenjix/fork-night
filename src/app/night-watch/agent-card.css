@@ -1,63 +1,56 @@
-/* The Night Watch's ERC-8004 card, drawn like Wren's agent card on /agents (.ag-id-card) with the same paper and ink. */
-.night-watch .nw-card.nw-agent-card {
-  --nw-star: var(--ink);
-  --nw-mist: var(--muted);
-  --nw-link: var(--violet-dark);
-  --nw-line: var(--line);
-  --nw-raised: var(--paper);
-  --nw-agent: var(--success);
-  --nw-moon: var(--violet-dark);
+/* The Night Watch's ERC-8004 card, drawn like Wren's agent card on /agents (.ag-id-card) with the same butter paper and ink. */
+.nw-card.nw-agent-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  border: 1px solid #d8c693;
-  background: #fff0cd;
+  gap: var(--space-4);
+  border: 1px solid var(--yellow-line);
+  background: var(--yellow-soft);
   box-shadow: none;
-  color: var(--nw-star);
 }
-.night-watch .nw-agent-card a { color: var(--nw-link); text-underline-offset: 4px; }
-.night-watch .nw-agent-card :focus-visible { outline-color: var(--nw-moon); }
-.night-watch .nw-agent-card code { color: var(--nw-star); }
-.night-watch .nw-agent-card h4 { color: var(--nw-star); margin-bottom: 8px; }
+.nw-agent-card a { color: var(--accent-strong); text-underline-offset: 4px; }
+.nw-agent-card code { color: var(--ink); }
+.nw-agent-card h4 { color: var(--ink); margin-bottom: var(--space-2); }
 
-.nw-agent-card-top { display: flex; align-items: center; gap: 16px; }
-.nw-agent-card-top > div { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; flex: 1; }
-.nw-agent-card-top h3 { font-size: 30px; line-height: 1; color: var(--nw-star); }
-.nw-agent-card-avatar { display: grid; place-items: center; flex-shrink: 0; width: 68px; height: 68px; border-radius: 12px 12px 4px 4px; background: var(--navy); color: #ffdb67; }
-.nw-agent-card-eyebrow { display: inline-flex; align-items: center; gap: 6px; color: var(--nw-agent); font-size: 12px; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
-.night-watch .nw-agent-card-top .nw-icon-button { align-self: flex-start; border-color: var(--nw-line); background: var(--nw-raised); color: var(--nw-star); }
-.night-watch .nw-agent-card-top .nw-icon-button:hover { background: var(--violet-soft); }
+.nw-agent-card-top { display: flex; align-items: center; gap: var(--space-4); }
+.nw-agent-card-top > div { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); min-width: 0; flex: 1; }
+.nw-agent-card-title { display: flex; align-items: center; flex-wrap: wrap; gap: 6px var(--space-3); }
+.nw-agent-card-top h3 { font-size: var(--text-section); line-height: var(--leading-tight); color: var(--ink); }
+.nw-agent-card-avatar { display: grid; place-items: center; flex-shrink: 0; width: 56px; height: 56px; border-radius: var(--radius-lg) var(--radius-lg) 4px 4px; background: var(--navy); color: var(--night-yellow); }
+.nw-agent-card-chips { margin: 0; }
+.nw-agent-card-top .nw-icon-button { align-self: flex-start; border-color: var(--edge); background: var(--paper); color: var(--ink); }
+.nw-agent-card-top .nw-icon-button:hover { background: var(--accent-soft); }
 
 /* The badge every agent byline carries, as on /agents. */
-.nw-agent-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--success); color: var(--surface); font-size: 13px; font-weight: 750; line-height: 1.2; letter-spacing: 0.01em; white-space: nowrap; }
+.nw-agent-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 9px; border-radius: var(--radius-pill); background: var(--success); color: var(--surface); font-size: var(--text-sm); font-weight: 750; line-height: 1.2; letter-spacing: 0.01em; white-space: nowrap; }
 
-.nw-agent-card-byline { font-size: 17px; font-weight: 600; line-height: 1.4; color: var(--nw-moon); }
-.nw-agent-card-steward { color: var(--nw-mist); font-size: 15px; }
-.nw-agent-card-steward strong { color: var(--nw-star); }
-.nw-agent-card-status { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 999px; background: #e0edcd; color: var(--nw-agent); font-size: 14px; font-weight: 650; line-height: 1.4; }
+.nw-agent-card-byline { font-size: var(--text-lg); font-weight: 600; line-height: 1.4; color: var(--accent-strong); }
+.nw-agent-card-steward { color: var(--muted); font-size: var(--text-md); }
+.nw-agent-card-steward strong { color: var(--ink); }
+.nw-agent-card-statusrow { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
+.nw-agent-card-status { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: var(--radius-pill); background: var(--success-soft); color: var(--success); font-size: var(--text-base); font-weight: 650; line-height: 1.4; }
 .nw-agent-card-status svg { flex-shrink: 0; }
-.nw-agent-card-status[data-pending] { border-color: var(--nw-line); background: var(--nw-raised); color: var(--nw-mist); }
+.nw-agent-card-status[data-pending] { background: var(--paper); color: var(--muted); box-shadow: inset 0 0 0 1px var(--yellow-line); }
 
 .nw-agent-card-rows { display: grid; gap: 0; }
-.nw-agent-card-rows > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--nw-line); font-size: 14px; line-height: 1.5; }
-.nw-agent-card-rows dt { display: flex; align-items: flex-start; gap: 6px; color: var(--nw-mist); }
-.nw-agent-card-rows dt svg { margin-top: 4px; }
-.nw-agent-card-rows dd { color: var(--nw-star); }
+.nw-agent-card-rows > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: var(--space-3); padding: 10px 0; border-top: 1px solid var(--yellow-line); font-size: var(--text-base); line-height: 1.5; }
+.nw-agent-card-rows dt { display: flex; align-items: flex-start; gap: 6px; color: var(--muted); }
+.nw-agent-card-rows dt svg { margin-top: 2px; }
+.nw-agent-card-rows dd { color: var(--ink); }
 
 .nw-agent-card-block { min-width: 0; }
-.nw-agent-card-list, .nw-agent-card-links { display: grid; gap: 6px; padding-left: 20px; color: var(--nw-mist); font-size: 15px; line-height: 1.5; }
+.nw-agent-card-list, .nw-agent-card-links { display: grid; gap: 6px; padding-left: var(--space-5); color: var(--muted); font-size: var(--text-md); line-height: 1.5; }
 .nw-agent-card-links a { display: inline-flex; align-items: center; gap: 5px; }
-.nw-agent-card-note { padding: 12px 14px; border-radius: 12px; background: var(--nw-raised); color: var(--nw-mist); font-size: 14px; line-height: 1.55; }
+.nw-agent-card-note { padding: 12px 14px; border-radius: var(--radius-lg); background: var(--paper); color: var(--muted); font-size: var(--text-base); line-height: 1.55; }
 
-.night-watch .nw-agent-card :is(.nw-quiet, .nw-technical, .nw-technical > summary) { color: var(--nw-mist); }
-.night-watch .nw-agent-card .nw-technical { margin-top: 0; }
-.night-watch .nw-agent-card .nw-technical > summary:hover { color: var(--nw-star); }
-.night-watch .nw-agent-card .nw-error { margin-top: 0; }
+.nw-agent-card :is(.nw-quiet, .nw-technical, .nw-technical > summary) { color: var(--muted); }
+.nw-agent-card .nw-technical { margin-top: 0; }
+.nw-agent-card .nw-technical > summary:hover { color: var(--ink); }
+.nw-agent-card .nw-error { margin-top: 0; }
 
 @media (max-width: 720px) {
-  .nw-agent-card-top { gap: 12px; }
-  .nw-agent-card-top h3 { font-size: 26px; }
-  .nw-agent-card-avatar { width: 56px; height: 56px; border-radius: 16px; }
-  .nw-agent-card-status { border-radius: 14px; }
+  .nw-agent-card-top { gap: var(--space-3); }
+  .nw-agent-card-top h3 { font-size: var(--text-card); }
+  .nw-agent-card-avatar { width: 48px; height: 48px; border-radius: var(--radius-md) var(--radius-md) 4px 4px; }
+  .nw-agent-card-status { border-radius: var(--radius-xl); }
   .nw-agent-card-rows > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }

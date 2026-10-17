@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { NightWatchPageContent } from "@/components/night-watch/night-watch-page";
 import "../pilot/pilot.css";
 import "../pilot/rooms.css";
@@ -7,6 +7,9 @@ import "./night-watch.css";
 import "./agent-card.css";
 import "./copilot.css";
 import "./brain.css";
+
+/** The page is night from edge to edge, so the browser chrome and the document's own scrollbars are too. */
+export const viewport: Viewport = { themeColor: "#10152f", colorScheme: "dark" };
 
 export const metadata: Metadata = {
   title: "Night Watch · Fork Night",

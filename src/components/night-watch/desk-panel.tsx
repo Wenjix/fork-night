@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { Check, CircleAlert, CircleDashed, ExternalLink, KeyRound, LoaderCircle, MoonStar, ShieldCheck, Sparkles, Wallet, X } from "lucide-react";
+import { Check, CircleAlert, CircleDashed, Clock3, ExternalLink, Images, KeyRound, LoaderCircle, MoonStar, ShieldCheck, Sparkles, Wallet, X } from "lucide-react";
 import type { ConsentTerms, CopilotResponse, JobSummary, MeResponse, SessionView, WorldResponse } from "../../night-watch/api-types.ts";
-import { GoogleButton, PrivyMark } from "../auth-branding.tsx";
+import { GoogleButton } from "../auth-branding.tsx";
+import { BrandBadge, BrandStrip, Chip } from "../brand-badge";
 import { WalletSignInButton } from "../pilot-wallet-signin.tsx";
 import { usePilotAccount } from "../pilot-account.tsx";
 import { useNightWatchPrivy } from "./night-watch-account.tsx";
 import { ActHeading } from "./world-panel.tsx";
+import { Disclosure } from "../disclosure";
+import { CardHeading } from "./card-heading";
+import { ModelBadge, PaymentChain, RouterBadge } from "./night-watch-badges";
 import {
   BRIEF_LIMIT,
   consentItems,
@@ -23,7 +27,6 @@ import {
   isJobActive,
   momentLabel,
   openSessions,
-  PAYMENT_NETWORK_NAME,
   plural,
   safeHref,
   sameAddress,
@@ -128,7 +131,7 @@ function SessionCard({ session, now, revoking, disabled, onRevoke }: { session: 
     </div>
     <dl className="nw-limits">
       <div><dt>Limit</dt><dd>{formatUsdc(session.limits.totalAllowanceAtomic)} · {plural(session.limits.maxPayments, "top-up")}</dd></div>
-      <div><dt>Allowed call</dt><dd>{session.limits.maxPayments > 0 ? <>One transfer of at most {formatUsdc(session.limits.maxPaymentAtomic)} on {PAYMENT_NETWORK_NAME}</> : "None: no payments allowed"}</dd></div>
+      <div><dt>Allowed call</dt><dd>{session.limits.maxPayments > 0 ? <>One transfer of at most {formatUsdc(session.limits.maxPaymentAtomic)} on <PaymentChain /></> : "None: no payments allowed"}</dd></div>
       <div><dt>Still available</dt><dd>{formatUsdc(session.remainingAtomic)}</dd></div>
       <div><dt>Attempts</dt><dd>Up to {plural(session.limits.attemptAllowance, "candidate")}</dd></div>
     </dl>
@@ -137,7 +140,7 @@ function SessionCard({ session, now, revoking, disabled, onRevoke }: { session: 
         const href = safeHref(payment.explorerUrl);
         return <li key={payment.id}>
           <span><strong>{formatUsdc(payment.amountAtomic)}</strong> · {PAYMENT_STATES[payment.state]}{payment.creditsAdded ? ` · +${payment.creditsAdded} test credits` : ""}</span>
-          {href && payment.transaction && <a href={href} target="_blank" rel="noreferrer">{shortHex(payment.transaction)} <ExternalLink size={13} aria-hidden="true" /></a>}
+          {href && payment.transaction && <a href={href} target="_blank" rel="noreferrer">{shortHex(payment.transaction)} <ExternalLink size={16} aria-hidden="true" /></a>}
         </li>;
       })}
     </ul>}
@@ -145,15 +148,14 @@ function SessionCard({ session, now, revoking, disabled, onRevoke }: { session: 
       <button type="button" className="button secondary nw-revoke" disabled={disabled || revoking} onClick={onRevoke}>{revoking ? "Revoking…" : "Revoke Night Watch"}</button>
       <small>Revoking removes the signer from your wallet and sets its policy to deny every request. A payment that already settled stays settled.</small>
     </div>
-    <details className="nw-technical">
-      <summary>Session details</summary>
+    <Disclosure className="nw-technical" summary="Session details">
       <dl>
         <div><dt>Session</dt><dd><code>{session.id}</code></dd></div>
         <div><dt>Wallet</dt><dd><code>{session.walletAddress}</code></dd></div>
         <div><dt>Pays only to</dt><dd><code>{session.limits.payTo}</code></dd></div>
-        <div><dt>Token (test USDC)</dt><dd><code>{session.limits.token}</code> · chain {session.limits.chainId}</dd></div>
+        <div><dt>Token (test USDC)</dt><dd><code>{session.limits.token}</code> · <PaymentChain label={`chain ${session.limits.chainId}`} /></dd></div>
       </dl>
-    </details>
+    </Disclosure>
   </section>;
 }
 
@@ -379,7 +381,7 @@ export function DeskPanel({ api, world, me, meError, signedIn, accountLoading, f
     return <section id="desk" className="nw-act" aria-labelledby="desk-title">
       {heading}
       <div className="nw-card nw-desk-signin">
-        <MoonStar size={28} aria-hidden="true" />
+        <MoonStar size={24} aria-hidden="true" />
         <div>
           <h3>Sign in to authorize a Night Watch</h3>
           <p>{accountLoading ? "Checking your sign-in…" : "Sign in with Google or your wallet on this machine to authorize a Night Watch. Either way, top-ups are paid from your Privy in-app wallet, not the sign-in wallet. The world above is public; your desk, drafts and receipts are yours."}</p>
@@ -393,7 +395,7 @@ export function DeskPanel({ api, world, me, meError, signedIn, accountLoading, f
     return <section id="desk" className="nw-act" aria-labelledby="desk-title">
       {heading}
       <div className="nw-card nw-desk-signin" role="status">
-        <CircleAlert size={28} aria-hidden="true" />
+        <CircleAlert size={24} aria-hidden="true" />
         <div>
           <h3>The Night Watch signer is unavailable here</h3>
           <p>{privy.error}</p>
@@ -411,29 +413,32 @@ export function DeskPanel({ api, world, me, meError, signedIn, accountLoading, f
 
   const choicesForForm = world ? forkPointChoices(world) : [];
   const serverTerms = (working || scheduled) && terms ? terms : null;
-  const items = consentItems(serverTerms ?? preview);
+  const glance = serverTerms ?? preview;
+  const items = consentItems(glance);
   return <section id="desk" className="nw-act" aria-labelledby="desk-title">
     {heading}
     {meError && <p className="nw-error nw-on-night" role="alert">{meError}</p>}
     <div className="nw-desk">
       <div className="nw-card nw-desk-form">
-        <div className="nw-wallet-line">
-          <Wallet size={20} aria-hidden="true" />
-          <div>
-            <strong>Your in-app wallet <PrivyMark /></strong>
-            <span>{privy.address
-              ? <><code title={privy.address}>{shortHex(privy.address, 8, 6)}</code>{privy.delegated || serverWallet?.delegated ? " · has a signer today" : " · no signers"}</>
-              : privy.error || (privy.configured ? "Preparing your in-app wallet…" : "Unavailable on this server")}</span>
-            {maxPayments === 1 && <small>A top-up is paid from this wallet’s own test USDC on {PAYMENT_NETWORK_NAME}. Add at least 1.00 test USDC to the same address first.</small>}
-            {serverWallet && !serverWallet.tee && <small className="nw-warning">Privy reports this wallet without TEE execution, which session signers need. Adding the signer may be refused.</small>}
-            {walletMismatch && <small className="nw-warning">The server sees {shortHex(serverWallet!.address)}; this browser opened {shortHex(privy.address)}.</small>}
+        <div className="nw-status-panel">
+          <div className="nw-wallet-line">
+            <Wallet size={20} aria-hidden="true" />
+            <div>
+              <strong>Your in-app wallet <BrandBadge brand="privy" /></strong>
+              <span>{privy.address
+                ? <><code title={privy.address}>{shortHex(privy.address, 8, 6)}</code>{privy.delegated || serverWallet?.delegated ? " · has a signer today" : " · no signers"}</>
+                : privy.error || (privy.configured ? "Preparing your in-app wallet…" : "Unavailable on this server")}</span>
+              {maxPayments === 1 && <small>A top-up is paid from this wallet’s own test USDC on <PaymentChain />. Add at least 1.00 test USDC to the same address first.</small>}
+              {serverWallet && !serverWallet.tee && <small className="nw-warning">Privy reports this wallet without TEE execution, which session signers need. Adding the signer may be refused.</small>}
+              {walletMismatch && <small className="nw-warning">The server sees {shortHex(serverWallet!.address)}; this browser opened {shortHex(privy.address)}.</small>}
+            </div>
           </div>
+          {me && <p className={`nw-runner${me.runner.alive ? "" : " nw-runner-off"}`}>
+            {me.runner.alive
+              ? <><Check size={16} aria-hidden="true" />The Night Watch runner is running on this machine{me.runner.lastSeen ? ` (last seen ${clockTime(me.runner.lastSeen)})` : ""}.</>
+              : <><CircleAlert size={16} aria-hidden="true" /><span>The runner is not running on this machine. Scheduled jobs wait until the operator starts <code>node --env-file-if-exists=.env.local scripts/night-watch-runner.ts</code>.</span></>}
+          </p>}
         </div>
-        {me && <p className={`nw-runner${me.runner.alive ? "" : " nw-runner-off"}`}>
-          {me.runner.alive
-            ? <><Check size={15} aria-hidden="true" />The Night Watch runner is running on this machine{me.runner.lastSeen ? ` (last seen ${clockTime(me.runner.lastSeen)})` : ""}.</>
-            : <><CircleAlert size={15} aria-hidden="true" /><span>The runner is not running on this machine. Scheduled jobs wait until the operator starts <code>node --env-file-if-exists=.env.local scripts/night-watch-runner.ts</code>.</span></>}
-        </p>}
         {open
           ? <SessionCard session={open} now={now} revoking={revoking === open.id} disabled={working || !!revoking} onRevoke={() => void revoke(open)} />
           : null}
@@ -474,7 +479,7 @@ export function DeskPanel({ api, world, me, meError, signedIn, accountLoading, f
                 </div>}
                 {copilotError && <p className="nw-error" role="alert">{copilotError}</p>}
               </div>
-              <small id={`${ids}-copilot-note`} className="nw-copilot-note">Room co-pilot: {copilot?.copilot.label ?? "Kimi K3"} via TokenRouter · operator-paid · suggestions only, you choose</small>
+              <small id={`${ids}-copilot-note`} className="nw-copilot-note">Room co-pilot: <ModelBadge label={copilot?.copilot.label ?? "Kimi K3"} /> <RouterBadge /> · operator-paid · suggestions only, you choose</small>
             </div>
             <div className="nw-field-row">
               <fieldset className="nw-field nw-segmented">
@@ -503,18 +508,22 @@ export function DeskPanel({ api, world, me, meError, signedIn, accountLoading, f
             </div>
           </fieldset>
         </form>
-        {earlier.length > 0 && <details className="nw-technical">
-          <summary>Earlier allowances ({earlier.length})</summary>
+        {earlier.length > 0 && <Disclosure className="nw-technical" summary={`Earlier allowances (${earlier.length})`}>
           <ul className="nw-earlier">{earlier.map((session) => <li key={session.id}>
             <span>{session.state === "revoked" ? "Revoked" : session.state === "expired" ? "Expired" : session.state === "active" ? "Active" : "Awaiting signer"}</span>
             <span>until {dateTime(session.deadline)} · {formatUsdc(session.limits.totalAllowanceAtomic)} allowance · {plural(session.payments.filter((payment) => payment.state === "settled").length, "settled payment")}</span>
           </li>)}</ul>
-        </details>}
+        </Disclosure>}
       </div>
 
       <aside className="nw-card nw-consent" aria-labelledby={`${ids}-consent`}>
-        <p className="nw-card-eyebrow"><KeyRound size={15} aria-hidden="true" />{serverTerms ? "Terms the server set" : "Consent"}</p>
-        <h3 id={`${ids}-consent`}>What this Night Watch may do</h3>
+        <CardHeading id={`${ids}-consent`} title="What this Night Watch may do" kind={serverTerms ? "Terms the server set" : "Consent"} icon={KeyRound} />
+        <BrandStrip label="The limits at a glance" className="nw-consent-glance">
+          <BrandBadge brand="usdc" label={formatUsdc(glance.totalAllowanceAtomic)} />
+          {glance.maxPayments > 0 && <BrandBadge brand="base" />}
+          <Chip icon={Clock3}>Signing stops at {clockTime(glance.deadline)}</Chip>
+          <Chip icon={Images}>{plural(glance.attemptAllowance, "candidate")}</Chip>
+        </BrandStrip>
         <dl className="nw-consent-terms">
           {items.map((item) => <div key={item.label} data-term={item.label === "Never" ? "never" : undefined}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}
         </dl>
