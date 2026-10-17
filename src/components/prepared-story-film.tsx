@@ -3,16 +3,22 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowDown, ArrowUpRight, Download, Film, Play, RotateCcw } from "lucide-react";
 import type { PreparedFilm } from "@/lib/prepared-story-film";
+import { BrandBadge, BrandStrip, Chip } from "./brand-badge";
+import { ToArrow } from "./inline-arrow";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Card } from "./ui/card";
-import "@/app/prepared-story-film.css";
+import { Card, CardAction, CardContent, CardDescription } from "./ui/card";
 
+/** The invitation to the film: the section-plate anatomy (mount, heading, text, action) with the film's poster as its mount. */
 export function PreparedFilmInvite({ film, onOpen }: { film: PreparedFilm; onOpen: () => void }) {
-  return <Card className="fn-film-invite">
-    <img src={film.poster} width={80} height={80} alt="" />
-    <div><h2>See this story come to life.</h2><p>{film.invite}</p></div>
-    <Button type="button" className="fn-film-button" onClick={onOpen}><Film size={18} aria-hidden="true" />Images → video</Button>
+  return <Card className="fn-section-plate fn-film-plate" data-tone="lavender" data-variant="plate">
+    <span className="fn-plate-mount" aria-hidden="true"><img src={film.poster} width={56} height={56} alt="" /></span>
+    <CardContent className="fn-plate-copy">
+      <h2 className="fn-plate-heading">See this story come to life.</h2>
+      <CardDescription className="fn-plate-description">{film.invite}</CardDescription>
+    </CardContent>
+    <CardAction className="fn-plate-action">
+      <Button type="button" className="fn-film-button" onClick={onOpen}><Film size={18} aria-hidden="true" /><span>Images <ToArrow />video</span></Button>
+    </CardAction>
   </Card>;
 }
 
@@ -58,7 +64,12 @@ export function PreparedStoryFilm({ film }: { film: PreparedFilm }) {
     </header>
 
     <section className="fn-film-sources" aria-label={`${film.sourcesHeading}, in story order`}>
-      <div className="fn-film-section-heading"><h3>{film.sourcesHeading}</h3><Badge className="fn-film-badge">{film.imageModel} · {film.provider}</Badge></div>
+      <div className="fn-film-section-heading"><h3>{film.sourcesHeading}</h3>
+        <BrandStrip label="Image model and provider">
+          <BrandBadge brand={film.brands.imageModel} label={film.imageModel} />
+          <BrandBadge brand={film.brands.provider} label={film.provider} />
+        </BrandStrip>
+      </div>
       <ol className="fn-film-images">
         {film.images.map((image, index) => <li key={image.frame}>
           <figure><img src={image.src} width={1024} height={1024} alt={image.caption} loading={index < 2 ? "eager" : "lazy"} />
@@ -69,7 +80,15 @@ export function PreparedStoryFilm({ film }: { film: PreparedFilm }) {
     </section>
 
     <Card className="fn-film-motion">
-      <div className="fn-film-motion-heading"><div><h3 ref={motionHeading} tabIndex={-1}>Now, in motion.</h3><p>{film.videoModel} · {film.provider} · {film.duration} seconds</p></div>
+      <div className="fn-film-motion-heading"><div><h3 ref={motionHeading} tabIndex={-1}>Now, in motion.</h3>
+        <div className="fn-film-credit">
+          <BrandStrip label="Video model and provider">
+            <BrandBadge brand={film.brands.videoModel} label={film.videoModel} />
+            <BrandBadge brand={film.brands.provider} label={film.provider} />
+          </BrandStrip>
+          <span>{film.duration} seconds</span>
+        </div>
+      </div>
         <Button type="button" className="fn-film-button fn-film-button-light" onClick={play} disabled={busy} aria-controls={playerId}>{playback === "ended" ? <RotateCcw size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}{playLabel}</Button>
       </div>
       <div className="fn-film-motion-body">
@@ -87,7 +106,7 @@ export function PreparedStoryFilm({ film }: { film: PreparedFilm }) {
           <figcaption id={descriptionId}>A prepared interpretation of the “{film.ending}” path, using the {film.images.length === 4 ? "four" : film.images.length} images above.</figcaption>
         </figure>
         <div className="fn-film-film-note">
-          <Badge className="fn-film-badge fn-film-badge-night">Prepared motion example</Badge>
+          <Chip>Prepared motion example</Chip>
           <p>The images are the references. The film adds movement and camera work, with the original audio.</p>
           <p>Generated on {film.preparedOnLabel}. This fixed clip is ready to show; changes to your story can be made into a separate storyboard video through <strong>Make a video</strong>.</p>
           <div className="fn-film-downloads"><Button asChild variant="outline" className="fn-film-button fn-film-button-outline"><a href={film.video} target="_blank" rel="noopener noreferrer">Open video<ArrowUpRight size={16} aria-hidden="true" /></a></Button><Button asChild variant="outline" className="fn-film-button fn-film-button-outline"><a href={film.video} download={film.downloadName}><Download size={17} aria-hidden="true" />Download MP4</a></Button></div>

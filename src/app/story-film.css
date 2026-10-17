@@ -42,7 +42,7 @@
 .storyboard-navigation > div { display: flex; align-items: center; gap: 10px; }
 .storyboard-navigation .text-button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 6px; color: var(--violet); border: 1px solid var(--line); border-radius: 9px; background: transparent; }
 .storyboard-navigation button:disabled { opacity: .45; cursor: default; }
-.story-video-pane { padding: 30px; }
+.story-video-pane { padding: var(--space-7) var(--gutter); }
 .world-demo .story-film { --muted: var(--wd-muted); --line: var(--wd-line); --violet: var(--wd-link); --navy: var(--wd-night); }
 .world-demo .story-film h2 { font: 650 30px/1.2 var(--font-display), sans-serif; }
 .world-demo .story-film .button { background: var(--wd-yellow); color: #211d28; border: 0; }
@@ -51,16 +51,9 @@
 @media (max-width: 700px) {
   .story-film-heading { align-items: flex-start; flex-direction: column; gap: 18px; }
   .story-film-heading .button { width: 100%; }
-  .story-video-pane { padding: 22px 18px; }
   .storyboard-toolbar { align-items: flex-start; flex-direction: column; gap: 12px; }
   .storyboard-horizontal > li { flex-basis: min(82vw, 300px); }
   .storyboard-vertical > li { grid-template-columns: 1fr; gap: 18px; }
   .storyboard-navigation { align-items: flex-start; flex-direction: column; }
   .storyboard-navigation > div { align-self: flex-end; }
-}
-@media (max-width: 760px) {
-  .workspace-toolbar { flex-wrap: wrap; gap: 8px; }
-  .workspace-toolbar .view-switch { width: 100%; justify-content: space-between; }
-  .workspace-toolbar .view-switch > button { flex: 1; min-height: 44px; }
-  .workspace-toolbar .export-top { margin-left: auto; }
 }

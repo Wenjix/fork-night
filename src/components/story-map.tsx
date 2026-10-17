@@ -1,11 +1,18 @@
 "use client";
 
-import { ArrowDown, ArrowUp, CornerUpRight, LocateFixed } from "lucide-react";
+import type { CSSProperties } from "react";
+import { ArrowDown, ArrowUp, CornerUpRight, LocateFixed, Plus } from "lucide-react";
 import type { DemoState, Moment, Project } from "@/domain/types";
 import { DEMO_UNIT, demoReuseFee, formatCredits, getPath } from "@/domain";
 import { layoutMoments } from "@/lib/map-layout";
+import { Chip } from "./brand-badge";
+import { MakerName } from "./maker-name";
 import { StoryArt } from "./story-art";
 import { useCanvasNavigation } from "./use-canvas-navigation";
+
+/** A moment card is this tall (see .moment-card), and the map puts one tier every TIER pixels. */
+const CARD_HEIGHT = 145;
+const TIER = 180;
 
 interface Props {
   state: DemoState;
@@ -22,6 +29,12 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
   const selectedIds = new Set(path.map((item) => item.id));
   const children = moments.filter((item) => item.parentId === selected.id);
   const parent = moments.find((item) => item.id === selected.parentId);
+  // A selected moment with nothing built on it shows where the next one would go, when the map has room above it.
+  const selectedNode = nodes.find((node) => node.moment.id === selected.id);
+  const slot =
+    selectedNode && children.length === 0 && selectedNode.y - TIER >= 30
+      ? { x: selectedNode.x, y: selectedNode.y - TIER, from: selectedNode.y }
+      : null;
 
   function card(moment: Moment, compact = false) {
     const author = state.users.find((user) => user.id === moment.authorId)!;
@@ -56,7 +69,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
               >
                 {author.initials}
               </span>
-              {author.agent ? <>{author.name.replace(/ \(AI agent\)$/, "")}<span className="agent-chip" title="AI agent">AI</span></> : author.name}
+              <MakerName name={author.name} agent={author.agent} />
             </span>
             <span>
               {formatCredits(fee)} {fee === DEMO_UNIT ? "credit" : "credits"}{" "}
@@ -89,6 +102,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
         aria-label="Story map canvas"
         aria-describedby={helpId}
         tabIndex={0}
+        style={{ "--map-world-height": `${height}px` } as CSSProperties}
       >
         <div className="map-world" style={{ width, height }}>
           <svg
@@ -109,7 +123,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
                 <path
                   d="M1 1 L7 4 L1 7"
                   fill="none"
-                  stroke="var(--violet)"
+                  stroke="var(--accent)"
                   strokeWidth="1.5"
                 />
               </marker>
@@ -124,7 +138,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
                 <path
                   d="M1 1 L7 4 L1 7"
                   fill="none"
-                  stroke="var(--line-strong)"
+                  stroke="var(--edge)"
                   strokeWidth="1.5"
                 />
               </marker>
@@ -139,20 +153,36 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
                   selectedIds.has(node.moment.id) &&
                   selectedIds.has(source.moment.id);
                 const y1 = source.y;
-                const y2 = node.y + 145;
+                const y2 = node.y + CARD_HEIGHT;
                 const mid = (y1 + y2) / 2;
                 return (
                   <path
                     key={node.moment.id}
                     d={`M ${source.x} ${y1} C ${source.x} ${mid}, ${node.x} ${mid}, ${node.x} ${y2 + 4}`}
                     fill="none"
-                    stroke={active ? "var(--violet)" : "var(--line-strong)"}
-                    strokeWidth={active ? 3 : 1.7}
+                    stroke={active ? "var(--accent)" : "var(--edge)"}
+                    strokeWidth={active ? 3 : 2}
                     markerEnd={`url(#arrow-${active ? "violet" : "muted"})`}
                   />
                 );
               })}
+            {slot && (
+              <path
+                d={`M ${slot.x} ${slot.from} L ${slot.x} ${slot.y + CARD_HEIGHT + 4}`}
+                fill="none"
+                stroke="var(--edge)"
+                strokeWidth={2}
+                strokeDasharray="4 5"
+                markerEnd="url(#arrow-muted)"
+              />
+            )}
           </svg>
+          {slot && (
+            <div className="map-slot" style={{ left: slot.x - 90, top: slot.y }}>
+              <Plus size={20} aria-hidden="true" />
+              <p>The next moment could be yours</p>
+            </div>
+          )}
           {nodes.map((node) => (
             <div
               key={node.moment.id}
@@ -163,7 +193,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
             >
               {card(node.moment)}
               {node.moment.parentId === null && (
-                <span className="seed-label">Our story starts here</span>
+                <Chip className="seed-chip">Our story starts here</Chip>
               )}
             </div>
           ))}
@@ -201,7 +231,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
             </button>
           </>
         ) : (
-          <span className="seed-label">Our story starts here</span>
+          <Chip className="seed-chip">Our story starts here</Chip>
         )}
       </div>
       <div className="map-controls">
@@ -220,7 +250,7 @@ export function StoryMap({ state, project, selected, onSelect }: Props) {
         >
           <LocateFixed size={16} /> Find selected
         </button>
-        <span>{moments.length} moments · no ending required</span>
+        <span>{moments.length} moment{moments.length === 1 ? "" : "s"} · no ending required</span>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 import type { Panel } from "../domain/types.ts";
+import type { BrandId } from "./brands.ts";
 import { fandomStory } from "./fandom-stories.ts";
 
 const story = fandomStory("blade-runner-memory")!;
@@ -15,6 +16,8 @@ export const BLADE_RUNNER_RESTYLE = {
   style: "Anime",
   model: "Hy-Image 3.5 preview",
   provider: "GMI Cloud",
+  /** The registered brands that draw the model and the provider as badges beside the same words. */
+  brands: { model: "hunyuan", provider: "gmi" } as const satisfies Record<string, BrandId>,
   preparedOn: "2026-10-13",
   /** Selecting either moment of the archive fork offers the restyle. */
   momentIds: [`${story.id}-archive`, `${story.id}-no-owner`],
