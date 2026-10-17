@@ -68,3 +68,10 @@ test("the browser chrome takes the header's navy, and NETWORK_BRANDS is a view o
     assert.equal(NETWORK_BRANDS[id].testnet, BRANDS[id].net);
   }
 });
+
+test("a room's theme comes from its id alone, so it can paint before data loads", async () => {
+  const { roomTheme } = await tsImport("../../src/lib/room-theme.ts", import.meta.url);
+  const { KESSLER_ROOM_ID } = await tsImport("../../src/lib/kessler-room.ts", import.meta.url);
+  assert.equal(roomTheme(KESSLER_ROOM_ID), "neon");
+  for (const id of ["midnight-signal", "paper-moon", "night-shift", "", null, undefined]) assert.equal(roomTheme(id), undefined);
+});
