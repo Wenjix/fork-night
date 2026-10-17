@@ -12,7 +12,6 @@ import { StoryArt } from "../story-art";
 import { AgentConcepts } from "./agent-concepts";
 import {
   AgentBadge,
-  ConceptTag,
   LiveTag,
   momentHref,
   roomTime,
@@ -117,9 +116,6 @@ export function AgentsShowcase() {
             <ul className="ag-legend" aria-label="How to read this page">
               <li>
                 <LiveTag label="Live" /> read from the room as you watch
-              </li>
-              <li>
-                <ConceptTag /> a design idea, not built yet
               </li>
             </ul>
           </div>
