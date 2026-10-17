@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type RefObject } from "react";
-import { RefreshCw, Share2 } from "lucide-react";
+import { ArrowRight, RefreshCw, Share2 } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Tables } from "../lib/supabase/database.types.ts";
 import { pilotPanels, type PilotMoment } from "../lib/pilot.ts";
@@ -66,9 +66,9 @@ export function PilotContinuation({ client, selected, moments, profile, authenti
         <small>{operation.charged_units} room {operation.charged_units === 1 ? "credit" : "credits"} used for complete delivery, even if discarded.</small>
       </> : operation.status === "published" ? <>
         <div className="pilot-live-invite">
-          <strong>Your moment is live. Invite the next maker →</strong>
+          <strong>Your moment is live. Invite the next maker <ArrowRight size={16} aria-hidden="true" /></strong>
           <p>Published with credit to {profile.display_name}. Let someone else pick up the story.</p>
-          <div className="button-row"><button className="button secondary" disabled={busy} onClick={actions.share}><Share2 size={17} aria-hidden="true" />Copy invite link</button><button className="button secondary" disabled={busy} onClick={actions.continue}>Continue from here</button></div>
+          <div className="button-row"><button className="button secondary" disabled={busy} onClick={actions.share}><Share2 size={16} aria-hidden="true" />Copy invite link</button><button className="button secondary" disabled={busy} onClick={actions.continue}>Continue from here</button></div>
         </div>
       </> : finalStates.has(operation.status) ? <>
         <p>{operation.status === "discarded" ? `Kept off the public story. Complete delivery used ${operation.charged_units} room ${operation.charged_units === 1 ? "credit" : "credits"}.` : operation.generation_error ?? "This moment could not be completed. No room credit was used."}</p>

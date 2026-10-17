@@ -379,7 +379,7 @@ export function PilotComposer({
         {draft.idea ? (
           <div className="pilot-carried-idea" key={draft.idea.id}>
             <div>
-              <Lightbulb size={17} />
+              <Lightbulb size={16} aria-hidden="true" />
               <strong>Starting with {draft.idea.label}’s idea</strong>
               <button
                 type="button"
@@ -388,7 +388,7 @@ export function PilotComposer({
                 disabled={frozen}
                 onClick={() => update({ idea: undefined })}
               >
-                <X size={17} />
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
             <p>{draft.idea.body}</p>
@@ -396,7 +396,7 @@ export function PilotComposer({
           </div>
         ) : (
           <p>
-            <Lightbulb size={18} />
+            <Lightbulb size={16} aria-hidden="true" />
             <span>
               Borrow a spark from the room.
               <br />
@@ -483,7 +483,7 @@ export function PilotComposer({
               disabled={frozen || !!draft.pendingSpeech || (!hasWords && !draft.captions.some(Boolean))}
               onClick={() => previewOwnWords()}
             >
-              Preview my idea <ArrowRight size={17} />
+              Preview my idea <ArrowRight size={16} aria-hidden="true" />
             </button>
             {helpers.shape && (
               <button
@@ -492,7 +492,7 @@ export function PilotComposer({
                 disabled={frozen || !!draft.pendingSpeech || !hasWords}
                 onClick={() => void shape("twists")}
               >
-                <Shuffle size={16} />
+                <Shuffle size={16} aria-hidden="true" />
                 {shaping === "twists"
                   ? "Exploring possibilities…"
                   : "Explore possibilities"}
@@ -550,7 +550,7 @@ export function PilotComposer({
                       );
                     }}
                   >
-                    Play with this <ArrowRight size={15} />
+                    Play with this <ArrowRight size={16} aria-hidden="true" />
                   </button>
                 </div>
               ))}
@@ -572,7 +572,7 @@ export function PilotComposer({
               requestAnimationFrame(() => thoughtField.current?.focus());
             }}
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={16} aria-hidden="true" />
             Back to the idea
           </button>
           <div className="pilot-sequence-heading">
@@ -611,7 +611,7 @@ export function PilotComposer({
                             changeSequence(captions, index - 1);
                           }}
                         >
-                          <ArrowUp size={15} />
+                          <ArrowUp size={16} aria-hidden="true" />
                         </button>
                         <button
                           type="button"
@@ -627,7 +627,7 @@ export function PilotComposer({
                             changeSequence(captions, index + 1);
                           }}
                         >
-                          <ArrowDown size={15} />
+                          <ArrowDown size={16} aria-hidden="true" />
                         </button>
                         <button
                           type="button"
@@ -641,7 +641,7 @@ export function PilotComposer({
                             )
                           }
                         >
-                          <X size={16} />
+                          <X size={16} aria-hidden="true" />
                         </button>
                       </>
                     )}
@@ -674,7 +674,7 @@ export function PilotComposer({
                 disabled={frozen}
                 onClick={() => changeSequence([...draft.captions, ""], count)}
               >
-                <Plus size={17} />
+                <Plus size={16} aria-hidden="true" />
                 Let it continue
               </button>
             )}
@@ -685,7 +685,7 @@ export function PilotComposer({
                 disabled={frozen || !!draft.pendingSpeech}
                 onClick={() => void shape("shape")}
               >
-                <Sparkles size={16} />
+                <Sparkles size={16} aria-hidden="true" />
                 {shaping === "shape"
                   ? "Finding the shape…"
                   : "Suggest a layout"}
@@ -712,7 +712,7 @@ export function PilotComposer({
               }
               onClick={onGenerate}
             >
-              <Sparkles size={18} />
+              <Sparkles size={16} aria-hidden="true" />
               {busy
                 ? "Saving your idea…"
                 : draft.submitted
@@ -799,7 +799,7 @@ export function PilotComposer({
               setError("");
             }}
           >
-            <Undo2 size={15} />
+            <Undo2 size={16} aria-hidden="true" />
             Undo last change
           </button>
         )}

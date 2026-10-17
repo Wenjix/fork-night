@@ -277,7 +277,7 @@ export function PilotIdeas({
         title="Ideas from the room"
         description="A little spark for whoever comes next."
         icon={Lightbulb}
-        tone="butter"
+        variant="inline"
         className="pilot-ideas-sign"
       />
       {readError && (
@@ -332,7 +332,7 @@ export function PilotIdeas({
                 })}
               </time>
               <button className="text-button" onClick={() => onUse(note)}>
-                <Lightbulb size={16} /> Use this idea <ArrowRight size={16} />
+                <Lightbulb size={16} aria-hidden="true" /> Use this idea <ArrowRight size={16} aria-hidden="true" />
               </button>
             </footer>
           </article>
@@ -369,7 +369,7 @@ export function PilotIdeas({
           requestAnimationFrame(() => text.current?.focus());
         }}
       >
-        <Plus size={29} />
+        <Plus size={24} aria-hidden="true" />
         <strong>
           Leave an idea{" "}
           <span className="pilot-idea-location">

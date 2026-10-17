@@ -23,6 +23,8 @@ export function PilotArtwork({
   const [inspecting, setInspecting] = useState<number | null>(null);
   const showCaption = (caption: string) => caption.trim().toLocaleLowerCase() !== title.trim().toLocaleLowerCase();
   function pager(index: number, change: (n: number) => void, className = "") {
+    // One panel has nothing to page through.
+    if (panels.length < 2) return null;
     return (
       <nav
         className={`pilot-panel-pager ${className}`}
@@ -34,7 +36,7 @@ export function PilotArtwork({
           disabled={index === 0}
           onClick={() => change(index - 1)}
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={20} aria-hidden="true" />
         </button>
         <span aria-live="polite">
           Panel {index + 1} of {panels.length}
@@ -45,7 +47,7 @@ export function PilotArtwork({
           disabled={index === panels.length - 1}
           onClick={() => change(index + 1)}
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={20} aria-hidden="true" />
         </button>
       </nav>
     );
@@ -62,7 +64,7 @@ export function PilotArtwork({
                 aria-label={`Enlarge panel ${index + 1}`}
                 onClick={() => setInspecting(index)}
               >
-                <Maximize2 size={18} />
+                <Maximize2 size={20} aria-hidden="true" />
               </button>
             </div>
             {showCaption(panel.caption) && <figcaption>{panel.caption}</figcaption>}

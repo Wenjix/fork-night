@@ -68,7 +68,7 @@ export function PilotDialog({
           disabled={!dismissible}
           autoFocus
         >
-          <X size={23} />
+          <X size={20} aria-hidden="true" />
         </button>
       </header>
       {children}
