@@ -1,0 +1,120 @@
+/* Neon: Kessler Ward's night-city skin, defined once for both routes (the shared room at /pilot and the local preview at
+   /#/project/…). A room opts in with data-room-theme="neon" on its main element, on a wrapper, or on both.
+
+   The theme contract is declared in globals.css (:root and [data-room-theme]). This block gives it neon values, keeps the base
+   names older rules still read as aliases of the contract, and is the only place a neon colour is written. Below it, only the
+   rules a token cannot express: the base rules paint var(--violet) and var(--yellow) as fills under white or ink text, and in
+   this room those two names are the light, text-safe red and cyan.
+
+   tests/app/room-theme-contrast.test.ts checks every pair: accent, muted, danger and success are 4.5:1 on --surface; --on-accent
+   sits on --accent-fill and --on-signal on --signal at 4.5:1; --edge and --accent-fill are 3:1 on --surface.
+
+   The wrapper form carries a :root prefix so it outranks the contract defaults in globals.css whatever the stylesheet order. */
+.pilot-shell[data-room-theme="neon"],
+#story-workspace[data-room-theme="neon"],
+:root [data-room-theme="neon"] {
+  /* canvas */
+  --paper: #0d0a12;
+  --surface: #16111f;
+  --ink: #f6f1ff;
+  --muted: #bdb5cf;
+
+  /* edges: --line is the decorative hairline, --edge a control border */
+  --line: #382e4c;
+  --edge: #6c5b89;
+
+  /* accent: crimson. --accent is text on dark, --accent-fill sits under --on-accent */
+  --accent: #ff718b;
+  --accent-strong: #ff91a6;
+  --accent-soft: #301523;
+  --accent-fill: #c91c3b;
+  --accent-fill-hover: #aa1631;
+  --on-accent: #fff;
+
+  /* signal: cyan, the highlight, the agent chip and the plate mount */
+  --signal: #21e6ff;
+  --on-signal: #04121a;
+  --signal-soft: #11323b;
+
+  /* status */
+  --success: #81e2b4;
+  --success-soft: #10281c;
+  --danger: #ff9c9c;
+  --danger-soft: #401b26;
+  --danger-fill: #b4233c;
+
+  /* browser surfaces */
+  --selection: #a3203f;
+  --focus-ring: #21e6ff;
+
+  /* skin: a red corner glow and a faint cyan one behind the room, and the one glow shared by selected and invited cards */
+  --backdrop:
+    radial-gradient(900px 440px at 96% -6%, rgb(255 46 77 / 0.2), transparent 70%),
+    radial-gradient(700px 380px at -6% 30%, rgb(33 230 255 / 0.09), transparent 70%),
+    var(--paper);
+  --glow: 0 4px 20px rgb(255 46 77 / 0.34);
+
+  /* the base names older rules read, as aliases of the contract and never a second set of values */
+  --line-strong: var(--edge);
+  --violet: var(--accent);
+  --violet-dark: var(--accent-strong);
+  --violet-soft: var(--accent-soft);
+  --violet-wash: var(--accent-soft);
+  --violet-line: var(--edge);
+  --yellow: var(--signal);
+  --yellow-soft: var(--signal-soft);
+  --yellow-line: var(--signal);
+  --agent: var(--signal);
+  --agent-ink: var(--on-signal);
+
+  color: var(--ink);
+  color-scheme: dark;
+  background: var(--backdrop);
+}
+
+/* Browser surfaces take the room's palette: the selection, the focus ring and placeholders. */
+:root [data-room-theme="neon"]::selection,
+:root [data-room-theme="neon"] ::selection { background: var(--selection); color: var(--ink); }
+:root [data-room-theme="neon"] :is(button, a, input, textarea, select, summary, [tabindex]):focus-visible { outline-color: var(--focus-ring); }
+:root [data-room-theme="neon"] :is(input, textarea)::placeholder { color: var(--muted); }
+
+/* Fills. The base rules paint var(--violet) under white text, and in this room that name is the light, text-safe red, so these
+   elements get the fill pair through the names their rules already read. Hover, disabled and focus stay with the base rules. */
+:root [data-room-theme="neon"] :is(.button.primary, .fn-film-button[data-slot="button"]:not(.fn-film-button-light, .fn-film-button-outline), .restyle-styles button, .fandom-art-options button[aria-pressed="true"], .pilot-voice.is-active .pilot-mic) {
+  --violet: var(--accent-fill);
+  --violet-dark: var(--accent-fill-hover);
+}
+
+/* The "New" mark takes the signal pair, and the microphone's hover tint is drawn from the accent. */
+:root [data-room-theme="neon"] .pilot-new { background: var(--signal); color: var(--on-signal); }
+:root [data-room-theme="neon"] .pilot-voice:not(.is-active) .pilot-mic:not(:disabled):hover { background: color-mix(in srgb, var(--accent) 10%, var(--accent-soft)); }
+
+/* Two base rules put a status token on a light literal: the "Draft delivered" tag and the subtle button's hover. */
+:root [data-room-theme="neon"] .status-tag { background: var(--success-soft); }
+:root [data-room-theme="neon"] .button.subtle:hover { background: var(--danger-soft); }
+
+/* Story-map cards, on both routes: one corner, a cyan edge on hover, a crimson frame with the glow when selected, and the
+   cyan focus ring on top of that frame so a selected card still shows where the keyboard is. */
+:root [data-room-theme="neon"] :is(.moment-card, .pilot-node) { border-radius: var(--radius-xs); }
+:root [data-room-theme="neon"] .moment-card { border-color: var(--edge); }
+:root [data-room-theme="neon"] .moment-card:hover { border-color: var(--signal); }
+:root [data-room-theme="neon"] :is(.moment-card.selected, .pilot-node.selected, .pilot-node[aria-pressed="true"]) {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  box-shadow: var(--glow);
+}
+:root [data-room-theme="neon"] :is(.moment-card.selected, .pilot-node.selected, .pilot-node[aria-pressed="true"]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+/* Section plates keep one tone in this room: the surface, with the signal on the mount. */
+:root [data-room-theme="neon"] :is(.fn-section-plate, .fn-context-plate) {
+  --plate-surface: var(--surface);
+  --plate-ink: var(--ink);
+  --plate-muted: var(--muted);
+  --plate-edge: var(--edge);
+  --plate-accent: var(--signal);
+  --plate-mount: var(--signal-soft);
+}
