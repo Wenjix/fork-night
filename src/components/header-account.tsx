@@ -43,6 +43,11 @@ export function needsPilotTrip(account: Storyteller, storage: Pick<Storage, "get
   return privyConfigured && !account.anonymous && privySessionStored(storage);
 }
 
+/** Like /pilot's identity menu: Google sign-in waits for a Privy app, which prepares the in-app wallet after it. */
+export function canSaveWithGoogle(account: Storyteller, privyConfigured = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
+  return privyConfigured && account.anonymous;
+}
+
 // localStorage fires "storage" only in other tabs, so this tab announces its own sign-out.
 const SESSION_CHANGED = "fork-night:storyteller-session";
 /** Reads that never throw, for checks made while rendering: a blocked localStorage throws on access. */
@@ -287,7 +292,10 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
     setError("");
     try {
       const { startGoogleLogin } = await import("../lib/supabase/onboarding.ts");
-      await startGoogleLogin(ready.client, window.location.href, window.sessionStorage, "link");
+      if (await startGoogleLogin(ready.client, window.location.href, window.sessionStorage, "link") !== "saved") return;
+      // Saved in another tab: no redirect starts, so give the button back and let the refreshed session relabel the chip.
+      setGoogleBusy(false);
+      await ready.client.auth.refreshSession().catch(() => undefined);
     } catch (reason) {
       setGoogleBusy(false);
       setError(reason instanceof Error ? reason.message : "Google sign-in could not start. Try again.");
@@ -305,8 +313,9 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
   const trip = !!account && needsPilotTrip(account, savedHere);
   const guest = !!ready && !!label && !!account?.anonymous;
   const displayLabel = guest ? `Guest · ${label}` : label;
-  return <div className={`fn-account-ready${guest ? " fn-account-guest" : ""}`}>
-    <details ref={menu} className="fn-account-menu" data-guest={guest ? "true" : undefined} onToggle={event => {
+  const saveable = guest && !!account && canSaveWithGoogle(account);
+  return <div className={`fn-account-ready${saveable ? " fn-account-guest" : ""}`}>
+    <details ref={menu} className="fn-account-menu" data-guest={saveable ? "true" : undefined} onToggle={event => {
       const opened = event.currentTarget.open;
       setOpen(opened);
       if (!opened && !busy && !googleBusy) { setConfirming(false); setError(""); }
@@ -327,7 +336,7 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
         {account && displayLabel ? <p className="fn-account-who"><strong>{displayLabel}</strong><span>{accountDetail(account)}</span></p>
           : shown.status === "unread" ? <p>Your account could not load here. <a href="/pilot">Open Shared rooms</a> to manage it.</p>
           : <p>Checking your account…</p>}
-        {guest && !confirming && <button type="button" className="fn-account-save-google-menu" disabled={googleBusy} onClick={() => void saveWithGoogle()}>{googleBusy ? "Opening Google…" : "Save with Google"}</button>}
+        {saveable && !confirming && <button type="button" className="fn-account-save-google-menu" disabled={googleBusy} onClick={() => void saveWithGoogle()}>{googleBusy ? "Opening Google…" : "Save with Google"}</button>}
         {ready && (confirming
           ? <div className="fn-account-confirm" role="group" aria-labelledby={warningId}>
             <p id={warningId} ref={warning} tabIndex={-1}><strong>{"This guest can't be recovered."}</strong></p>
@@ -341,6 +350,6 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
         {error && <p className="fn-account-error" role="alert">{error}</p>}
       </div>
     </details>
-    {guest && <button type="button" className="fn-account-save-google" disabled={googleBusy} onClick={() => void saveWithGoogle()}>{googleBusy ? "Opening Google…" : "Save with Google"}</button>}
+    {saveable && <button type="button" className="fn-account-save-google" disabled={googleBusy} onClick={() => void saveWithGoogle()}>{googleBusy ? "Opening Google…" : "Save with Google"}</button>}
   </div>;
 }

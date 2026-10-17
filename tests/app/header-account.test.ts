@@ -15,7 +15,7 @@ import {
 register(`data:text/javascript,${encodeURIComponent(`export async function load(url, context, next) {
   return new URL(url).pathname.endsWith(".css") ? { format: "module", source: "", shortCircuit: true } : next(url, context);
 }`)}`);
-const { AppHeader, HeaderAccount, HeaderAccountVisibility, NightWatchApp, accountDetail, accountLabel, needsPilotTrip, sessionKey, storyteller } =
+const { AppHeader, HeaderAccount, HeaderAccountVisibility, NightWatchApp, accountDetail, accountLabel, canSaveWithGoogle, needsPilotTrip, sessionKey, storyteller } =
   await tsImport("./header-account-fixtures.ts", import.meta.url);
 
 const SITE = "https://fork-night.vercel.app";
@@ -108,6 +108,13 @@ test("only a saved account with a stored Privy session takes the trip through /p
   assert.equal(needsPilotTrip(storyteller(users.guest), privy, true), false, "/pilot mounts no Privy bridge for a guest either");
   assert.equal(needsPilotTrip(saved, privy, false), false, "without a Privy app there is no bridge to mount");
   assert.throws(() => createSignOutRequest({ setItem() { throw new Error("blocked"); } }, `${SITE}/`), "without session storage the chip signs out on the page");
+});
+
+test("only a guest is offered Google, and only where /pilot offers it too: with a Privy app", () => {
+  assert.equal(canSaveWithGoogle(storyteller(users.guest), true), true);
+  assert.equal(canSaveWithGoogle(storyteller(users.guest), false), false, "without a Privy app /pilot hides Google sign-in");
+  assert.equal(canSaveWithGoogle(storyteller(users.google), true), false);
+  assert.equal(canSaveWithGoogle(storyteller(users.wallet), true), false);
 });
 
 test("the chip checks the same storage key supabase-js derives for the project", async () => {
@@ -637,4 +644,33 @@ test("the agents page's header link is named by its words, with an arrow that sc
   assert.ok(ts.isJsxElement(label));
   assert.equal(attribute(label.openingElement, "className"), 'className="ag-header-room-label"');
   assert.equal(label.children.map(child => child.getText(page)).join(""), "Open the room", "the link's accessible name");
+});
+
+test("Save with Google gives the button back when the account was already saved elsewhere, and keeps it busy while Google opens", async () => {
+  async function save(result: "saved" | undefined | Error) {
+    const steps: string[] = [];
+    const client = { auth: { refreshSession: async () => { steps.push("refreshSession"); return { data: {}, error: null }; } } };
+    const onboarding = { startGoogleLogin: async (used: unknown, href: string, storage: unknown, mode: string) => {
+      assert.equal(used, client); assert.equal(href, `${SITE}/agents`); assert.equal(mode, "link");
+      steps.push("startGoogleLogin");
+      if (result instanceof Error) throw result;
+      return result;
+    } };
+    const menu = { current: { open: false } };
+    const saveWithGoogle = run(`() => { ${lift("saveWithGoogle")}\nreturn saveWithGoogle; }`, {
+      ready: { status: "ready", client }, googleBusy: false, menu,
+      window: { location: { href: `${SITE}/agents` }, sessionStorage: memory() },
+      load: async (path: string) => { assert.equal(path, "../lib/supabase/onboarding.ts"); return onboarding; },
+      setGoogleBusy: (value: boolean) => steps.push(`googleBusy ${value}`), setError: (value: string) => { if (value) steps.push(`error ${value}`); },
+      setOpen: (value: boolean) => steps.push(`open ${value}`),
+    })();
+    await saveWithGoogle();
+    return { steps, menu };
+  }
+  assert.deepEqual((await save(undefined)).steps, ["googleBusy true", "startGoogleLogin"], "the redirect to Google is under way");
+  assert.deepEqual((await save("saved")).steps, ["googleBusy true", "startGoogleLogin", "googleBusy false", "refreshSession"],
+    "saved in another tab: the button comes back and the refreshed session relabels the chip");
+  const failed = await save(new Error("Google could not be linked."));
+  assert.deepEqual(failed.steps, ["googleBusy true", "startGoogleLogin", "googleBusy false", "error Google could not be linked.", "open true"]);
+  assert.equal(failed.menu.current.open, true, "the menu opens to show the error");
 });
