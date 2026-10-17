@@ -374,7 +374,7 @@ export function ArticleBody({ locale }: { locale: Locale }) {
           {KIMI_CODE_PATHS.map((path, index) => <li key={path}><code lang="en">{path}</code><span>{copy.close.codeRoles[index]}</span></li>)}
         </ul>
       </Details>
-      <ArticleLinks current="kimi" className="km-more" />
+      <ArticleLinks className="km-more" />
     </Section>
   </article>;
 }

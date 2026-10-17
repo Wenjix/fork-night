@@ -2,25 +2,19 @@ import { BRANDS, type BrandId } from "@/lib/brands";
 import { BrandBadge, BrandStrip } from "../brand-badge";
 
 /**
- * The quiet strip at the end of each sponsor article that points to the other tool pages. It is shared by /kimi and
- * /hunyuan and lives in this one file because the Kimi tests scan the Kimi source files for other model names:
- * the names of the pages it links to stay here, not in the article files.
+ * The quiet strip at the end of each sponsor article that points to the pages for the payment rail and the wallet.
+ * A model article is about its own model alone (kimi-article.test.ts), so the strip never links one model's page
+ * from another's; the lobby's built-with row is where the models sit side by side.
  */
 const PAGES = [
-  { brand: "kimi", href: "/kimi" },
-  { brand: "hunyuan", href: "/hunyuan" },
   { brand: "tempo", href: "/tempo" },
   { brand: "privy", href: "/night-watch-privy" },
 ] as const satisfies readonly { brand: BrandId; href: string }[];
 
-export type ArticlePage = (typeof PAGES)[number]["brand"];
-
-/** Every page but the one being read, as badge links. */
-export function ArticleLinks({ current, className }: { current: ArticlePage; className?: string }) {
-  const others = PAGES.filter((page) => page.brand !== current);
+export function ArticleLinks({ className }: { className?: string }) {
   return (
-    <BrandStrip label={others.map((page) => BRANDS[page.brand].name).join(" · ")} className={className}>
-      {others.map((page) => <BrandBadge key={page.brand} brand={page.brand} href={page.href} />)}
+    <BrandStrip label={PAGES.map((page) => BRANDS[page.brand].name).join(" · ")} className={className}>
+      {PAGES.map((page) => <BrandBadge key={page.brand} brand={page.brand} href={page.href} />)}
     </BrandStrip>
   );
 }

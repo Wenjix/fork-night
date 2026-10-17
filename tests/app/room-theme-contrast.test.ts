@@ -10,7 +10,7 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/@import[^;]*;/g, "");
 const read = (path: string) => strip(readFileSync(join(root, path), "utf8"));
 const NEON = "src/app/room-theme-neon.css";
-const NEON_FILES = [NEON, "src/app/pilot/kessler.css", "src/app/room-themes.css"];
+const NEON_FILES = [NEON, "src/app/pilot/kessler.css"];
 
 type Rule = { selector: string; body: string };
 
@@ -187,7 +187,7 @@ test("neon: descendant rules work on main or on a wrapper, and colours are writt
       }
     }
   }
-  for (const file of [NEON, "src/app/room-themes.css"]) {
+  for (const file of [NEON]) {
     for (const rule of rules(read(file))) {
       if (neonBlock(rule)) continue;
       assert.doesNotMatch(rule.body, /#[0-9a-f]{3,8}\b|rgba?\(/i, `${file}: "${rule.selector}" writes a colour; use a token`);

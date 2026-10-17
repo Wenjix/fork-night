@@ -38,20 +38,22 @@ test("Kimi's nav marks its own page with the Kimi tile, not the Night Watch moon
   assert.doesNotMatch(nav, /<svg/);
 });
 
-test("both articles end with a strip that links to the other tool pages, and never to themselves", () => {
+test("both articles end with a strip that links to the payment and wallet pages and to no other model", () => {
   const strips = [...kimi.matchAll(/<ul class="fn-badges km-more" aria-label="([^"]+)">([\s\S]*?)<\/ul>/g)];
   assert.equal(strips.length, 2, "one strip in each language's article");
   for (const [, label, items] of strips) {
-    assert.equal(label, "Hunyuan · Tempo · Privy");
-    assert.deepEqual([...items.matchAll(/href="([^"]+)"/g)].map((match) => match[1]), ["/hunyuan", "/tempo", "/night-watch-privy"]);
+    assert.equal(label, "Tempo · Privy");
+    assert.deepEqual([...items.matchAll(/href="([^"]+)"/g)].map((match) => match[1]), ["/tempo", "/night-watch-privy"]);
   }
   // The Hunyuan page hands the strip in, so the article renders without it and the page-level markup stays as pinned.
-  const closing = React.createElement(ArticleLinks, { current: "hunyuan", className: "hy-more" });
+  const closing = React.createElement(ArticleLinks, { className: "hy-more" });
   const html = renderToStaticMarkup(React.createElement(HunyuanArticle, { hasVideo: false, closing })).replace(/<link rel="preload"[^>]*\/>/g, "");
   const strip = /<ul class="fn-badges hy-more" aria-label="([^"]+)">([\s\S]*?)<\/ul>/.exec(html)!;
-  assert.equal(strip[1], "Kimi K3 · Tempo · Privy");
-  assert.deepEqual([...strip[2].matchAll(/href="([^"]+)"/g)].map((match) => match[1]), ["/kimi", "/tempo", "/night-watch-privy"]);
+  assert.equal(strip[1], "Tempo · Privy");
+  assert.deepEqual([...strip[2].matchAll(/href="([^"]+)"/g)].map((match) => match[1]), ["/tempo", "/night-watch-privy"]);
   assert.ok(html.endsWith("</ul></article></main></div>"), "the strip is the article's last element");
+  // The Kimi article's own rule: no other model is named, in the markup as well as in the source files.
+  assert.doesNotMatch(kimi, new RegExp(["hun" + "yuan", "ten" + "cent"].join("|"), "i"), "/kimi renders no other model's name");
 });
 
 test("Hunyuan's byline, restyle tag and tool chips keep the words; each step's label sits beside its title", () => {
