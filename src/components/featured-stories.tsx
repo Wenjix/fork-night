@@ -1,5 +1,5 @@
 import { ArrowRight, GitBranch } from "lucide-react";
-import { featuredRooms } from "@/lib/featured-stories";
+import { builtWith, featuredRooms } from "@/lib/featured-stories";
 import { BrandBadge, BrandStrip, Chip } from "./brand-badge";
 import { StoryArt } from "./story-art";
 
@@ -32,5 +32,17 @@ export function FeaturedStories() {
         </li>)}
       </ul>
     </section>
+  );
+}
+
+/** The tools and chains behind the rooms, in one quiet row under them. Each badge opens the page that shows it at work. */
+export function BuiltWith() {
+  return (
+    <div className="fn-built-with">
+      <span className="fn-built-with-label" aria-hidden="true">Built with</span>
+      <BrandStrip label="Built with">
+        {builtWith.map(item => <BrandBadge key={item.brand} brand={item.brand} href={item.href} />)}
+      </BrandStrip>
+    </div>
   );
 }

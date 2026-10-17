@@ -1,14 +1,12 @@
 /* Social spaces extend the illustrated Fork Night world. */
 .social-app {
-  --night: #10162e;
-  --night-panel: #181d3d;
-  --night-muted: #c0c5e0;
-  --night-line: #484b79;
-  --social-purple: #6941f6;
-  --social-yellow: #ffdb67;
-  --hand: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
+  --social-purple: var(--night-violet);
+  --social-yellow: var(--night-yellow);
+  --social-line: var(--night-line);
+  --social-muted: var(--night-muted);
+  --hand: var(--font-hand);
   min-height: 100svh;
-  color: #f8f6ff;
+  color: var(--night-ink);
   background: var(--night);
   font-size: 15px;
   line-height: 1.55;
@@ -69,8 +67,9 @@
   font-weight: 650;
   font-optical-sizing: auto;
 }
-.social-app h1 {
-  font-size: clamp(36px, 3vw, 44px);
+/* :where() keeps this a default: a component that sets its own title size (the lobby hero) wins whatever loads last. */
+:where(.social-app) h1 {
+  font-size: var(--text-page);
 }
 .social-app h2 {
   font-size: 28px;
@@ -96,7 +95,7 @@
 }
 .social-main {
   max-width: 1600px;
-  padding: 26px 34px 45px;
+  padding: 26px var(--gutter) 45px;
   margin: 0 auto;
   outline: none;
   min-height: 70svh;
@@ -130,29 +129,33 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--night-muted);
-  padding: 5px 34px;
-  background: #141a36;
+  gap: var(--space-2) var(--space-3);
+  min-height: var(--control-h);
+  padding: var(--space-1) var(--gutter);
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  color: var(--social-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
   flex-wrap: wrap;
 }
 .social-demo-strip > span { margin-right: auto; }
-.social-demo-strip .social-live-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #ffdb67; font-weight: 600; text-decoration: none; }
-.social-demo-strip .social-live-link:hover { text-decoration: underline; }
-.social-paper .social-demo-strip .social-live-link { color: #5937b9; }
 .social-demo-strip button {
   display: inline-flex;
   gap: 6px;
   align-items: center;
   background: none;
   border: 0;
-  padding: 5px;
-  font-size: 13px;
-  min-height: 36px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+  min-height: var(--control-h);
 }
+.social-demo-strip button:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+.social-demo-strip select { min-height: var(--control-h); }
+/* On the lobby the strip sits in the page, between the invitation and the rooms. */
+.social-main > .social-demo-strip { margin-bottom: var(--space-6); padding-inline: var(--space-4); border-radius: var(--radius-lg); }
 .social-help {
-  padding: 24px 34px;
+  padding: 24px var(--gutter);
   background: #272445;
 }
 .social-help p {
@@ -168,12 +171,12 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 22px 34px;
+  padding: 22px var(--gutter);
   max-width: 1600px;
   margin: auto;
-  border-top: 1px solid var(--night-line);
+  border-top: 1px solid var(--social-line);
   font-size: 13px;
-  color: var(--night-muted);
+  color: var(--social-muted);
 }
 .social-footer > span:first-child {
   display: flex;
@@ -249,7 +252,7 @@
   justify-content: center;
 }
 .social-fine {
-  color: var(--night-muted);
+  color: var(--social-muted);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -302,7 +305,7 @@
   margin: 12px 0;
 }
 .social-app .social-loading h2 {
-  font-size: clamp(36px, 3vw, 44px);
+  font-size: var(--text-page);
 }
 .social-empty > svg,
 .social-loading > svg {
@@ -310,7 +313,7 @@
 }
 .social-empty p {
   margin: 0 auto 20px;
-  color: var(--night-muted);
+  color: var(--social-muted);
 }
 .social-toast {
   position: fixed;
@@ -390,7 +393,7 @@
 .lobby-heading h2 {
   min-width: 0;
   text-wrap: balance;
-  font-size: clamp(36px, 3vw, 44px);
+  font-size: var(--text-page);
 }
 .small-drawing {
   color: var(--social-yellow);
@@ -413,7 +416,7 @@
   min-width: 200px;
   flex: 1;
   padding: 0 13px;
-  min-height: 43px;
+  min-height: var(--control-h);
   color: #d9dcef;
 }
 .social-search input {
@@ -473,12 +476,22 @@
   font-size: 13px;
   line-height: 1.6;
 }
-.room-card {
-  border: 1px solid var(--night-line);
-  border-radius: 12px;
+/* Room entries (the lobby's cards, a hall's project tiles, My spaces) share one surface, border, radius and title step,
+   and answer a hover on the whole card. Selected keeps the yellow ring, so hover never borrows it. */
+.room-card,
+.project-tile,
+.space-entry {
   overflow: hidden;
-  background: #181d3d;
-  transition: border-color 0.15s;
+  border: 1px solid var(--social-line);
+  border-radius: var(--radius-lg);
+  background: var(--night-panel);
+  transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.room-card:hover,
+.project-tile:hover,
+.space-entry:hover {
+  border-color: var(--night-edge);
+  background: var(--night-raised);
 }
 .room-card.selected {
   border-color: var(--social-yellow);
@@ -533,8 +546,8 @@
   padding: 18px;
 }
 .room-card h2 {
-  font-size: 24px;
-  line-height: 1.3;
+  font-size: var(--text-card);
+  line-height: var(--leading-snug);
   margin-bottom: 4px;
 }
 .room-host {
@@ -569,7 +582,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px 16px;
-  color: var(--night-muted);
+  color: var(--social-muted);
   font-size: 13px;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
@@ -585,7 +598,7 @@
   color: var(--social-yellow);
 }
 .room-progress strong {
-  color: var(--night-text);
+  color: var(--night-ink);
 }
 .room-card .room-progress {
   flex: 1;
@@ -607,7 +620,7 @@
   flex-basis: 100%;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--night-muted);
+  color: var(--social-muted);
 }
 .room-presence > span {
   display: inline-flex;
@@ -758,8 +771,8 @@
   margin: 18px 0;
   display: flex;
   gap: 11px;
-  border-top: 1px solid var(--night-line);
-  border-bottom: 1px solid var(--night-line);
+  border-top: 1px solid var(--social-line);
+  border-bottom: 1px solid var(--social-line);
   font-size: 15px;
   color: #e8e1f1;
 }
@@ -785,7 +798,7 @@
   gap: 12px;
   margin-top: 22px;
   padding-top: 18px;
-  border-top: 1px solid var(--night-line);
+  border-top: 1px solid var(--social-line);
 }
 .host-invitation strong {
   font-family: var(--hand);
@@ -814,7 +827,7 @@
 .guild-mark svg {
   width: 30px;
   height: 30px;
-  stroke-width: 1.5;
+  stroke-width: 1.75;
 }
 .guild-mark.large {
   width: 88px;
@@ -848,7 +861,7 @@
   min-height: 280px;
   border-radius: 14px;
   overflow: hidden;
-  background: #1e2442;
+  background: var(--night-raised);
   margin-bottom: 27px;
 }
 .guild-hero-copy {
@@ -858,7 +871,7 @@
   gap: 24px;
 }
 .guild-hero h1 {
-  font-size: clamp(36px, 3vw, 44px);
+  font-size: var(--text-page);
 }
 .guild-hero .handwritten {
   font-family: var(--hand);
@@ -905,12 +918,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
-.project-tile {
-  overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid var(--night-line);
-  background: #1a1e3c;
-}
 .project-tile-art {
   position: relative;
 }
@@ -924,7 +931,7 @@
   padding: 18px;
 }
 .project-tile h3 {
-  font-size: 25px;
+  font-size: var(--text-card);
   margin-bottom: 8px;
   font-weight: 650;
 }
@@ -951,7 +958,7 @@
 }
 .profile-aside > section {
   padding: 22px;
-  border: 1px solid var(--night-line);
+  border: 1px solid var(--social-line);
   border-radius: 12px;
   margin-bottom: 18px;
 }
@@ -1024,7 +1031,6 @@
   line-height: 1.5;
 }
 .social-app:has(.hall-layout) .social-demo-strip button {
-  min-height: 36px;
   font-weight: 600;
 }
 .social-app:has(.hall-layout) .social-help h2 {
@@ -1056,7 +1062,7 @@
 }
 .guild-rail {
   padding-right: 16px;
-  border-right: 1px solid var(--night-line);
+  border-right: 1px solid var(--social-line);
 }
 .guild-rail h2 {
   font-family: var(--font-interface), sans-serif;
@@ -1112,7 +1118,7 @@
   gap: 11px;
   align-items: center;
   text-decoration: none;
-  border-top: 1px solid var(--night-line);
+  border-top: 1px solid var(--social-line);
   padding: 23px 5px;
   margin-top: 13px;
   font-size: 14px;
@@ -1134,7 +1140,7 @@
   overflow: hidden;
   border-radius: 10px;
   margin-top: 25px;
-  background: #1e2540;
+  background: var(--night-raised);
 }
 .rail-art .social-scene {
   aspect-ratio: 0.75;
@@ -1158,7 +1164,7 @@
   min-height: 195px;
   overflow: hidden;
   border-radius: 12px;
-  background: #1e2440;
+  background: var(--night-raised);
 }
 .hall-welcome > div {
   padding: 18px 20px;
@@ -1235,7 +1241,7 @@
   flex-direction: column;
 }
 .hall-projects .project-tile h3 {
-  font-size: 25px;
+  font-size: var(--text-card);
   font-weight: 650;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -1278,7 +1284,7 @@
   display: grid;
   align-items: center;
   gap: 16px;
-  border: 1px solid var(--night-line);
+  border: 1px solid var(--social-line);
   border-radius: 12px;
   padding: 18px;
   margin-top: 26px;
@@ -1296,16 +1302,16 @@
   width: auto;
   min-width: 0;
 }
-.hall-idea-invitation > div > p:first-child {
-  color: var(--social-yellow);
-  font-size: 13px;
-  margin-bottom: 8px;
-  line-height: 1.5;
+.hall-idea-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
 }
 .hall-idea-invitation h3 {
-  font-size: 25px;
-  margin-bottom: 8px;
-  line-height: 1.2;
+  font-size: var(--text-card);
+  line-height: var(--leading-tight);
 }
 .hall-idea-invitation > div > p:last-child {
   font-size: 15px;
@@ -1320,7 +1326,7 @@
 }
 .hall-aside > section {
   padding: 20px 18px;
-  border: 1px solid var(--night-line);
+  border: 1px solid var(--social-line);
   border-radius: 12px;
   margin-bottom: 20px;
 }
@@ -1334,7 +1340,7 @@
   display: flex;
   gap: 12px;
   align-items: start;
-  border-bottom: 1px solid var(--night-line);
+  border-bottom: 1px solid var(--social-line);
   padding: 16px 0;
 }
 .around-hall .social-avatar {
@@ -1457,7 +1463,7 @@
 .guild-requests {
   margin-top: 26px;
   padding-top: 22px;
-  border-top: 1px solid var(--night-line);
+  border-top: 1px solid var(--social-line);
 }
 .guild-requests h2 {
   font-size: 26px;
@@ -1490,7 +1496,7 @@
   align-items: center;
   gap: 16px;
   padding: 18px 0;
-  border-bottom: 1px solid var(--night-line);
+  border-bottom: 1px solid var(--social-line);
 }
 .hall-people > div > span {
   margin-left: auto;
@@ -1517,7 +1523,6 @@
 /* Return visits and a personal desk. */
 .spaces-page {
   max-width: 1250px;
-  margin: 0 auto;
 }
 .spaces-intro {
   display: flex;
@@ -1529,7 +1534,7 @@
 }
 .spaces-intro h1 {
   text-wrap: balance;
-  font-size: 36px;
+  font-size: var(--text-page);
 }
 .spaces-intro p {
   font-size: 15px;
@@ -1555,14 +1560,11 @@
   align-items: center;
   gap: 22px;
   padding: 23px 20px;
-  border: 1px solid var(--night-line);
-  border-radius: 12px;
   text-decoration: none;
   margin-bottom: 17px;
-  background: #1c2140;
 }
-.space-entry:hover {
-  border-color: var(--social-yellow);
+.space-entry h3 {
+  font-size: var(--text-card);
 }
 .space-entry p {
   margin: 7px 0;
@@ -1622,7 +1624,7 @@
   margin-top: 25px;
   padding: 23px 0;
   text-decoration: none;
-  border-top: 1px solid var(--night-line);
+  border-top: 1px solid var(--social-line);
 }
 .personal-desk-link > svg {
   color: var(--social-yellow);
@@ -1635,116 +1637,17 @@
   color: #cfbddc;
   margin-top: 7px;
 }
-.desk-page {
-  max-width: 1080px;
-  margin: auto;
-}
-.desk-heading {
-  display: flex;
-  gap: 22px;
-  align-items: center;
-  margin: 20px 0 20px;
-}
-.desk-heading > svg {
-  color: #796329;
-}
-.desk-heading p {
-  color: #62566e;
-  margin-top: 11px;
-}
-.desk-guide {
-  margin-bottom: 28px;
-  padding: 12px 0;
-  border-block: 1px solid #dcd4c7;
-}
-.desk-guide summary {
-  cursor: pointer;
-  color: #514061;
-  font-size: 14px;
-  font-weight: 600;
-}
-.desk-how-it-works {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px 28px;
-  margin: 16px 0 4px;
-  padding-left: 22px;
-}
-.desk-how-it-works li {
-  padding-left: 3px;
-  color: #62566e;
-  font-size: 15px;
-  line-height: 1.6;
-}
-.desk-how-it-works strong {
-  display: block;
-  color: #292042;
-  margin-bottom: 4px;
-}
-.draft-status {
-  display: inline-block;
-  font-size: 13px;
-  color: #514061;
-  background: #e9ddf6;
-  border-radius: 5px;
-  padding: 4px 8px;
-  margin-bottom: 10px;
-}
-.desk-drafts {
-  display: grid;
-  gap: 22px;
-}
-.desk-drafts article {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 27px;
-  padding-bottom: 25px;
-  border-bottom: 1px solid #dcd4c7;
-}
-.desk-drafts article > .social-scene,
-.desk-drafts article > .story-art {
-  aspect-ratio: 1.3;
-  width: 100%;
-  border-radius: 11px;
-}
-.desk-drafts h2 {
-  margin: 5px 0 10px;
-}
-.desk-drafts p {
-  font-size: 15px;
-  color: #5c5165;
-  overflow-wrap: anywhere;
-}
-.desk-drafts .social-fine {
-  margin-top: 8px;
-}
-.desk-drafts .social-button {
-  margin-top: 18px;
-}
-.desk-footnote {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 13px;
-  color: #6b5c70;
-  margin-top: 35px;
-}
-
 /* Private ideas: a readable board with a durable chronological view. */
 .social-paper {
   background: #faf7ef;
   color: #252044;
   color-scheme: light;
-  --night-line: #ddd7e4;
-  --night-muted: #675d7c;
+  --social-line: #ddd7e4;
+  --social-muted: #675d7c;
 }
 .social-paper .social-user select option {
   color: #211a32;
   background: white;
-}
-.social-paper .social-demo-strip {
-  color: #605572;
-  background: #f1ecdf;
 }
 .social-paper .social-help {
   background: #e9e0f2;
@@ -1810,7 +1713,7 @@
   font-family: var(--font-display), sans-serif;
   font-weight: 700;
   letter-spacing: -0.025em;
-  font-size: clamp(36px, 3vw, 44px);
+  font-size: var(--text-page);
 }
 .ideas-heading p {
   color: #74618c;
@@ -2342,13 +2245,16 @@
   background: #fbe6e6;
   color: #792c3f;
 }
-.app-shell .brand {
-  font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
-}
-.app-shell .app-header {
-  min-height: 74px;
-  height: auto;
-  padding-block: 12px;
+@media (max-width: 760px), (pointer: coarse) {
+  .social-segments button,
+  .social-segments a {
+    min-height: var(--control-h);
+  }
+  .note-pin,
+  .social-icon-button {
+    min-width: var(--control-h);
+    min-height: var(--control-h);
+  }
 }
 @media (min-width: 1500px) {
   .room-grid,
@@ -2377,9 +2283,6 @@
   }
 }
 @media (max-width: 1250px) {
-  .social-main {
-    padding-inline: 24px;
-  }
   .room-grid {
     gap: 12px;
   }
@@ -2498,8 +2401,8 @@
     padding: 0 0 16px;
     margin-bottom: 20px;
     border: 0;
-    border-bottom: 1px solid var(--night-line);
-    scrollbar-color: var(--night-line) var(--night);
+    border-bottom: 1px solid var(--social-line);
+    scrollbar-color: var(--social-line) var(--night);
     scrollbar-width: thin;
   }
 
@@ -2533,9 +2436,9 @@
     height: 34px;
   }
 
-  .social-demo-strip {
-    padding: 6px 18px;
-
+  .social-main > .social-demo-strip {
+    padding-inline: var(--space-3);
+    gap: var(--space-2);
   }
   .social-demo-strip button span {
     display: none;
@@ -2543,24 +2446,19 @@
   .social-demo-strip button,
   .social-app:has(.hall-layout) .social-demo-strip button {
     justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
+    min-width: var(--control-h);
   }
   .social-main {
-    padding: 23px 18px 32px;
+    padding-block: 23px 32px;
   }
   .social-help {
-    padding: 20px 18px;
+    padding-block: 20px;
   }
   .social-footer {
-    padding: 20px 18px;
-
+    padding-block: 20px;
   }
   .lobby-layout {
     display: block;
-  }
-  .lobby-heading h2 {
-    font-size: 32px;
   }
   .lobby-tools {
     display: block;
@@ -2643,9 +2541,6 @@
     min-height: auto;
     aspect-ratio: 2;
   }
-  .guild-hero h1 {
-    font-size: 36px;
-  }
   .guild-hero .handwritten {
     font-size: 24px;
   }
@@ -2674,9 +2569,6 @@
   .spaces-intro {
     padding: 4px 0 16px;
   }
-  .spaces-intro h1 {
-    font-size: 32px;
-  }
   .spaces-columns {
     display: block;
   }
@@ -2688,9 +2580,6 @@
   }
   .ideas-layout {
     display: block;
-  }
-  .ideas-heading h1 {
-    font-size: 36px;
   }
   .ideas-heading p {
     font-size: 15px;
@@ -2747,31 +2636,6 @@
   .idea-composer textarea,
   .idea-composer select {
     font-size: 16px;
-  }
-  .desk-heading {
-    align-items: flex-start;
-    gap: 15px;
-  }
-  .desk-how-it-works {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .desk-heading > svg {
-    width: 27px;
-  }
-  .desk-heading h1 {
-    font-size: 37px;
-  }
-  .desk-drafts article {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-  .desk-drafts article > .social-scene,
-  .desk-drafts article > .story-art {
-    aspect-ratio: 1.8;
-  }
-  .app-shell .app-header {
-    height: auto;
   }
   .draft-switch-notice {
     margin: 15px;
@@ -2863,10 +2727,6 @@
     width: 29px;
     height: 29px;
   }
-  .social-main {
-    padding-inline: 14px;
-  }
-
   .profile-projects {
     grid-template-columns: 1fr;
   }

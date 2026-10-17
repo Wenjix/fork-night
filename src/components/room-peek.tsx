@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ArrowRight, Eye, X } from "lucide-react";
 import type { DemoState, Project } from "@/domain";
 import { projectActivity } from "@/social/activity";
+import { Chip } from "./brand-badge";
 import { StoryArt } from "./story-art";
 
 /** A nonmodal, top-layer preview. Opening it never changes the active project. */
@@ -86,7 +87,7 @@ export function RoomPeek({
         onPointerLeave={leave}
         onClick={() => show(true)}
       >
-        <Eye size={17} /> Peek in
+        <Eye size={16} /> Peek in
       </button>
       <div
         ref={panel}
@@ -112,14 +113,12 @@ export function RoomPeek({
         }}
       >
         <div className="room-peek-heading">
-          <span>
-            <Eye size={15} /> A look inside
-          </span>
+          <h2>{project.title}</h2>
           <button aria-label="Close room preview" onClick={() => close(true)}>
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
-        <h2>{project.title}</h2>
+        <Chip icon={Eye} className="room-peek-chip">A look inside</Chip>
         <div className="room-peek-panels">
           {seed?.panels.map((frame, index) => (
             <figure key={index}>
@@ -136,7 +135,7 @@ export function RoomPeek({
           longest path {activity.longestPath}
         </p>
         <button className="social-button yellow" onClick={onEnter}>
-          Step inside <ArrowRight size={17} />
+          Step inside <ArrowRight size={16} />
         </button>
         <small>You’re still in the lobby. Enter when you’re ready.</small>
       </div>

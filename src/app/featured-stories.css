@@ -1,10 +1,10 @@
 .fn-featured-stories {
   margin: 0 auto 28px;
   padding: 24px 28px 12px;
-  border: 1px solid var(--night-line, #484b79);
-  border-radius: 14px;
-  background: var(--night, #10162e);
-  color: #f8f6ff;
+  border: 1px solid var(--night-line);
+  border-radius: var(--radius-xl);
+  background: var(--night);
+  color: var(--night-ink);
   font-family: var(--font-interface), sans-serif;
 }
 .fn-featured-heading { margin-bottom: 20px; }
@@ -14,16 +14,16 @@
   font-family: var(--font-display), sans-serif;
   font-size: 30px;
   font-weight: 650;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
   text-wrap: balance;
 }
 .fn-featured-heading p {
-  max-width: 70ch;
+  max-width: var(--measure);
   margin: 0;
-  color: var(--night-muted, #c0c5e0);
-  font-size: 14px;
-  line-height: 1.55;
+  color: var(--night-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
 }
 .fn-featured-rooms {
   display: grid;
@@ -33,13 +33,16 @@
   margin: 0;
   list-style: none;
 }
+/* A room is one row: art, title, badges, status, one primary action, and a receipt. The whole row opens the room and
+   answers a hover (the action underlines and its arrow steps forward); the receipt keeps its own link above that. */
 .fn-featured-room {
+  position: relative;
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
   column-gap: 18px;
   align-content: start;
   padding: 20px 0;
-  border-top: 1px solid var(--night-line, #484b79);
+  border-top: 1px solid var(--night-line);
   min-width: 0;
 }
 .fn-featured-art {
@@ -47,8 +50,8 @@
   width: 96px;
   height: 96px;
   overflow: hidden;
-  border-radius: 8px;
-  background: var(--night-panel, #181d3d);
+  border-radius: var(--radius-sm);
+  background: var(--night-panel);
 }
 .fn-featured-art .story-art { width: 100%; height: 100%; aspect-ratio: 1; }
 .fn-featured-copy { min-width: 0; }
@@ -56,31 +59,24 @@
   margin: 0;
   color: inherit;
   font-family: var(--font-display), sans-serif;
-  font-size: 23px;
+  font-size: var(--text-card);
   font-weight: 650;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
   text-wrap: balance;
-}
-.fn-featured-stories .fn-featured-focus {
-  margin: 5px 0 0;
-  color: #f8f6ff;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
 }
 .fn-featured-stack { margin-top: 8px; }
 .fn-featured-description {
   margin: 8px 0 0;
-  color: var(--night-muted, #c0c5e0);
-  font-size: 14px;
-  line-height: 1.55;
+  color: var(--night-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
   font-variant-numeric: tabular-nums;
 }
 .fn-featured-status {
   margin: 7px 0 0;
-  color: var(--night-muted, #c0c5e0);
-  font-size: 12px;
+  color: var(--night-muted);
+  font-size: var(--text-xs);
   line-height: 1.5;
 }
 .fn-featured-actions {
@@ -96,31 +92,60 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 44px;
+  min-height: var(--control-h);
   max-width: 100%;
-  line-height: 1.4;
+  color: var(--night-yellow);
+  font-size: var(--text-base);
+  font-weight: 650;
+  line-height: var(--leading-snug);
   text-decoration: none;
   text-underline-offset: 4px;
 }
-.fn-featured-stories .fn-featured-cta { color: var(--social-yellow, #ffdb67); font-size: 14px; font-weight: 650; }
+.fn-featured-stories .fn-featured-cta::after { content: ""; position: absolute; inset: 0; }
+.fn-featured-actions a.fn-badge { position: relative; z-index: 1; }
 .fn-featured-stories a:not(.fn-badge):hover { text-decoration: underline; }
-.fn-featured-stories a:active { color: #f8f6ff; }
-.fn-featured-actions svg { flex-shrink: 0; }
+.fn-featured-stories a:active { color: var(--night-ink); }
+.fn-featured-actions svg { flex-shrink: 0; transition: transform var(--dur-fast) var(--ease-out); }
+.fn-featured-room:hover .fn-featured-cta svg { transform: translateX(3px); }
 .fn-featured-stories a:focus-visible {
-  outline: 3px solid var(--social-yellow, #ffdb67);
+  outline: 3px solid var(--night-yellow);
   outline-offset: 4px;
   border-radius: 3px;
 }
 .fn-featured-stories a.fn-badge:focus-visible { border-radius: 9px; }
 .fn-featured-stories ::selection { background: #d6c4ff; color: #21113e; }
+
+/* What the rooms are built with: one quiet line under the panel, on the page's own ground. On a phone the badges stack
+   beside the label instead of under it. */
+.fn-built-with {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2) var(--space-4);
+  margin: -12px 0 var(--space-7);
+  color: var(--night-muted);
+  font-family: var(--font-interface), sans-serif;
+}
+.fn-built-with-label { padding-top: 4px; font-size: var(--text-sm); font-weight: 600; white-space: nowrap; }
+.fn-built-with .fn-badges { flex: 1 1 0; min-width: 0; }
+
 @media (max-width: 860px) {
   .fn-featured-rooms { grid-template-columns: 1fr; }
 }
 @media (max-width: 540px) {
   .fn-featured-stories { padding: 20px 16px 4px; }
   .fn-featured-stories .fn-featured-heading h2 { font-size: 26px; }
+  /* Art and title share the first row; the badges, text and actions then run the full width, so a badge never has to cut
+     its name short. */
   .fn-featured-room { grid-template-columns: 64px minmax(0, 1fr); column-gap: 14px; padding: 16px 0; }
-  .fn-featured-art { grid-row: 1; width: 64px; height: 64px; }
-  .fn-featured-stories .fn-featured-copy h3 { font-size: 21px; }
+  .fn-featured-copy { display: contents; }
+  .fn-featured-art { grid-column: 1; grid-row: 1; width: 64px; height: 64px; }
+  .fn-featured-stories .fn-featured-copy h3 { grid-column: 2; grid-row: 1; align-self: center; }
+  .fn-featured-stack,
+  .fn-featured-description,
+  .fn-featured-status { grid-column: 1 / -1; }
   .fn-featured-actions { grid-column: 1 / -1; margin-top: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fn-featured-actions svg { transition: none; }
+  .fn-featured-room:hover .fn-featured-cta svg { transform: none; }
 }

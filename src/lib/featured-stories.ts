@@ -100,3 +100,13 @@ export const featuredRooms = [
 ] as const;
 
 export const proofRoomIds = new Set(["midnight-signal", "paper-moon", WREN.roomId]);
+
+/** What the rooms are built with. Each links to the page that shows it working: Privy and Monad on the Night Watch, Tempo on Wren's page, Solana on the Paper Moon guild's treasury. */
+export const builtWith = [
+  { brand: "monad", href: "/night-watch-privy" },
+  { brand: "tempo", href: "/tempo" },
+  { brand: "solana", href: featuredStoryLinks.paperMoonGuild },
+  { brand: "privy", href: "/night-watch-privy" },
+  { brand: "kimi", href: "/kimi" },
+  { brand: "hunyuan", href: "/hunyuan" },
+] as const;
