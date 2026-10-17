@@ -1006,7 +1006,11 @@ export function SharedPilot() {
     onChoosePath={(id) => select(id, true)}
     onInspect={(id) => {
       select(id);
-      requestAnimationFrame(() => document.querySelector(".pilot-reader")?.scrollIntoView({ block: "start" }));
+      requestAnimationFrame(() => {
+        const reader = document.getElementById("pilot-story-reader");
+        reader?.scrollIntoView({ block: "start" });
+        reader?.focus({ preventScroll: true });
+      });
     }}
   /> : null;
 

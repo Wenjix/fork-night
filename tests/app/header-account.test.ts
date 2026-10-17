@@ -15,7 +15,7 @@ import {
 register(`data:text/javascript,${encodeURIComponent(`export async function load(url, context, next) {
   return new URL(url).pathname.endsWith(".css") ? { format: "module", source: "", shortCircuit: true } : next(url, context);
 }`)}`);
-const { AppHeader, HeaderAccount, HeaderAccountVisibility, NightWatchApp, accountDetail, accountLabel, needsPilotTrip, sessionKey, storyteller } =
+const { AppHeader, HeaderAccount, HeaderAccountVisibility, NightWatchApp, accountDetail, accountLabel, canSaveWithGoogle, needsPilotTrip, sessionKey, storyteller } =
   await tsImport("./header-account-fixtures.ts", import.meta.url);
 
 const SITE = "https://fork-night.vercel.app";
@@ -110,6 +110,13 @@ test("only a saved account with a stored Privy session takes the trip through /p
   assert.throws(() => createSignOutRequest({ setItem() { throw new Error("blocked"); } }, `${SITE}/`), "without session storage the chip signs out on the page");
 });
 
+test("only a guest is offered Google, and only where /pilot offers it too: with a Privy app", () => {
+  assert.equal(canSaveWithGoogle(storyteller(users.guest), true), true);
+  assert.equal(canSaveWithGoogle(storyteller(users.guest), false), false, "without a Privy app /pilot hides Google sign-in");
+  assert.equal(canSaveWithGoogle(storyteller(users.google), true), false);
+  assert.equal(canSaveWithGoogle(storyteller(users.wallet), true), false);
+});
+
 test("the chip checks the same storage key supabase-js derives for the project", async () => {
   const { createClient } = await import("@supabase/supabase-js");
   const url = "https://abcdefghijklmnopqrst.supabase.co";
@@ -176,6 +183,16 @@ test("the chip asks for the Supabase client only for a stored session, and its c
   assert.match(source, /Sign out of this browser/);
   assert.doesNotMatch(source, /real money|mainnet|audited|funded credits|patron paid/i);
   assert.doesNotMatch(source, /window\.confirm|confirm\(/, "the guest confirms inside the menu");
+});
+
+test("a guest can save with Google from the chip, or from the menu on phones, and Back from Google frees the button", async () => {
+  const source = await readFile("src/components/header-account.tsx", "utf8");
+  const css = (await readFile("src/app/header-account.css", "utf8")).replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.equal(source.match(/void saveWithGoogle\(\)/g)?.length, 2, "the inline action and the menu action start the same flow");
+  assert.match(source, /if \(event\.persisted\) \{ setBusy\(false\); setGoogleBusy\(false\); \}/, "a page restored from the back-forward cache is not stuck on Opening Google");
+  assert.match(css, /\.fn-account-save-google \{ display: none; \}/, "the inline action leaves phones");
+  assert.match(css, /\.fn-account-save-google-menu \{\s*display: none;/, "the menu action is hidden wherever the inline one shows");
+  assert.match(css, /\.fn-account-save-google-menu \{ display: block; \}/, "and the menu carries it on phones");
 });
 
 test("the box keeps one size from the first paint, and the phone menu opens under the chip inside the screen", async () => {
@@ -303,7 +320,7 @@ function chipMenu(user: object, saved: Record<string, string>, failures: { signO
     steps.push("forgetPrivySession");
   };
   const handlers = run(`() => { ${lift("signOut")}\n${lift("requestSignOut")}\nreturn { signOut, requestSignOut }; }`, {
-    ready: { status: "ready", client, account, named: true }, busy: false, account, savedHere: memory(saved), window, createSignOutRequest,
+    ready: { status: "ready", client, account, named: true }, busy: false, googleBusy: false, account, savedHere: memory(saved), window, createSignOutRequest,
     forgetPrivySession, expireCookie,
     needsPilotTrip: (who: unknown, storage: unknown) => needsPilotTrip(who, storage, true),
     load: async (path: string) => { steps.push(`load ${path}`); return modules[path]; },
@@ -627,4 +644,48 @@ test("the agents page's header link is named by its words, with an arrow that sc
   assert.ok(ts.isJsxElement(label));
   assert.equal(attribute(label.openingElement, "className"), 'className="ag-header-room-label"');
   assert.equal(label.children.map(child => child.getText(page)).join(""), "Open the room", "the link's accessible name");
+});
+
+test("Save with Google gives the button back when the account was already saved elsewhere, and keeps it busy while Google opens", async () => {
+  async function save(result: "saved" | undefined | Error, state: { busy?: boolean; confirming?: boolean } = {}) {
+    const steps: string[] = [];
+    const client = { auth: { refreshSession: async () => { steps.push("refreshSession"); return { data: {}, error: null }; } } };
+    const onboarding = { startGoogleLogin: async (used: unknown, href: string, storage: unknown, mode: string) => {
+      assert.equal(used, client); assert.equal(href, `${SITE}/agents`); assert.equal(mode, "link");
+      steps.push("startGoogleLogin");
+      if (result instanceof Error) throw result;
+      return result;
+    } };
+    const menu = { current: { open: false } };
+    const saveWithGoogle = run(`() => { ${lift("saveWithGoogle")}\nreturn saveWithGoogle; }`, {
+      ready: { status: "ready", client }, googleBusy: false, busy: !!state.busy, confirming: !!state.confirming, menu,
+      window: { location: { href: `${SITE}/agents` }, sessionStorage: memory() },
+      load: async (path: string) => { assert.equal(path, "../lib/supabase/onboarding.ts"); return onboarding; },
+      setGoogleBusy: (value: boolean) => steps.push(`googleBusy ${value}`), setError: (value: string) => { if (value) steps.push(`error ${value}`); },
+      setOpen: (value: boolean) => steps.push(`open ${value}`),
+    })();
+    await saveWithGoogle();
+    return { steps, menu };
+  }
+  assert.deepEqual((await save(undefined)).steps, ["googleBusy true", "startGoogleLogin"], "the redirect to Google is under way");
+  assert.deepEqual((await save("saved")).steps, ["googleBusy true", "startGoogleLogin", "googleBusy false", "refreshSession"],
+    "saved in another tab: the button comes back and the refreshed session relabels the chip");
+  const failed = await save(new Error("Google could not be linked."));
+  assert.deepEqual(failed.steps, ["googleBusy true", "startGoogleLogin", "googleBusy false", "error Google could not be linked.", "open true"]);
+  assert.equal(failed.menu.current.open, true, "the menu opens to show the error");
+  assert.deepEqual((await save(undefined, { confirming: true })).steps, [], "not while the unrecoverable-guest warning is open");
+  assert.deepEqual((await save(undefined, { busy: true })).steps, [], "not once sign-out has begun");
+});
+
+test("sign-out and Save with Google never run at once", async () => {
+  const source = await readFile("src/components/header-account.tsx", "utf8");
+  assert.equal(source.match(/\{saveable && !confirming && <button/g)?.length, 2, "both Google actions leave while the guest confirms sign-out");
+  assert.equal(source.match(/disabled=\{googleBusy \|\| busy\}/g)?.length, 2, "and wait while sign-out runs");
+  assert.match(source, /className="fn-account-signout" disabled=\{busy \|\| googleBusy\}/, "sign-out waits while Google opens");
+  const steps: string[] = [];
+  const signOut = run(`() => { ${lift("signOut")}\nreturn signOut; }`, {
+    ready: { status: "ready" }, busy: false, googleBusy: true, setBusy: (value: boolean) => steps.push(`busy ${value}`), setError: () => {},
+  })();
+  await signOut();
+  assert.deepEqual(steps, [], "no sign-out while Google is opening");
 });

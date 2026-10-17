@@ -5,6 +5,7 @@ import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   CalendarClock,
+  CheckCircle2,
   Coins,
   ExternalLink,
   KeyRound,
@@ -23,6 +24,13 @@ import {
 } from "@/lib/agents/wren";
 import { momentHref } from "./agent-bits";
 import { NetworkBrandMark } from "../room-network-plate";
+
+const mppSteps = (topUp: typeof WREN_ALLOWANCE.topUp) => [
+  "Wren ran out of credits",
+  `paid ${topUp.price} over MPP`,
+  `room got +${topUp.credits} credits`,
+  "Wren published the next scene",
+];
 
 /**
  * Whether Wren's allowance has expired. It starts as expired, so the server
@@ -61,7 +69,7 @@ export function WrenAllowance() {
     { icon: KeyRound, label: "Allowed call", value: a.allowedCall, hint: "No other kind of call", mono: true },
     { icon: Target, label: "Only to", value: a.recipientLabel, hint: a.recipient, href: addressUrl(a.recipient) },
     expired
-      ? { icon: CalendarClock, label: "Expired", value: a.expiresAt, hint: "Since then the key can no longer pay" }
+      ? { icon: CalendarClock, label: "Recorded Oct 12 · allowance has since expired", value: a.expiresAt, hint: "Since then the key can no longer pay" }
       : { icon: CalendarClock, label: "Expires", value: a.expiresAt, hint: "After that the key can no longer pay" },
   ] as { icon: typeof Coins; label: string; value: string; hint: string; mono?: boolean; href?: string }[];
   return (
@@ -70,21 +78,20 @@ export function WrenAllowance() {
       id="allowance"
       aria-labelledby="allowance-title"
     >
-      <SectionPlate className="ag-section-head" icon={Wallet} tone="butter" headingId="allowance-title" title={<span className="fn-network-allowance-heading"><NetworkBrandMark network="tempo" /><span>Wren’s allowance on Tempo</span></span>}
+      <SectionPlate className="ag-section-head" icon={Wallet} tone="butter" headingId="allowance-title" title={<span className="fn-network-allowance-heading"><NetworkBrandMark network="tempo" /><span>Wren paid for more room on Tempo, by itself</span></span>}
         description={<p>
-          {expired ? (
-            <>
-              When The Uncharted Star ran low, Wren could top the room up from a
-              small allowance its steward gave it on the {a.network}. The
-              allowance expired on {a.expiresAt}.
-            </>
-          ) : (
-            <>
-              When The Uncharted Star runs low, Wren can top the room up from a
-              small allowance its steward gave it on the {a.network}.
-            </>
-          )}
+          Machine Payments Protocol (MPP) · {a.network}
         </p>} />
+
+      <ol className="ag-mpp-strip" aria-label="Wren's recorded MPP top-up flow">
+        {mppSteps(a.topUp).map((step) => (
+          <li key={step}>
+            <CheckCircle2 size={17} aria-hidden="true" />
+            <span>{step}</span>
+            <ArrowRight size={15} aria-hidden="true" />
+          </li>
+        ))}
+      </ol>
 
       <div className="ag-allowance">
         <div className="ag-rules">

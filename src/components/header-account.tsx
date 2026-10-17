@@ -43,6 +43,11 @@ export function needsPilotTrip(account: Storyteller, storage: Pick<Storage, "get
   return privyConfigured && !account.anonymous && privySessionStored(storage);
 }
 
+/** Like /pilot's identity menu: Google sign-in waits for a Privy app, which prepares the in-app wallet after it. */
+export function canSaveWithGoogle(account: Storyteller, privyConfigured = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
+  return privyConfigured && account.anonymous;
+}
+
 // localStorage fires "storage" only in other tabs, so this tab announces its own sign-out.
 const SESSION_CHANGED = "fork-night:storyteller-session";
 /** Reads that never throw, for checks made while rendering: a blocked localStorage throws on access. */
@@ -136,6 +141,7 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState("");
   const menu = useRef<HTMLDetailsElement>(null);
   const signOutButton = useRef<HTMLButtonElement>(null);
@@ -201,8 +207,8 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
   useEffect(() => {
     // The trip replaces this page's history entry, so it never comes back from the back-forward cache
     // after /pilot. A page restored mid sign-out (Back, then Forward, before /pilot loaded) is usable at once,
-    // without waiting for the next press or key.
-    const restored = (event: PageTransitionEvent) => { if (event.persisted) setBusy(false); };
+    // without waiting for the next press or key. Back from Google's consent screen restores the page the same way.
+    const restored = (event: PageTransitionEvent) => { if (event.persisted) { setBusy(false); setGoogleBusy(false); } };
     window.addEventListener("pageshow", restored);
     return () => window.removeEventListener("pageshow", restored);
   }, []);
@@ -228,7 +234,7 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
   const account = ready?.account;
 
   async function signOut() {
-    if (!ready || busy) return;
+    if (!ready || busy || googleBusy) return;
     setBusy(true); setError("");
     let privyLeft = false;
     if (needsPilotTrip(ready.account, savedHere)) {
@@ -280,6 +286,23 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
     focusAfterConfirm.current = warning;
     setConfirming(true);
   }
+  async function saveWithGoogle() {
+    if (!ready || googleBusy || busy || confirming) return;
+    setGoogleBusy(true);
+    setError("");
+    try {
+      const { startGoogleLogin } = await import("../lib/supabase/onboarding.ts");
+      if (await startGoogleLogin(ready.client, window.location.href, window.sessionStorage, "link") !== "saved") return;
+      // Saved in another tab: no redirect starts, so give the button back and let the refreshed session relabel the chip.
+      setGoogleBusy(false);
+      await ready.client.auth.refreshSession().catch(() => undefined);
+    } catch (reason) {
+      setGoogleBusy(false);
+      setError(reason instanceof Error ? reason.message : "Google sign-in could not start. Try again.");
+      if (menu.current) menu.current.open = true;
+      setOpen(true);
+    }
+  }
   function keepGuest() {
     focusAfterConfirm.current = signOutButton;
     setConfirming(false);
@@ -288,38 +311,45 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
   const label = ready?.named ? accountLabel(ready.account) : shown.status === "unread" ? "Account" : undefined;
   const initial = account?.name ? Array.from(account.name)[0].toLocaleUpperCase() : undefined;
   const trip = !!account && needsPilotTrip(account, savedHere);
-  return <details ref={menu} className="fn-account-menu" onToggle={event => {
-    const opened = event.currentTarget.open;
-    setOpen(opened);
-    if (!opened && !busy) { setConfirming(false); setError(""); }
-  }}>
-    <summary aria-busy={label ? undefined : true}>
-      <span className="fn-account-avatar" aria-hidden="true">
-        {initial ?? (account?.wallet ? <Wallet size={16} /> : <UserRound size={16} />)}
-      </span>
-      <span className="fn-account-text">
-        <span className="fn-account-sr">Your storyteller account: </span>
-        <span className="fn-account-eyebrow" aria-hidden="true">Signed in</span>
-        {label ? <span className="fn-account-name">{label}</span> : <span className="fn-account-name fn-account-pending"><span className="fn-account-sr">checking</span></span>}
-      </span>
-      <ChevronDown className="fn-account-chevron" size={16} aria-hidden="true" />
-    </summary>
-    <div className="fn-account-panel">
-      <strong className="fn-account-heading">Your storyteller account</strong>
-      {account && label ? <p className="fn-account-who"><strong>{label}</strong><span>{accountDetail(account)}</span></p>
-        : shown.status === "unread" ? <p>Your account could not load here. <a href="/pilot">Open Shared rooms</a> to manage it.</p>
-        : <p>Checking your account…</p>}
-      {ready && (confirming
-        ? <div className="fn-account-confirm" role="group" aria-labelledby={warningId}>
-          <p id={warningId} ref={warning} tabIndex={-1}><strong>{"This guest can't be recovered."}</strong></p>
-          <div className="fn-account-confirm-actions">
-            <button type="button" className="fn-account-keep" disabled={busy} onClick={keepGuest}>Keep this guest</button>
-            <button type="button" className="fn-account-danger" disabled={busy} onClick={() => void signOut()}>{busy ? "Signing out…" : "Sign out"}</button>
+  const guest = !!ready && !!label && !!account?.anonymous;
+  const displayLabel = guest ? `Guest · ${label}` : label;
+  const saveable = guest && !!account && canSaveWithGoogle(account);
+  return <div className={`fn-account-ready${saveable ? " fn-account-guest" : ""}`}>
+    <details ref={menu} className="fn-account-menu" data-guest={saveable ? "true" : undefined} onToggle={event => {
+      const opened = event.currentTarget.open;
+      setOpen(opened);
+      if (!opened && !busy && !googleBusy) { setConfirming(false); setError(""); }
+    }}>
+      <summary aria-busy={displayLabel ? undefined : true}>
+        <span className="fn-account-avatar" aria-hidden="true">
+          {initial ?? (account?.wallet ? <Wallet size={16} /> : <UserRound size={16} />)}
+        </span>
+        <span className="fn-account-text">
+          <span className="fn-account-sr">Your storyteller account: </span>
+          {!guest && <span className="fn-account-eyebrow" aria-hidden="true">Signed in</span>}
+          {displayLabel ? <span className="fn-account-name">{displayLabel}</span> : <span className="fn-account-name fn-account-pending"><span className="fn-account-sr">checking</span></span>}
+        </span>
+        <ChevronDown className="fn-account-chevron" size={16} aria-hidden="true" />
+      </summary>
+      <div className="fn-account-panel">
+        <strong className="fn-account-heading">Your storyteller account</strong>
+        {account && displayLabel ? <p className="fn-account-who"><strong>{displayLabel}</strong><span>{accountDetail(account)}</span></p>
+          : shown.status === "unread" ? <p>Your account could not load here. <a href="/pilot">Open Shared rooms</a> to manage it.</p>
+          : <p>Checking your account…</p>}
+        {saveable && !confirming && <button type="button" className="fn-account-save-google-menu" disabled={googleBusy || busy} onClick={() => void saveWithGoogle()}>{googleBusy ? "Opening Google…" : "Save with Google"}</button>}
+        {ready && (confirming
+          ? <div className="fn-account-confirm" role="group" aria-labelledby={warningId}>
+            <p id={warningId} ref={warning} tabIndex={-1}><strong>{"This guest can't be recovered."}</strong></p>
+            <div className="fn-account-confirm-actions">
+              <button type="button" className="fn-account-keep" disabled={busy} onClick={keepGuest}>Keep this guest</button>
+              <button type="button" className="fn-account-danger" disabled={busy} onClick={() => void signOut()}>{busy ? "Signing out…" : "Sign out"}</button>
+            </div>
           </div>
-        </div>
-        : <button ref={signOutButton} type="button" className="fn-account-signout" disabled={busy} onClick={requestSignOut}>{busy ? "Signing out…" : "Sign out of this browser"}</button>)}
-      {ready && trip && !confirming && <small>Stops at Shared rooms to end your in-app wallet session, then brings you back here.</small>}
-      {error && <p className="fn-account-error" role="alert">{error}</p>}
-    </div>
-  </details>;
+          : <button ref={signOutButton} type="button" className="fn-account-signout" disabled={busy || googleBusy} onClick={requestSignOut}>{busy ? "Signing out…" : "Sign out of this browser"}</button>)}
+        {ready && trip && !confirming && <small>Stops at Shared rooms to end your in-app wallet session, then brings you back here.</small>}
+        {error && <p className="fn-account-error" role="alert">{error}</p>}
+      </div>
+    </details>
+    {saveable && !confirming && <button type="button" className="fn-account-save-google" disabled={googleBusy || busy} onClick={() => void saveWithGoogle()}>{googleBusy ? "Opening Google…" : "Save with Google"}</button>}
+  </div>;
 }
