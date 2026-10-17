@@ -101,7 +101,7 @@ export function EditionPanel({ api, tip, world, me, job, client }: {
     try {
       const { claim } = await api.claim({ releaseId: edition.release.id, beneficiary });
       setClaimNotice(claim.state === "finalized"
-        ? `Delivered ${formatMon(claim.claimedWei ?? claim.amountWei)} to ${shortHex(beneficiary)}. Checked on-chain.`
+        ? `Delivered ${formatMon(claim.claimedWei ?? claim.amountWei)} to ${shortHex(beneficiary)}. Settled on Monad testnet.`
         : `${CLAIM_STATE_LABELS[claim.state]}. The page checks again shortly.`);
       setVersion((value) => value + 1);
     } catch (reason) {
@@ -174,9 +174,9 @@ export function EditionPanel({ api, tip, world, me, job, client }: {
           <h3 id={`${ids}-shares`}><HandCoins size={20} aria-hidden="true" />Deliver a share with the Night Watch helper</h3>
           <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Refresh the release and claims" onClick={() => setVersion((value) => value + 1)}><RefreshCw size={18} aria-hidden="true" /></button>
         </div>
-        <p className="nw-fine">The helper is an app-funded wallet that pays the gas to call <code>claim</code> on the release contract. The contract sends each share only to its frozen recipient, so the helper can deliver a share but never redirect it. A delivery counts once Monad testnet finalizes it.</p>
+        <p className="nw-fine">The helper is an app-funded wallet that pays the gas to call <code>claim</code> on the release contract. The contract sends each share only to its frozen recipient, so the helper can deliver a share but never redirect it. A delivery counts once Monad testnet has settled it.</p>
         {!release || !release.exists
-          ? <p className="nw-quiet">Once every scene is on Monad, the story is locked and can receive support; then its recipients and shares appear here.</p>
+          ? <p className="nw-quiet">This release is not frozen yet. The curator freezes it in the release panel above; then its recipients and their shares appear here.</p>
           : <>
             <p className="nw-release-line">Release <code title={release.id}>{shortHex(release.id, 10, 6)}</code> · {formatMon(release.receivedWei)} support received · {formatMon(release.paidWei)} delivered{release.finalizedBlock !== null ? ` · read at finalized block ${release.finalizedBlock.toLocaleString()}` : ""}</p>
             <ul className="nw-share-list">
