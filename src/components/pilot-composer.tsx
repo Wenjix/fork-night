@@ -196,7 +196,7 @@ export function PilotComposer({
   }
   function keepEditedPanels() {
     setRebuildChoice(false);
-    update({ stage: "preview" });
+    update({ stage: "preview", previewInput: previewSignature(current.current) });
     focusPreview();
   }
   function previewOwnWords(rebuild = false) {
