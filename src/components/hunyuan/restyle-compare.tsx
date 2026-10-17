@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { BrandTile } from "../brand-badge";
 import { StoryArt } from "../story-art";
 
 /** Drag to reveal the restyled frame over the original; both come from packaged sheets. */
@@ -20,7 +21,7 @@ export function RestyleCompare({ before, after, label, labels }: {
       </div>
       <span className="hy-compare-line" style={{ left: `${split}%` }} aria-hidden="true" />
       <span className="hy-compare-tag hy-compare-tag-left" aria-hidden="true">{labels.original}</span>
-      <span className="hy-compare-tag hy-compare-tag-right" aria-hidden="true">{labels.restyled}</span>
+      <span className="hy-compare-tag hy-compare-tag-right" aria-hidden="true"><BrandTile brand="hunyuan" />{labels.restyled}</span>
     </div>
     <label htmlFor={id} className="hy-compare-control">
       <span className="hy-visually-hidden">{labels.control}</span>
