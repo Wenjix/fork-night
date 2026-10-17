@@ -49,7 +49,7 @@ function handoff(patch: Record<string, unknown> = {}, starter: string | null = "
     draft: undefined, hasActive: false, mutation: { current: false }, parseFirstNightStarter, stripFirstNightParams,
     window, setNotice: (notice: string) => { notices.push(notice); }, select: (...args: unknown[]) => { selections.push(args); },
     setFirstNightStarter() {}, setDraft: (draft: unknown) => { drafts.push(draft); },
-    setInspectingSource() {}, setOperation() {}, setComposing() {}, setView() {}, setError() {},
+    setDraftRecovery() {}, setInspectingSource() {}, setOperation() {}, setComposing() {}, setView() {}, setError() {},
     localStorage: store, pendingKey: (id: string, room: string) => `${id}:${room}`, crypto, pilotPath,
     requestAnimationFrame() {}, taskHeading: { current: null }, ...patch,
   };
@@ -155,7 +155,7 @@ function publishing(response: unknown) {
   const publish = run(shared("publishMoment"), {
     client: { rpc: async () => response }, profile: { id: actor }, roomId: FIRST_NIGHT_ROOM_ID,
     operation: { id: resultId, status: "delivered" }, recordFirstNightResult: (value: unknown) => { records.push(value); },
-    setOperation: (value: unknown) => { operations.push(value); }, setMoments() {}, select() {}, setDraft() {}, setComposing() {},
+    setOperation: (value: unknown) => { operations.push(value); }, setMoments() {}, select() {}, setDraft() {}, setDraftRecovery() {}, setComposing() {},
   });
   return { publish, records, operations };
 }
@@ -167,6 +167,57 @@ test("guide completion follows only a confirmed public moment belonging to this 
   for (const response of [{ error: { message: "unknown outcome" } }, { error: null, data: null }, { error: null, data: { ...moment, maker_id: "another-maker" } }, { error: null, data: { ...moment, room_id: "another-room" } }]) {
     const h = publishing(response); await assert.rejects(h.publish(), /Publication could not be confirmed/);
     assert.equal(h.records.length, 0); assert.equal(h.operations.length, 0);
+  }
+});
+
+function startingFresh(patch: Record<string, unknown> = {}) {
+  const confirms: string[] = [], notices: string[] = [], starts: unknown[][] = [], store = storage();
+  const env = {
+    draft: { requestId: resultId, submitted: true }, hasActive: false, profile: { id: actor }, roomId: FIRST_NIGHT_ROOM_ID,
+    wrenBusy: false, wrenPreviewId: undefined, releaseBusy: false, moments: [root], selected: root, pilotPath,
+    pendingKey: (id: string, room: string) => `${id}:${room}`, localStorage: store,
+    window: { confirm: (text: string) => { confirms.push(text); return true; } },
+    setNotice: (notice: string) => { notices.push(notice); }, setDraft() {}, setDraftRecovery() {}, setComposing() {}, setError() {},
+    start: (...args: unknown[]) => { starts.push(args); }, ...patch,
+  };
+  return { startFresh: run(shared("startFreshDraft"), env), confirms, notices, starts, store };
+}
+
+test("start fresh explains active generation instead of asking first, and asks once before dropping a submitted draft", () => {
+  const active = startingFresh({ hasActive: true });
+  active.startFresh();
+  assert.deepEqual(active.confirms, []);
+  assert.deepEqual(active.starts, []);
+  assert.match(active.notices.at(-1)!, /still in progress/);
+
+  const declined = startingFresh({ window: { confirm: () => false } });
+  declined.store.setItem(`${actor}:${FIRST_NIGHT_ROOM_ID}`, "saved draft");
+  declined.startFresh();
+  assert.deepEqual(declined.starts, []);
+  assert.equal(declined.store.values.size, 1, "a declined confirmation keeps the saved draft");
+
+  const accepted = startingFresh();
+  accepted.store.setItem(`${actor}:${FIRST_NIGHT_ROOM_ID}`, "saved draft");
+  accepted.startFresh();
+  assert.equal(accepted.confirms.length, 1);
+  assert.equal(accepted.store.values.size, 0);
+  assert.deepEqual(accepted.starts, [[undefined, undefined, { replaceDraft: true }]]);
+
+  const unsent = startingFresh({ draft: { requestId: resultId } });
+  unsent.startFresh();
+  assert.deepEqual(unsent.confirms, [], "a draft that was never submitted needs no confirmation");
+  assert.equal(unsent.starts.length, 1);
+});
+
+test("start fresh keeps the saved draft when a new continuation could not start", () => {
+  for (const patch of [{ wrenBusy: true }, { wrenPreviewId: resultId }, { releaseBusy: true }, { selected: undefined }]) {
+    const blocked = startingFresh(patch);
+    blocked.store.setItem(`${actor}:${FIRST_NIGHT_ROOM_ID}`, "saved draft");
+    blocked.startFresh();
+    assert.deepEqual(blocked.confirms, []);
+    assert.deepEqual(blocked.starts, []);
+    assert.equal(blocked.store.values.size, 1);
+    assert.ok(blocked.notices.length > 0);
   }
 });
 

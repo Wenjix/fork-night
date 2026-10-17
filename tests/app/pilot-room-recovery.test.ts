@@ -69,7 +69,7 @@ function generating(response: unknown) {
   const store = storage(), sent: Record<string, unknown>[] = [], drafts: unknown[] = [];
   const env: Record<string, unknown> = {
     profile: { id: "p1" }, roomId: "midnight-signal", localStorage: store, setError() {},
-    setDraft: (next: unknown) => { drafts.push(next); },
+    setDraft: (next: unknown) => { drafts.push(next); }, setDraftRecovery() {},
     pendingKey: run(room(initializer("pendingKey")), {}),
   };
   env.changeDraft = run(room(named("changeDraft")), env);

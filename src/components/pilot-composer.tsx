@@ -8,6 +8,7 @@ import {
   ArrowDown,
   Lightbulb,
   Plus,
+  RefreshCw,
   Shuffle,
   Sparkles,
   Undo2,
@@ -94,6 +95,7 @@ export function PilotComposer({
   const previewHeading = useRef<HTMLHeadingElement>(null);
   const panelFields = useRef<(HTMLTextAreaElement | null)[]>([]);
   current.current = draft;
+  const [rebuildChoice, setRebuildChoice] = useState(false);
   const frozen = busy || !!draft.submitted || !!shaping || speaking;
   const preview =
     draft.stage === "preview" ||
@@ -192,15 +194,27 @@ export function PilotComposer({
       );
     return result;
   }
-  function previewOwnWords() {
+  function keepEditedPanels() {
+    setRebuildChoice(false);
+    update({ stage: "preview", previewInput: previewSignature(current.current) });
+    focusPreview();
+  }
+  function previewOwnWords(rebuild = false) {
     if (frozen || draft.pendingSpeech) return;
     setError("");
     setNotice("");
+    setRebuildChoice(false);
     const d = current.current;
     const signature = previewSignature(d);
-    if (d.captions.some(Boolean) && d.previewInput === signature) {
+    const hasPanels = d.captions.some(Boolean);
+    if (hasPanels && (d.previewInput === signature || !(d.thought?.trim() || d.idea?.body.trim()))) {
       update({ stage: "preview" });
       focusPreview();
+      return;
+    }
+    // Existing panels would be replaced: let the maker choose instead of silently overwriting.
+    if (!rebuild && hasPanels) {
+      setRebuildChoice(true);
       return;
     }
     try {
@@ -409,6 +423,7 @@ export function PilotComposer({
               onChange={(event) => {
                 update({ thought: event.target.value });
                 setTwists([]);
+                setRebuildChoice(false);
               }}
               placeholder={
                 draft.idea
@@ -465,8 +480,8 @@ export function PilotComposer({
             <button
               type="button"
               className="button primary"
-              disabled={frozen || !!draft.pendingSpeech || !hasWords}
-              onClick={previewOwnWords}
+              disabled={frozen || !!draft.pendingSpeech || (!hasWords && !draft.captions.some(Boolean))}
+              onClick={() => previewOwnWords()}
             >
               Preview my idea <ArrowRight size={17} />
             </button>
@@ -483,20 +498,21 @@ export function PilotComposer({
                   : "Explore possibilities"}
               </button>
             )}
-            {count > 0 && draft.captions.some(Boolean) && (
-              <button
-                type="button"
-                className="text-button"
-                disabled={frozen}
-                onClick={() => {
-                  update({ stage: "preview" });
-                  focusPreview();
-                }}
-              >
-                Return to saved preview
-              </button>
-            )}
           </div>
+          {rebuildChoice && (
+            <div className="pilot-draft-recovery" role="status">
+              <strong>You edited these panels.</strong>
+              <p>Keep your edits or rebuild the panels from your new idea?</p>
+              <div className="button-row">
+                <button type="button" className="button primary" disabled={frozen} onClick={keepEditedPanels}>
+                  Keep my panels
+                </button>
+                <button type="button" className="button secondary" disabled={frozen} onClick={() => previewOwnWords(true)}>
+                  Rebuild panels
+                </button>
+              </div>
+            </div>
+          )}
           <p className="pilot-helper-copy">
             Previewing uses your words. Images come later, when you choose.
           </p>
@@ -676,7 +692,12 @@ export function PilotComposer({
               </button>
             )}
           </div>
-          <div className="pilot-generate-action">
+          {draft.submitted && busy ? (
+            <div className="pilot-generation-status" data-phase="starting" role="status" aria-live="polite" aria-atomic="true">
+              <div className="pilot-generation-state"><RefreshCw size={20} aria-hidden="true" className="pilot-generation-active" /><strong>Starting your panel…</strong></div>
+              <p>Your panel plan is saved. Image generation is starting now.</p>
+            </div>
+          ) : <div className="pilot-generate-action">
             <button
               type="button"
               className="button primary"
@@ -711,7 +732,7 @@ export function PilotComposer({
                   ? "This room needs more credits. Your draft is saved here."
                   : "Used only when every panel arrives. One or two panels: 1 credit. Three: 2 credits."}
             </small>
-          </div>
+          </div>}
         </section>
       )}
       {draft.pendingSpeech && (
