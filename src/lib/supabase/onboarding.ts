@@ -42,7 +42,8 @@ export function googleReturnUrl(current: string) {
   return url.href;
 }
 
-export async function startGoogleLogin(client: Client, currentUrl: string, storage: StoragePort, mode: "link" | "return") {
+/** Resolves "saved" when, in link mode, the storyteller is already saved (in another tab, say) and no redirect starts. */
+export async function startGoogleLogin(client: Client, currentUrl: string, storage: StoragePort, mode: "link" | "return"): Promise<"saved" | undefined> {
   const session = await client.auth.getSession();
   if (session.error) throw new Error("Your session could not be restored. Refresh before signing in.");
   const verified = session.data.session ? await client.auth.getUser() : undefined;
@@ -51,7 +52,7 @@ export async function startGoogleLogin(client: Client, currentUrl: string, stora
   const options = { redirectTo: googleReturnUrl(currentUrl) };
   if (mode === "link") {
     if (!user) throw new Error("Choose your storyteller name before signing in with Google.");
-    if (isSavedAccount(user)) return;
+    if (isSavedAccount(user)) return "saved";
     storage.setItem(GOOGLE_LINK_KEY, user.id);
     const result = await client.auth.linkIdentity({ provider: "google", options });
     if (result.error) {

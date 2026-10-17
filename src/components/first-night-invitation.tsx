@@ -47,15 +47,15 @@ export function FirstNightInvitation({ variant = "lobby" }: { variant?: "lobby" 
     </figure>
     <div className="fn-first-invitation-copy">
       <h2 id={titleId}>What happens next?</h2>
-      <p>Choose a spark, then make it yours in Kessler Ward. Write a scene yourself or ask Wren for a private preview.</p>
+      <p>Read Kessler Ward, then choose a spark for a private scene draft. You can also leave an idea at any moment.</p>
       <fieldset className="fn-first-starters"><legend>Choose a starting idea</legend>{FIRST_NIGHT_STARTERS.filter(starter => starter.id !== "own").map(starter => <label className="fn-first-starter" key={starter.id} data-selected={selected === starter.id}>
         <input type="radio" name={starterName} value={starter.id} checked={selected === starter.id} onChange={() => setSelected(starter.id)} />
         <span className="fn-first-starter-dot" aria-hidden="true">{selected === starter.id && <span />}</span><span>{starter.label}</span>
       </label>)}
         <label className="fn-first-own" data-selected={selected === "own"}><input type="radio" name={starterName} value="own" checked={selected === "own"} onChange={() => setSelected("own")} /><span>{selected === "own" && <Check size={15} aria-hidden="true" />}Write my own idea</span></label>
       </fieldset>
-      <a className="fn-first-continue" href={firstNightRoomHref(selected)}>Continue this story <ArrowRight size={20} aria-hidden="true" /></a>
-      <p className="fn-first-reassurance">Read first. You can edit your idea before making a private preview.</p>
+      <a className="fn-first-continue" href={firstNightRoomHref(selected)}>Start a scene draft <ArrowRight size={20} aria-hidden="true" /></a>
+      <p className="fn-first-reassurance">Writing a draft is free. New images need room credits; Wren is not active yet.</p>
       <a className="fn-first-read-first" href={firstNightRoomHref()}>I’ll read the story first</a>
     </div>
   </section>
