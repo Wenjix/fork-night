@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { KESSLER_OPENING_ID, KESSLER_ROOM_ID } from '../../src/lib/kessler-room.ts';
 
 // React may evaluate functional state updates after the async room sync returns.
 // Exercise the actual selection block with that scheduling, without network calls.
@@ -8,11 +9,11 @@ const source = readFileSync(new URL('../../src/components/shared-pilot.tsx', imp
 const start = source.indexOf('        const target =\n');
 const end = source.indexOf('        setOperation((current)', start);
 assert(start >= 0 && end > start);
-const apply = new Function('input', `
+const select = new Function('input', 'KESSLER_ROOM_ID', 'KESSLER_OPENING_ID', `
   let first = input.first ?? true;
   let selected = input.selected ?? '', tip = input.tip ?? '';
-  const roomId = 'paper-moon';
-  const story = { data: ['a', 'b', 'c'].map(id => ({ id })) };
+  const roomId = input.roomId ?? 'paper-moon';
+  const story = { data: (input.moments ?? ['a', 'b', 'c']).map(id => ({ id })) };
   const sharedTarget = { current: input.target ? { room: roomId, moment: input.target } : null };
   const pending = [], errors = [];
   const setSelectedId = update => pending.push(() => { selected = update(selected); });
@@ -22,6 +23,8 @@ const apply = new Function('input', `
   pending.forEach(update => update());
   return { selected, tip, errors, first };
 `);
+const apply = (input: { first?: boolean; selected?: string; tip?: string; target?: string; roomId?: string; moments?: string[] }) =>
+  select(input, KESSLER_ROOM_ID, KESSLER_OPENING_ID);
 
 test('a fresh room selects its published story even when React defers the state callbacks', () => {
   assert.deepEqual(apply({}), { selected: 'c', tip: 'c', errors: [], first: false });
@@ -42,4 +45,19 @@ test('a returning reader retains valid selection and path while an unavailable l
 test('later polling preserves the selected story rather than jumping to the newest publication', () => {
   const result = apply({ first: false, selected: 'a', tip: 'b' });
   assert.equal(result.selected, 'a'); assert.equal(result.tip, 'b');
+});
+
+test('a fresh Kessler reader starts at its opening rather than the latest prepared ending', () => {
+  const result = apply({ roomId: KESSLER_ROOM_ID, moments: [KESSLER_OPENING_ID, 'branch', 'ending'] });
+  assert.deepEqual(result, { selected: KESSLER_OPENING_ID, tip: KESSLER_OPENING_ID, errors: [], first: false });
+});
+
+test('an explicit Kessler ending link retains its target on first load', () => {
+  const result = apply({ roomId: KESSLER_ROOM_ID, moments: [KESSLER_OPENING_ID, 'branch', 'ending'], target: 'ending', selected: KESSLER_OPENING_ID });
+  assert.equal(result.selected, 'ending'); assert.equal(result.tip, 'ending');
+});
+
+test('a returning Kessler reader retains a saved scene and path', () => {
+  const result = apply({ roomId: KESSLER_ROOM_ID, moments: [KESSLER_OPENING_ID, 'branch', 'ending'], selected: 'branch', tip: 'ending' });
+  assert.equal(result.selected, 'branch'); assert.equal(result.tip, 'ending');
 });

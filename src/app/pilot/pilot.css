@@ -175,6 +175,13 @@
   letter-spacing: -0.025em;
   line-height: 1.25;
 }
+.pilot-ideas-sign {
+  align-items: flex-start;
+}
+.pilot-ideas-sign h2 {
+  font-size: 24px;
+  overflow-wrap: normal;
+}
 .pilot-recap-sign {
   margin-bottom: 14px;
 }
@@ -460,6 +467,10 @@
   line-height: 1.3;
   padding-inline: 12px;
   font-weight: 600;
+}
+.pilot-story-actions .pilot-return-link {
+  justify-self: start;
+  align-self: center;
 }
 .pilot-credit-line {
   display: flex;
@@ -1058,6 +1069,30 @@
 }
 .pilot-task .button-row {
   margin-top: 20px;
+}
+.pilot-live-invite,
+.pilot-draft-recovery {
+  display: grid;
+  gap: 10px;
+  max-width: 680px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.pilot-live-invite > strong,
+.pilot-draft-recovery > strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 22px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.pilot-live-invite > p,
+.pilot-draft-recovery > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 .pilot-task > p,
 .pilot-task form > p,

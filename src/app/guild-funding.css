@@ -7,6 +7,36 @@
   background: var(--surface);
   color: var(--ink);
 }
+.guild-funding-summary {
+  padding: 0;
+}
+.guild-funding-drawer {
+  min-width: 0;
+}
+.guild-funding-drawer-summary {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 12px 16px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.45;
+  cursor: pointer;
+  list-style-position: inside;
+  overflow-wrap: anywhere;
+}
+.guild-funding-drawer-summary strong {
+  color: var(--violet);
+  font-weight: 700;
+}
+.guild-funding-drawer-summary:hover strong {
+  color: var(--violet-dark);
+}
+.guild-funding-drawer-body {
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--line);
+}
 .guild-funding-featured {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -328,6 +358,15 @@
   .guild-funding-summary,
   .guild-funding-hall-entry {
     padding: 12px;
+  }
+  .guild-funding-summary {
+    padding: 0;
+  }
+  .guild-funding-drawer-summary {
+    padding-inline: 12px;
+  }
+  .guild-funding-drawer-body {
+    padding: 4px 12px 12px;
   }
   .guild-funding-dialog .pilot-dialog-heading {
     padding: 16px 16px 12px;

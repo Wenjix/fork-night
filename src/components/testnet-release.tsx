@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Check, Download, ExternalLink, Layers3, RefreshCw, Wallet } from "lucide-react";
+import { Check, ChevronDown, Download, ExternalLink, Layers3, RefreshCw, Wallet } from "lucide-react";
 import { formatEther, getAddress, ZeroAddress } from "ethers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../lib/supabase/database.types.ts";
@@ -25,15 +25,21 @@ export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, cli
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
   onChoosePath: (id: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const config = useMemo(releaseConfig, []);
+  useEffect(() => setOpen(false), [roomId]);
   const prepared = useMemo(() => {
     if (!releaseRoom(roomId) || !tipId || !config) return { value: null, error: "" };
     try { return { value: prepareRelease(moments, roomId, tipId, config.curator), error: "" }; }
     catch (error) { return { value: null, error: error instanceof Error ? error.message : "This story's release could not be prepared." }; }
   }, [roomId, moments, tipId, config]);
   if (!releaseRoom(roomId) || !tipId) return null;
+  const controls = prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} open={roomId === "midnight-signal" || open} /> : <p className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>;
   return <section className="pilot-release" aria-label="Story release and support">
-    {prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} /> : <p className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>}
+    {roomId === "midnight-signal" ? controls : <>
+      <button className="pilot-release-toggle" type="button" aria-expanded={open} aria-controls="payout-body" onClick={() => setOpen(!open)}><Layers3 size={21} aria-hidden="true" /><span><strong>Release and support this story</strong><span>Making a moment never requires a wallet.</span></span><ChevronDown size={18} aria-hidden="true" /></button>
+      <div id="payout-body" className="pilot-release-body" hidden={!open}>{controls}</div>
+    </>}
   </section>;
 }
 
@@ -76,9 +82,10 @@ export function PreparedWorkWallet({ prepared, snapshot, config, account, blocke
   </section>;
 }
 
-function ReleaseControls({ prepared, config, moments, makerId, makerName, client, onInspect, onChoosePath, onBusyChange }: {
+function ReleaseControls({ prepared, config, moments, makerId, makerName, client, onInspect, onChoosePath, onBusyChange, open }: {
   prepared: PreparedRelease; config: ReleaseConfig; moments: PilotMoment[]; makerId?: string; makerName?: string;
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
+  open: boolean;
   onChoosePath: (id: string) => void;
 }) {
   const identity = usePilotAccount();
@@ -108,9 +115,10 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   useEffect(() => { session.syncWallet(sharedAccount); }, [session, selectedProvider, sharedAccount]);
   useEffect(() => { session.setPrepared(prepared); }, [session, prepared.id]);
   useEffect(() => {
+    if (!open) return;
     void session.refresh();
     return whileVisible(() => void session.refresh(), 8000);
-  }, [session]);
+  }, [session, open]);
   useEffect(() => { onBusyChange?.(walletBusy); return () => onBusyChange?.(false); }, [walletBusy, onBusyChange]);
   const perform = (operation: Operation, index = 0, address = "") => { void session.perform(operation, index, address, amount); };
   const ownUnregisteredIndex = snapshot?.scenes.findIndex(scene => !scene.registered && !!account && sameAddress(scene.maker, account)) ?? -1;
@@ -164,7 +172,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
       <div className="pilot-release-card-top">
         <div>
           <p className="pilot-release-kicker">Story release on Monad</p>
-          <h2>{journey.ownShare?.claimable ? "Your next step" : journey.released ? "Story release on Monad" : ownScene ? "Your next step" : "Midnight Signal"}</h2>
+          <h2>{journey.ownShare?.claimable ? "Your next step" : journey.released ? "Story release on Monad" : ownScene ? "Your next step" : releaseRoom(prepared.scenes[0].moment.room_id)?.title}</h2>
           <div className="pilot-release-badges"><span>Monad testnet</span>{account && <span title={account}>Signed in · {shortAddress(account)}</span>}{makerName && <span>Making as {makerName}</span>}</div>
         </div>
         <button className="pilot-icon-button" type="button" disabled={walletBusy} onClick={() => void session.refresh(true)} aria-label="Refresh onchain release"><RefreshCw size={18} aria-hidden="true" /></button>

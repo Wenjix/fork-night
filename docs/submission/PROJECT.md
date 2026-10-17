@@ -24,7 +24,7 @@ Supabase holds the shared stories, private operations, protected images and expe
 
 For the hackathon, the original **Midnight Signal** room demonstrates [testnet release controls](ONCHAIN.md) under an explicitly disclosed **equal-wallet policy**: every distinct registered wallet in the complete selected ancestry receives an equal share of that release's payments. Approved wallets register scene commitments, the curator freezes the path and recipients, and supporters fund independently claimable shares. This is one agreed policy for the demo's collaborating group; broader creator and organizational arrangements remain future work.
 
-The contract is deployed on Monad testnet with MonadScan Exact Match source verification. A founder-operated browser rehearsal registered four scenes, froze a release, received 1.0 test MON support and paid two separate 0.5 claims. The user-run checker confirms zero remaining liability. Multiple bylines mapped to one wallet receive one combined share under this policy. Wallets do not establish unique creators or ownership of underlying IP; generation credits remain separate.
+The contract is deployed on Monad testnet with MonadScan Exact Match source verification. A founder-operated browser rehearsal registered six scenes, froze a release, received 1.0 test MON support and paid four separate 0.25 claims across four wallets. The archived checker output (block 70416466) confirms zero remaining liability. Multiple bylines mapped to one wallet receive one combined share under this policy. Wallets do not establish unique creators or ownership of underlying IP; generation credits remain separate.
 
 ## Accounts and wallets
 

@@ -1,7 +1,7 @@
 import { AbstractProvider, BrowserProvider, Contract, getAddress, id, JsonRpcProvider, keccak256, ZeroAddress, ZeroHash, type Eip1193Provider } from "ethers";
 import { releaseAbi, releaseRuntimeHash } from "./abi.ts";
 import { MAX_SUPPORT_WEI, POLICY_HASH, sameAddress, sourceKey, TERMS_HASH, type PreparedRelease } from "./model.ts";
-import { MONAD_RELEASE_DEPLOYMENT_BLOCK } from "./records.ts";
+import { registrationTransaction } from "./records.ts";
 import type { ReleaseConfig } from "./config.ts";
 
 export type WalletProvider = Eip1193Provider & { on?: (event: string, listener: (...args: unknown[]) => void) => void; removeListener?: (event: string, listener: (...args: unknown[]) => void) => void };
@@ -79,29 +79,6 @@ export class ReleaseClient {
       return result.length === 1 ? result[0] : result;
     });
   }
-  private async registrationTransactions(prepared: PreparedRelease, registeredIds: string[], block: number) {
-    const wanted = new Set(registeredIds.map(id => id.toLowerCase()));
-    if (!wanted.size || !this.config.explorer) return new Map<string, string>();
-    try {
-      const event = this.contract.interface.getEvent("MomentRegistered");
-      if (!event) return new Map<string, string>();
-      const logs = await this.provider.getLogs({
-        address: this.config.address,
-        fromBlock: this.config.chainId === 10143 ? MONAD_RELEASE_DEPLOYMENT_BLOCK : 0,
-        toBlock: block,
-        topics: [event.topicHash, null, prepared.projectId],
-      });
-      const hashes = new Map<string, string>();
-      for (const log of logs) {
-        const parsed = this.contract.interface.parseLog(log);
-        const id = String(parsed?.args.momentId ?? "").toLowerCase();
-        if (wanted.has(id) && !hashes.has(id)) hashes.set(id, log.transactionHash);
-      }
-      return hashes;
-    } catch {
-      return new Map<string, string>();
-    }
-  }
   async load(prepared: PreparedRelease): Promise<Snapshot> {
     await this.readable();
     const block = await this.provider.getBlockNumber();
@@ -119,8 +96,10 @@ export class ReleaseClient {
     }
     if (project.curator !== ZeroAddress && project.root !== prepared.scenes[0].id) throw new Error("The recorded opening differs from this story. Keep the registered version and review the source before continuing.");
     if (scenes.some(scene => scene.registered && !scene.matches)) throw new Error("A registered scene differs from this published version. Its payout record has been preserved; select the registered version.");
-    const registrationHashes = await this.registrationTransactions(prepared, scenes.filter(scene => scene.registered).map(scene => scene.id), block);
-    for (const scene of scenes) scene.transactionHash = registrationHashes.get(scene.id.toLowerCase());
+    for (const scene of scenes) {
+      const transactionHash = scene.registered ? registrationTransaction(this.config.chainId, this.config.address, scene.id) : undefined;
+      if (transactionHash) scene.transactionHash = transactionHash;
+    }
     const exists = release.projectId !== ZeroHash;
     if (exists && (release.projectId !== prepared.projectId || release.tipId !== prepared.tipId || release.manifestHash !== prepared.hash)) throw new Error("The release does not match this selected path.");
     const addresses: string[] = [...release.beneficiaries];

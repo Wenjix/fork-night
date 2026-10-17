@@ -271,10 +271,10 @@ export function PilotIdeas({
       id="pilot-ideas"
       tabIndex={-1}
       className={`pilot-ideas${notes.length ? " has-ideas" : ""}${expanded ? " is-expanded" : ""}`}
-      aria-label={`Ideas for moment ${label}`}
+      aria-label="Ideas from the room"
     >
       <SectionPlate
-        title={`Ideas for ${label}`}
+        title="Ideas from the room"
         description="A little spark for whoever comes next."
         icon={Lightbulb}
         tone="butter"
