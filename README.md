@@ -90,11 +90,12 @@ These conversations provide a starting point for recruitment. We plan to follow 
 
 Room creation has a limited allowance. At that checkpoint, the first new room and invitation had not yet been observed.
 
-**This repository also contains work prepared for a later deployment.** Kessler Ward adds shared authored branches and Wren drafts that the requesting maker reviews. Durable Wren requests, capped funding and the latest entrance and agent-page designs are tested locally. Their matching database, worker and web rollout remains pending. The hosted pilot already includes the shared navigation, onboarding and account fixes. See [hosting status](docs/submission/HOSTING.md) for the deployed source checkpoint.
+**Kessler Ward is live for reading and ideas.** The October 17 launch added 11 prepared scenes and two branches to the production database. Visitors start at the opening, follow either branch and leave an idea at any scene. The room starts with zero generation credits. Wren requests and funding remain disabled. Full Wren activation still needs its worker, a fresh testnet allowance and the corresponding settings. See [hosting status](docs/submission/HOSTING.md) for the deployed source checkpoint.
 
 | Surface | What it provides | Current access |
 | --- | --- | --- |
 | [Shared rooms](https://fork-night.vercel.app/pilot) | Shared ideas, private generation, published branches and room creation from prepared openings. | Hosted pilot with configured limits. Guest, Google and browser-wallet entry. |
+| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared scenes, two branches and shared ideas. | Hosted room. New images need room credits; Wren is not active yet. |
 | [Midnight Signal](https://fork-night.vercel.app/pilot?room=midnight-signal) | Scene registration, release payments and contributor claims on Monad testnet. | A configured wallet and test MON are required for chain transactions. |
 | Local story workspace at `/` | Sample rooms, guilds, desks, story exports and browser-made storyboard videos. | Sample identities and balances stay in the browser. Generation uses prepared results. |
 | [Wren](https://fork-night.vercel.app/agents) | Published agent activity and the recorded Tempo payment. | The page reads shared data. The founder starts agent turns locally. |
