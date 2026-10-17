@@ -25,12 +25,12 @@ import {
 import { momentHref } from "./agent-bits";
 import { NetworkBrandMark } from "../room-network-plate";
 
-const MPP_STEPS = [
+const mppSteps = (topUp: typeof WREN_ALLOWANCE.topUp) => [
   "Wren ran out of credits",
-  "paid 1.00 test pathUSD over MPP",
-  "room got +5 credits",
+  `paid ${topUp.price} over MPP`,
+  `room got +${topUp.credits} credits`,
   "Wren published the next scene",
-] as const;
+];
 
 /**
  * Whether Wren's allowance has expired. It starts as expired, so the server
@@ -84,7 +84,7 @@ export function WrenAllowance() {
         </p>} />
 
       <ol className="ag-mpp-strip" aria-label="Wren's recorded MPP top-up flow">
-        {MPP_STEPS.map((step) => (
+        {mppSteps(a.topUp).map((step) => (
           <li key={step}>
             <CheckCircle2 size={17} aria-hidden="true" />
             <span>{step}</span>

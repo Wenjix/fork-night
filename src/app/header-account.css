@@ -116,6 +116,20 @@
   white-space: nowrap;
 }
 .fn-header .fn-account-save-google:disabled { color: var(--fn-header-muted); }
+/* On phones the inline action is hidden, so the menu carries it. */
+.fn-header .fn-account-save-google-menu {
+  display: none;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fn-header-current);
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.fn-header .fn-account-save-google-menu:disabled { color: var(--fn-header-muted); }
 
 /* The menu opens under the chip, against its right edge, and never wider than the screen allows. */
 .fn-header .fn-account-panel {
@@ -193,6 +207,7 @@
   .fn-header .fn-account-avatar { width: 32px; height: 32px; }
   .fn-header .fn-account-menu[data-guest] .fn-account-avatar { width: 32px; height: 32px; }
   .fn-header .fn-account-save-google { display: none; }
+  .fn-header .fn-account-save-google-menu { display: block; }
   /* Without the "Signed in" eyebrow, a demo persona's portrait beside the chip's avatar would read as a second account. */
   .fn-header .fn-header-actions .social-user .social-avatar { display: none; }
 }

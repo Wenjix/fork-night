@@ -178,6 +178,16 @@ test("the chip asks for the Supabase client only for a stored session, and its c
   assert.doesNotMatch(source, /window\.confirm|confirm\(/, "the guest confirms inside the menu");
 });
 
+test("a guest can save with Google from the chip, or from the menu on phones, and Back from Google frees the button", async () => {
+  const source = await readFile("src/components/header-account.tsx", "utf8");
+  const css = (await readFile("src/app/header-account.css", "utf8")).replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.equal(source.match(/void saveWithGoogle\(\)/g)?.length, 2, "the inline action and the menu action start the same flow");
+  assert.match(source, /if \(event\.persisted\) \{ setBusy\(false\); setGoogleBusy\(false\); \}/, "a page restored from the back-forward cache is not stuck on Opening Google");
+  assert.match(css, /\.fn-account-save-google \{ display: none; \}/, "the inline action leaves phones");
+  assert.match(css, /\.fn-account-save-google-menu \{\s*display: none;/, "the menu action is hidden wherever the inline one shows");
+  assert.match(css, /\.fn-account-save-google-menu \{ display: block; \}/, "and the menu carries it on phones");
+});
+
 test("the box keeps one size from the first paint, and the phone menu opens under the chip inside the screen", async () => {
   const css = (await readFile("src/app/header-account.css", "utf8")).replace(/\/\*[\s\S]*?\*\//g, "");
   const rule = (selector: string, within = css) => within.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\{([^}]*)\\}`))?.[1] ?? "";

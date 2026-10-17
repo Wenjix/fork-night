@@ -202,8 +202,8 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
   useEffect(() => {
     // The trip replaces this page's history entry, so it never comes back from the back-forward cache
     // after /pilot. A page restored mid sign-out (Back, then Forward, before /pilot loaded) is usable at once,
-    // without waiting for the next press or key.
-    const restored = (event: PageTransitionEvent) => { if (event.persisted) setBusy(false); };
+    // without waiting for the next press or key. Back from Google's consent screen restores the page the same way.
+    const restored = (event: PageTransitionEvent) => { if (event.persisted) { setBusy(false); setGoogleBusy(false); } };
     window.addEventListener("pageshow", restored);
     return () => window.removeEventListener("pageshow", restored);
   }, []);
@@ -327,6 +327,7 @@ function StorytellerMenu({ onSignedOut }: { onSignedOut: () => void }) {
         {account && displayLabel ? <p className="fn-account-who"><strong>{displayLabel}</strong><span>{accountDetail(account)}</span></p>
           : shown.status === "unread" ? <p>Your account could not load here. <a href="/pilot">Open Shared rooms</a> to manage it.</p>
           : <p>Checking your account…</p>}
+        {guest && !confirming && <button type="button" className="fn-account-save-google-menu" disabled={googleBusy} onClick={() => void saveWithGoogle()}>{googleBusy ? "Opening Google…" : "Save with Google"}</button>}
         {ready && (confirming
           ? <div className="fn-account-confirm" role="group" aria-labelledby={warningId}>
             <p id={warningId} ref={warning} tabIndex={-1}><strong>{"This guest can't be recovered."}</strong></p>
