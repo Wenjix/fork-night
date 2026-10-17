@@ -42,6 +42,27 @@ test("Midnight Signal defaults to the completed six-scene release when a newer c
   assert.equal(releaseDisplayTipId("kessler-ward", [released, child], child.id), child.id);
 });
 
+test("Midnight Signal lets a descendant path leave the archived release to register and freeze its own scenes", () => {
+  const saved = { address: process.env.NEXT_PUBLIC_MONAD_RELEASE_ADDRESS, curator: process.env.NEXT_PUBLIC_MONAD_CURATOR_ADDRESS };
+  process.env.NEXT_PUBLIC_MONAD_RELEASE_ADDRESS = config.address;
+  process.env.NEXT_PUBLIC_MONAD_CURATOR_ADDRESS = curator;
+  try {
+    const released = { ...moments.at(-1)!, id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
+    const child = { ...moments.at(-1)!, id: "10000000-0000-4000-8000-000000000099", parent_id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
+    const props = { roomId: "midnight-signal", moments: [...moments.slice(0, -1), released, child], tipId: child.id, onChoosePath: () => {} };
+    const html = renderToStaticMarkup(React.createElement(TestnetRelease, props));
+    assert.match(html, /4 scenes in the completed release/);
+    assert.match(html, /Release the chosen path/);
+    const own = renderToStaticMarkup(React.createElement(TestnetRelease, { ...props, moments: [...moments.slice(0, -1), released], tipId: released.id }));
+    assert.match(own, /4 scenes in the chosen path/);
+    assert.doesNotMatch(own, /Release the chosen path|Show the completed release/);
+  } finally {
+    for (const [key, value] of [["NEXT_PUBLIC_MONAD_RELEASE_ADDRESS", saved.address], ["NEXT_PUBLIC_MONAD_CURATOR_ADDRESS", saved.curator]]) {
+      if (value === undefined) delete process.env[key!]; else process.env[key!] = value;
+    }
+  }
+});
+
 test("prepared work approval is restricted to its curator, an unapproved prepared identity and explicit rights consent", () => {
   assert.deepEqual(journey.preparedWorkApproval?.(prepared, snapshot, curator, curator, makerWallet, true), { index: 0, address: makerWallet });
   assert.throws(() => journey.preparedWorkApproval(prepared, snapshot, otherWallet, curator, makerWallet, true), /curator/);

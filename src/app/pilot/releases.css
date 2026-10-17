@@ -42,6 +42,8 @@
 .pilot-wallet-connect > small { max-width: 36ch; color: var(--muted); line-height: 1.5; font-size: 13px; }
 .pilot-wallet-options { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .pilot-wallet-options [aria-pressed="true"] { color: var(--violet); font-weight: 700; }
+.pilot-release-path-choice { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 12px 0 0; }
+.pilot-release-path-choice .text-button { color: var(--violet-dark); }
 .pilot-release-wallet-help, .pilot-release-approval-help { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 12px 0 0; }
 .pilot-release a { color: var(--violet-dark); display: inline-flex; align-items: center; gap: 6px; text-underline-offset: 4px; overflow-wrap: anywhere; }
 .pilot-release-consent { display: flex; gap: 12px; align-items: flex-start; margin: 20px 0; line-height: 1.6; font-size: 15px; cursor: pointer; }
