@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { BadgeCheck, Ban, Check, CircleAlert, CircleDashed, Clock3, Coins, ExternalLink, Hourglass, Lock, MoonStar, Receipt, RefreshCw, Send, Sparkles } from "lucide-react";
+import { BadgeCheck, Ban, Check, CircleAlert, CircleDashed, Clock3, Coins, Hourglass, Lock, MoonStar, Receipt, RefreshCw, Send, Sparkles } from "lucide-react";
+import { BrandBadge } from "../brand-badge";
+import { Disclosure } from "../disclosure";
 import type { CandidateView, JobSummary, MeResponse, WorldMoment } from "../../night-watch/api-types.ts";
 import { ActHeading } from "./world-panel.tsx";
+import { CardHeading } from "./card-heading";
 import { BrainCard, brainCandidate, brainPick, CandidateThought, PickChip } from "./brain-card.tsx";
 import { useNow } from "./desk-panel.tsx";
 import {
@@ -100,7 +103,7 @@ function CandidateCard({ api, job, candidate, confirming, publishing, onAsk, onC
             {candidate.state === "delivered" ? image.error || "Opening the private image…" : CANDIDATE_STATES[candidate.state]}
             {image.error && <button type="button" className="text-button" onClick={() => setAttempt(attempt + 1)}>Load it again</button>}
           </span>}
-        {image.verified && <span className="nw-hash-chip"><BadgeCheck size={13} aria-hidden="true" />Hash verified</span>}
+        {image.verified && <span className="nw-hash-chip"><BadgeCheck size={16} aria-hidden="true" />Hash verified</span>}
         {picked && <PickChip />}
       </div>
       <figcaption>
@@ -110,7 +113,7 @@ function CandidateCard({ api, job, candidate, confirming, publishing, onAsk, onC
       </figcaption>
     </figure>
     <p className="nw-candidate-state">
-      {candidate.published ? <><Send size={14} aria-hidden="true" />Published by you</> : decided && candidate.state === "delivered" ? <><Lock size={14} aria-hidden="true" />Stays private</> : <>{candidate.state === "delivered" ? <Lock size={14} aria-hidden="true" /> : <CircleAlert size={14} aria-hidden="true" />}{CANDIDATE_STATES[candidate.state]}</>}
+      {candidate.published ? <><Send size={16} aria-hidden="true" />Published by you</> : decided && candidate.state === "delivered" ? <><Lock size={16} aria-hidden="true" />Stays private</> : <>{candidate.state === "delivered" ? <Lock size={16} aria-hidden="true" /> : <CircleAlert size={16} aria-hidden="true" />}{CANDIDATE_STATES[candidate.state]}</>}
       {candidate.expenseUsd && <span> · operator-paid inference {formatUsd(candidate.expenseUsd)}</span>}
     </p>
     {canPublish && (confirming
@@ -195,11 +198,10 @@ export function AwayPanel({ api, jobs, jobId, job, jobError, me, forkPoint, onSe
         <div className="nw-card nw-status-card" data-state={current.state}>
           <div className="nw-status-head">
             <div aria-live="polite" role="status" aria-atomic="true">
-              <p className="nw-card-eyebrow">Night Watch status</p>
-              <h3>{jobStateLabel(current.state)}</h3>
+              <CardHeading title={jobStateLabel(current.state)} kind="Night Watch status" icon={MoonStar} />
               {current.message && <p className="nw-status-message">{current.message}</p>}
             </div>
-            <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Refresh the Night Watch status" onClick={onRefresh}><RefreshCw size={18} aria-hidden="true" /></button>
+            <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Refresh the Night Watch status" onClick={onRefresh}><RefreshCw size={20} aria-hidden="true" /></button>
           </div>
           {current.state === "scheduled" && <p className="nw-countdown"><Clock3 size={16} aria-hidden="true" />Starts {startsIn(current.runAfter, now)} · {clockTime(current.runAfter)}</p>}
           {runnerOff && <p className="nw-warning"><CircleAlert size={16} aria-hidden="true" />The runner is not running on this machine, so this job waits until the operator starts it.</p>}
@@ -207,7 +209,7 @@ export function AwayPanel({ api, jobs, jobId, job, jobError, me, forkPoint, onSe
             {timeline.map((step) => {
               const Icon = STEP_ICONS[step.status];
               return <li key={step.state} data-status={step.status} aria-current={step.status === "current" ? "step" : undefined}>
-                <Icon size={15} aria-hidden="true" />
+                <Icon size={16} aria-hidden="true" />
                 <span>{step.label}{step.optional && step.status === "upcoming" ? " (only if credits run short)" : ""}</span>
                 <small>{STEP_NOTES[step.status]}</small>
               </li>;
@@ -224,25 +226,23 @@ export function AwayPanel({ api, jobs, jobId, job, jobError, me, forkPoint, onSe
               {current.capacity.refunded > 0 && ` · ${current.capacity.refunded} refunded`}
             </dd></div>
           </dl>
-          {events.length > 0 && <details className="nw-log" open={isJobActive(current.state)}>
-            <summary>Night log ({events.length} {events.length === 1 ? "entry" : "entries"})</summary>
+          {events.length > 0 && <Disclosure className="nw-log" defaultOpen={isJobActive(current.state)} summary={`Night log (${events.length} ${events.length === 1 ? "entry" : "entries"})`}>
             <ol>{events.map((event, index) => <li key={`${event.at}-${index}`}><time dateTime={event.at}>{clockTime(event.at)}</time><strong>{event.title}</strong>{event.detail && <span>{event.detail}</span>}</li>)}</ol>
-          </details>}
+          </Disclosure>}
         </div>
 
         <div className="nw-away-side">
           <article className="nw-card nw-receipt" aria-labelledby={`${ids}-receipt`}>
-            <p className="nw-card-eyebrow"><Receipt size={15} aria-hidden="true" />Payment receipt</p>
-            <h3 id={`${ids}-receipt`}>{receipt ? "Room top-up" : current.payment?.state === "released" ? "No payment made" : current.payment ? "Room top-up in progress" : "No payment"}</h3>
+            <CardHeading id={`${ids}-receipt`} title={receipt ? "Room top-up" : current.payment?.state === "released" ? "No payment made" : current.payment ? "Room top-up in progress" : "No payment"} kind="Payment receipt" icon={Receipt} />
             {receipt
               ? <>
-                <p className="nw-receipt-amount">{receipt.amount}<span>on {receipt.network}</span></p>
+                <p className="nw-receipt-amount">{receipt.amount}<span>on <BrandBadge brand="base" label={receipt.network} /></span></p>
                 <ul className="nw-receipt-lines">
-                  <li><Coins size={15} aria-hidden="true" />{receipt.credits}</li>
-                  <li><Check size={15} aria-hidden="true" />Paid by {receipt.payer}</li>
-                  <li><BadgeCheck size={15} aria-hidden="true" />{receipt.signedBy}</li>
+                  <li><Coins size={16} aria-hidden="true" />{receipt.credits}</li>
+                  <li><Check size={16} aria-hidden="true" />Paid by {receipt.payer}</li>
+                  <li><BadgeCheck size={16} aria-hidden="true" />{receipt.signedBy}</li>
                 </ul>
-                {receiptHref && receipt.transaction && <a className="nw-tx" href={receiptHref} target="_blank" rel="noreferrer">Base Sepolia transaction {shortHex(receipt.transaction)} <ExternalLink size={13} aria-hidden="true" /></a>}
+                {receiptHref && receipt.transaction && <BrandBadge className="nw-tx" brand="base" label={`Base Sepolia transaction ${shortHex(receipt.transaction)}`} href={receiptHref} />}
                 <p className="nw-fine">A top-up added test credits to the room. It explains a credit change, not a particular image.</p>
               </>
               : current.payment
@@ -250,8 +250,7 @@ export function AwayPanel({ api, jobs, jobId, job, jobError, me, forkPoint, onSe
                 : <p className="nw-quiet">{isJobActive(current.state) ? "The Night Watch pays only if the room runs short of test credits." : "The room had enough test credits, so nothing was paid."}</p>}
           </article>
           <article className="nw-card nw-expense" aria-labelledby={`${ids}-expense`}>
-            <p className="nw-card-eyebrow"><Sparkles size={15} aria-hidden="true" />Expense</p>
-            <h3 id={`${ids}-expense`}>Image generation</h3>
+            <CardHeading id={`${ids}-expense`} title="Image generation" kind="Expense" icon={Sparkles} />
             <p>{expenseText(current.expense)}</p>
             <p className="nw-fine">Paid by the operator, within a per-job cap. It is not paid from your allowance.</p>
           </article>

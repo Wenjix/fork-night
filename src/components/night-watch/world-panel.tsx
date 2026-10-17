@@ -6,6 +6,8 @@ import type { WorldMoment, WorldPanel as WorldPanelView, WorldResponse } from ".
 import { isApprovedArtUrl } from "../../lib/art.ts";
 import { SectionPlate } from "../visual-plates";
 import { StoryArt } from "../story-art.tsx";
+import { Disclosure } from "../disclosure";
+import { CardHeading } from "./card-heading";
 import { displayImageUrl, momentHeadline, plural, storyPath } from "./api.ts";
 
 function Unavailable({ caption, className }: { caption: string | undefined; className: string }) {
@@ -37,7 +39,7 @@ export function ActHeading({ act, id, title, children }: { act: string; id: stri
 function KitList({ icon: Icon, title, items }: { icon: typeof BookOpen; title: string; items: string[] }) {
   if (!items.length) return null;
   return <div className="nw-kit-list">
-    <h4><Icon size={17} aria-hidden="true" />{title}</h4>
+    <h4><Icon size={16} aria-hidden="true" />{title}</h4>
     <ul>{items.map((item) => <li key={item}>{item}</li>)}</ul>
   </div>;
 }
@@ -53,8 +55,8 @@ function MomentCard({ moment, index, friend, forkPoint, signedIn, onChoose }: {
       <p className="nw-moment-meta">
         {index !== null && <span>Scene {index + 1}</span>}
         {moment.parentId === null && <span className="nw-tag">Original opening</span>}
-        {friend && <span className="nw-tag nw-tag-friend"><Star size={13} aria-hidden="true" />A friend’s contribution</span>}
-        {moment.source === "night-watch" && <span className="nw-tag nw-tag-watch"><MoonStar size={13} aria-hidden="true" />Prepared by a Night Watch</span>}
+        {friend && <span className="nw-tag nw-tag-friend"><Star size={16} aria-hidden="true" />A friend’s contribution</span>}
+        {moment.source === "night-watch" && <span className="nw-tag nw-tag-watch"><MoonStar size={16} aria-hidden="true" />Prepared by a Night Watch</span>}
         {forkPoint && <span className="nw-tag nw-tag-fork">Fork point</span>}
       </p>
       <h4 title={heading}>{heading}</h4>
@@ -119,8 +121,7 @@ export function WorldPanel({ world, error, reading, forkPointId, signedIn, onCho
     <div className="nw-card nw-kit">
       <header className="nw-kit-head">
         <div>
-          <p className="nw-card-eyebrow">World kit</p>
-          <h3>{kit.title}</h3>
+          <CardHeading title={kit.title} kind="World kit" icon={BookOpen} />
           <p className="nw-kit-creator">{kit.creator}</p>
         </div>
         <ul className="nw-references" aria-label="Reference art">
@@ -130,21 +131,20 @@ export function WorldPanel({ world, error, reading, forkPointId, signedIn, onCho
           </li>)}
         </ul>
       </header>
-      <p className="nw-disclosure"><Info size={17} aria-hidden="true" /><span>{kit.disclosure}</span></p>
+      <p className="nw-disclosure"><Info size={20} aria-hidden="true" /><span>{kit.disclosure}</span></p>
       <div className="nw-kit-grid">
         <KitList icon={BookOpen} title="Lore" items={kit.lore} />
         <KitList icon={Brush} title="Style" items={kit.style} />
         <KitList icon={ScrollText} title="Rules" items={kit.rules} />
         <KitList icon={Feather} title="Participation terms" items={kit.participation} />
       </div>
-      <details className="nw-technical">
-        <summary>Kit version {kit.version} · digest {kit.digest.slice(0, 12)}…</summary>
+      <Disclosure className="nw-technical" summary={`Kit version ${kit.version} · digest ${kit.digest.slice(0, 12)}…`}>
         <p>Every Night Watch job pins this kit version and digest. Its prompt is built only from the pinned kit, so later edits cannot change a job that already ran.</p>
         <dl>
           <div><dt>Kit</dt><dd><code>{kit.id}@{kit.version}</code></dd></div>
           <div><dt>Digest (SHA-256)</dt><dd><code>{kit.digest}</code></dd></div>
         </dl>
-      </details>
+      </Disclosure>
     </div>
 
     <div className="nw-card nw-path">
@@ -152,7 +152,7 @@ export function WorldPanel({ world, error, reading, forkPointId, signedIn, onCho
         <h3>The story so far</h3>
         <span>{plural(path.length, "scene")} on the release path</span>
       </div>
-      {friend && <p className="nw-friend-note"><Star size={17} aria-hidden="true" /><span><strong>{friend.makerLabel}</strong> added “{friend.title}”. It stays credited to them on every path that continues from it.</span></p>}
+      {friend && <p className="nw-friend-note"><Star size={20} aria-hidden="true" /><span><strong>{friend.makerLabel}</strong> added “{friend.title}”. It stays credited to them on every path that continues from it.</span></p>}
       {path.length
         ? <ol className="nw-path-list">{path.map((moment, index) => <li key={moment.id}>
           <MomentCard moment={moment} index={index} friend={moment.id === friendContribution?.momentId} forkPoint={moment.id === forkPointId} signedIn={signedIn} onChoose={onChooseForkPoint} />
