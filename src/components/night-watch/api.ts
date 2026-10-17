@@ -572,8 +572,8 @@ export function shareRows(edition: Pick<EditionResponse, "release" | "claims">):
 export const CLAIM_STATE_LABELS: Record<ClaimView["state"], string> = {
   signed: "Signed by the helper, not sent yet",
   broadcast: "Sent to Monad testnet",
-  confirmed: "Included in a block, awaiting finality",
-  finalized: "Finalized on Monad testnet",
+  confirmed: "Included in a block, waiting to settle",
+  finalized: "Settled on Monad testnet",
   failed: "Did not complete",
 };
 
@@ -649,7 +649,7 @@ export function recapModel(input: RecapInput): RecapModel {
     input.release?.exists
       ? `Release ${shortHex(input.release.id)} on Monad testnet · ${formatMon(input.release.receivedWei)} support received`
       : "Release: not frozen yet",
-    finalized.length ? `Shares delivered and finalized: ${finalized.length}` : "",
+    finalized.length ? `Shares delivered and settled: ${finalized.length}` : "",
     input.expense && input.expense.images ? `Operator-paid inference: ${plural(input.expense.images, "image")}, ${formatUsd(input.expense.operatorPaidUsd)}` : "",
   ].filter(Boolean);
   return {

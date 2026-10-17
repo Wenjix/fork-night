@@ -93,8 +93,8 @@ export function GuildFundingHistory({ record, onClose, returnFocus }: {
   return (
     <PilotDialog title="How the guild funded this room" onClose={onClose} returnFocus={returnFocus} className="guild-funding-dialog">
       <div className="guild-funding-history">
-        <p className="guild-funding-context">{record.roomTitle} · Solana devnet · founder-operated rehearsal</p>
-        <p className="guild-funding-intro">{approvalsComplete ? "The stewards approved a limited withdrawal. A separate payer then used that funding to add shared room credits." : "This history records a limited withdrawal and a separate payer’s room payment. Some approval evidence is missing."}</p>
+        <p className="guild-funding-context">{record.roomTitle} · Solana devnet · test run by the founder</p>
+        <p className="guild-funding-intro">{approvalsComplete ? "The guild members approved a limited withdrawal. A separate payer then used that funding to add shared room credits." : "This history records a limited withdrawal and a separate payer’s room payment. Some approval evidence is missing."}</p>
         {!approvalsComplete && <p className="guild-funding-note">Approval receipts are incomplete in this view. Check the available receipts before relying on this history.</p>}
         <ol className="guild-funding-timeline" aria-label="Recorded funding sequence">
           <FundingStep number={1} title="Treasury funded">
@@ -102,7 +102,7 @@ export function GuildFundingHistory({ record, onClose, returnFocus }: {
             <ReceiptLinks receipts={[receipts.deposit]} />
           </FundingStep>
           <FundingStep number={2} title="Allowance approved">
-            <p>{approvalsComplete ? <><strong>{governance.threshold} of {governance.stewardWallets} steward wallets</strong> approved a </> : <>The recorded policy requires <strong>{governance.threshold} of {governance.stewardWallets} steward wallets</strong> to approve a </>}<strong>{usdc(amounts.allowance)}</strong> allowance, with no periodic reset. Only the authorized payer could draw, and only to its own wallet.</p>
+            <p>{approvalsComplete ? <><strong>{governance.threshold} of {governance.stewardWallets} guild members</strong> approved a </> : <>The recorded policy requires <strong>{governance.threshold} of {governance.stewardWallets} guild members</strong> to approve a</>}<strong>{usdc(amounts.allowance)}</strong> allowance, with no periodic reset. Only the authorized payer could draw, and only to its own wallet.</p>
             <ReceiptLinks receipts={receipts.approvals} approved />
             <ReceiptLinks receipts={[receipts.proposal, receipts.allowance]} />
           </FundingStep>
@@ -143,7 +143,7 @@ export function GuildFundingHistory({ record, onClose, returnFocus }: {
         <details className="guild-funding-disclosure">
           <summary>What this rehearsal proves</summary>
           <ul className="guild-funding-boundaries">
-            <li>{approvalsComplete ? "The onchain approval and spending limit worked." : "The approval receipts are incomplete in this view."} All three steward keys were held by the founder.</li>
+            <li>{approvalsComplete ? "The onchain approval and spending limit worked." : "The approval receipts are incomplete in this view."} All three guild-member keys were held by the founder.</li>
             <li>The allowance restricted withdrawals to the payer wallet. It did not restrict that wallet’s later spending to this room.</li>
             <li>Room credits are pooled. This top-up does not identify which credits paid for a particular scene.</li>
             <li>Test USDC came from a faucet. Images still use the operator’s approved provider budget; this is a test of approvals and payment, not commercial backing.</li>
@@ -182,7 +182,7 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
               <NetworkBrandMark network="solana" />
               <div>
                 <h2>Guild funding rehearsal</h2>
-                <p>{record.protocol} · {record.governance.threshold} of {record.governance.stewardWallets} steward wallets approved</p>
+                <p>{record.governance.threshold} of {record.governance.stewardWallets} guild members approved</p>
                 <div className="fn-network-brand guild-funding-meta">
                   <Badge variant="outline" className="fn-network-testnet">Solana Devnet</Badge>
                   <span className="fn-network-currency">
@@ -191,7 +191,7 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
                   </span>
                   <strong>Recorded addition: +{record.appCredit.added} room credits</strong>
                 </div>
-                <p className="guild-funding-environment">Solana devnet · founder-operated rehearsal</p>
+                <p className="guild-funding-environment">Solana devnet · test run by the founder</p>
               </div>
             </div>
             <Button ref={trigger} type="button" className="guild-funding-open" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>

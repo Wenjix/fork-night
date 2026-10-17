@@ -57,6 +57,16 @@ test("Midnight Signal keeps a newer selected child actionable instead of pinning
   assert.equal(releaseDisplayTipId("kessler-ward", [released, child], child.id), child.id);
 });
 
+test("Midnight Signal prepares the selected descendant and can still open the archived tip directly", () => {
+  const released = { ...moments.at(-1)!, id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
+  const child = { ...moments.at(-1)!, id: "10000000-0000-4000-8000-000000000099", parent_id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
+  const story = [...moments.slice(0, -1), released, child];
+  const descendant = renderRelease("midnight-signal", story, child.id);
+  assert.match(descendant, new RegExp(`0 of ${story.length} scenes registered`));
+  const archived = renderRelease("midnight-signal", story, released.id);
+  assert.match(archived, new RegExp(`0 of ${story.length - 1} scenes registered`));
+});
+
 test("prepared work approval is restricted to its curator, an unapproved prepared identity and explicit rights consent", () => {
   assert.deepEqual(journey.preparedWorkApproval?.(prepared, snapshot, curator, curator, makerWallet, true), { index: 0, address: makerWallet });
   assert.throws(() => journey.preparedWorkApproval(prepared, snapshot, otherWallet, curator, makerWallet, true), /curator/);

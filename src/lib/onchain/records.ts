@@ -46,4 +46,4 @@ export function registrationTransaction(chainId: number, contract: string, scene
 
 /** A dated snapshot: the release has taken more test support and claims since, so its live balances differ. */
 export const MIDNIGHT_SIGNAL_RELEASE_PROOF_LINE =
-  "This story paid its makers on Monad: 1 MON split across 4 wallets, all claimed (Oct 12 test rehearsal)";
+  "This story paid its makers on Monad: 1 MON split across 4 wallets, all claimed (its six-scene release, Oct 12 test rehearsal)";
