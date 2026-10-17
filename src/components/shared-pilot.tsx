@@ -999,6 +999,20 @@ export function SharedPilot() {
     ) : null;
   const recordedGuildFunding = !!getRecordedGuildFunding(roomId);
   const identityDisabled = !selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || !!account?.loading || !!account?.error && !account.user || (profile ? hasActive || !!draft : false);
+  const releasePanel = client && selected && loadedRoom === roomId && path.length ? <TestnetRelease
+    roomId={roomId} moments={moments} tipId={path.at(-1)!.id}
+    makerId={profile?.id} makerName={profile?.display_name} client={client}
+    onBusyChange={setReleaseBusy}
+    onChoosePath={(id) => select(id, true)}
+    onInspect={(id) => {
+      select(id);
+      requestAnimationFrame(() => {
+        const reader = document.getElementById("pilot-story-reader");
+        reader?.scrollIntoView({ block: "start" });
+        reader?.focus({ preventScroll: true });
+      });
+    }}
+  /> : null;
 
   if (unavailable) return <><AppHeader current="rooms" guide={false} /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
 
@@ -1055,6 +1069,7 @@ export function SharedPilot() {
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
         {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">Explore two prepared branches, then leave an idea at any scene. Each new published scene keeps its storyteller’s byline.</p>}
       </div>
+      {roomId === "midnight-signal" && !composing && !hasActive && !wrenBusy && !reviewing && releasePanel}
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
         <details className="pilot-roster"><summary>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></summary><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</details>
         {!joinedRoom && profile && <button className="button secondary" disabled={busy} onClick={() => setJoinOpen(true)}>Join this room</button>}
@@ -1308,18 +1323,7 @@ export function SharedPilot() {
                     />
                   </label>
                 )}
-                <div hidden={composing || hasActive || wrenBusy || reviewing}>
-                  <TestnetRelease
-                    roomId={roomId} moments={moments} tipId={path.at(-1)!.id}
-                    makerId={profile?.id} makerName={profile?.display_name} client={client}
-                    onBusyChange={setReleaseBusy}
-                    onChoosePath={(id) => select(id, true)}
-                    onInspect={(id) => {
-                      select(id);
-                      requestAnimationFrame(() => document.querySelector(".pilot-reader")?.scrollIntoView({ block: "start" }));
-                    }}
-                  />
-                </div>
+                {roomId === KESSLER_ROOM_ID && <div hidden={composing || hasActive || wrenBusy || reviewing}>{releasePanel}</div>}
                 {credits && (
                   <p className="pilot-credit-line">
                     <Sparkles size={15} />

@@ -68,7 +68,7 @@ export async function startWalletLogin(client: Client, wallet: WalletProvider | 
     if (profile.error) throw new Error("Your current storyteller could not be checked. Refresh before signing in.");
     if (profile.data) throw new Error(verified.data.user?.is_anonymous
       ? "Keep this guest's byline and drafts in this browser. Use a separate browser profile for wallet sign-in; your guest can still use a browser wallet for testnet actions."
-      : "You are already signed in. Use the release panel to connect a browser wallet, or sign out to switch accounts.");
+      : "You are already signed in. Sign out to switch accounts, or continue with this wallet for Monad release actions.");
   }
   let selected = "";
   let walletFailure: unknown;

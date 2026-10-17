@@ -1,8 +1,31 @@
 .pilot-release {
-  margin: 28px 0;
-  border-top: 1px solid var(--line);
+  margin: 18px 0 24px;
   color: var(--ink);
 }
+.pilot-release-card { border: 1px solid var(--violet); background: linear-gradient(180deg, #f5efff 0%, #fff 72%); border-radius: 12px; padding: 16px; box-shadow: 0 10px 28px rgba(109, 53, 212, 0.08); }
+.pilot-release-card-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+.pilot-release-card h2 { margin: 0; font-size: 21px; line-height: 1.2; letter-spacing: -0.02em; font-family: var(--font-display), sans-serif; font-weight: 700; }
+.pilot-release-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; color: var(--muted); font-size: 12px; }
+.pilot-release-badges > span { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; }
+.pilot-release-progress-copy { margin: 12px 0 7px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.pilot-release-progress { height: 7px; border-radius: 999px; background: var(--paper); overflow: hidden; }
+.pilot-release-progress > span { display: block; height: 100%; background: var(--violet); border-radius: inherit; }
+.pilot-release-card-copy { margin: 12px 0 14px; color: var(--ink); line-height: 1.55; font-size: 14px; max-width: 76ch; }
+.pilot-release-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pilot-release-actions .button { min-height: 42px; }
+.pilot-release-card > .pilot-wallet-options { margin-top: 12px; }
+.pilot-browser-payout { display: grid; justify-items: start; gap: 12px; margin-top: 20px; }
+.pilot-browser-payout p { margin: 0; max-width: 65ch; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.pilot-browser-payout label { display: grid; gap: 7px; max-width: 100%; font-size: 14px; font-weight: 600; }
+.pilot-browser-payout select { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
+.pilot-browser-payout select:focus-visible { outline: 3px solid var(--violet); outline-offset: 4px; }
+.pilot-release-card > .pilot-my-wallet-request { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
+.pilot-release-confirm { width: min(560px, calc(100vw - 32px)); }
+.pilot-release-confirm footer { margin-top: 18px; }
+.pilot-release-terms { margin-top: 20px; border-block: 1px solid var(--line); }
+.pilot-release-terms > summary { min-height: 44px; padding-block: 12px; color: var(--violet-dark); cursor: pointer; font-size: 15px; font-weight: 600; }
+.pilot-release-terms > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+.pilot-release-terms > p { max-width: 65ch; color: var(--ink); font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; margin: 0 0 16px; }
 .pilot-release-toggle {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) 18px;
@@ -42,8 +65,6 @@
 .pilot-wallet-connect > small { max-width: 36ch; color: var(--muted); line-height: 1.5; font-size: 13px; }
 .pilot-wallet-options { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .pilot-wallet-options [aria-pressed="true"] { color: var(--violet); font-weight: 700; }
-.pilot-release-path-choice { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 12px 0 0; }
-.pilot-release-path-choice .text-button { color: var(--violet-dark); }
 .pilot-release-wallet-help, .pilot-release-approval-help { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 12px 0 0; }
 .pilot-release a { color: var(--violet-dark); display: inline-flex; align-items: center; gap: 6px; text-underline-offset: 4px; overflow-wrap: anywhere; }
 .pilot-release-consent { display: flex; gap: 12px; align-items: flex-start; margin: 20px 0; line-height: 1.6; font-size: 15px; cursor: pointer; }

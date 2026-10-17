@@ -45,6 +45,8 @@
 .pilot-shell[data-room-theme="neon"] .fn-plate-mount { color: #21e6ff; background: #11323b; }
 .pilot-shell[data-room-theme="neon"] .fn-plate-description { color: var(--muted); }
 .pilot-shell[data-room-theme="neon"] .pilot-release-error { background: #401b26; color: var(--danger); }
+.pilot-shell[data-room-theme="neon"] .pilot-release-card { background: var(--surface); box-shadow: none; }
+.pilot-shell[data-room-theme="neon"] .pilot-release-badges > span { background: var(--paper); }
 .pilot-shell[data-room-theme="neon"] :is(.pilot-leave-idea > span, .pilot-note-form > p, .pilot-note-form small) { color: var(--muted); }
 .pilot-shell[data-room-theme="neon"] .pilot-leave-idea:hover { background: #3d1e2d; }
 .pilot-shell[data-room-theme="neon"] .pilot-onboarding-note { color: #675229; }

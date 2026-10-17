@@ -83,7 +83,7 @@ test("a Solana identity displays its real sign-in address and explains the separ
   const html = renderToStaticMarkup(createElement(PilotAccountContext.Provider, { value: account }, createElement(PilotIdentity, { disabled: false, onJoin: () => {} })));
   assert.match(html, new RegExp(address));
   assert.match(html, /Signed in with Solana/);
-  assert.match(html, /connect an EVM or in-app wallet on Monad testnet/);
+  assert.match(html, /use Google or an EVM wallet on Monad testnet/);
   assert.doesNotMatch(html, /saved with Google|Preparing your in-app wallet/);
 });
 

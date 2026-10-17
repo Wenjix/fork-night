@@ -290,3 +290,87 @@ test("an account event during final connection checks cannot restore the previou
   assert.equal(h.session.getSnapshot().account, "");
   assert.match(h.session.getSnapshot().error, /selected wallet or network changed/);
 });
+
+test("an explicitly connected payout wallet survives same-provider sync without a sign-in account", async t => {
+  const h = harness();
+  const session = new ReleaseSession(prepared, config, h.client, { wallet: () => h.wallet, storage: () => h.storage, account: () => undefined });
+  t.after(() => session.stop());
+  session.start(); await session.connect(); session.accept(true);
+  session.syncWallet(); await flush();
+  assert.equal(session.getSnapshot().account, curator);
+  assert.equal(session.getSnapshot().accepted, true);
+  await session.perform("register", 1);
+  assert.equal(h.calls[0].operation, "execute");
+  assert.equal(h.calls[0].args[2], curator);
+});
+
+test("an EVM sign-in account can explicitly choose a different payout account and recover its saved action", async t => {
+  const h = harness();
+  let account: string | undefined = curator;
+  const session = new ReleaseSession(prepared, config, h.client, { wallet: () => h.wallet, storage: () => h.storage, account: () => account });
+  t.after(() => session.stop());
+  session.start(); await flush();
+  assert.equal(session.getSnapshot().account, curator, "the shared sign-in wallet needs no extra connect");
+  account = undefined; session.syncWallet();
+  h.wallet.account = makerWallet;
+  h.records.set(transactionStorageKey(config, makerWallet, prepared.projectId), "saved payout action");
+  await session.connect(); session.syncWallet(); await flush();
+  assert.equal(session.getSnapshot().account, makerWallet);
+  assert.equal(session.getSnapshot().pending, true);
+  await session.recover();
+  assert.equal(h.calls.at(-1)?.operation, "recover");
+  h.wallet.emit("accountsChanged");
+  assert.equal(session.getSnapshot().account, "");
+  assert.equal(session.getSnapshot().accepted, false);
+  assert.equal(h.records.get(transactionStorageKey(config, makerWallet, prepared.projectId)), "saved payout action");
+});
+
+test("automatic external-wallet context requires its active first account; only an embedded bridge may be unready", async t => {
+  for (const response of [[], null, [makerWallet, curator], "unavailable"]) {
+    const h = harness();
+    h.wallet.request = async () => { if (response === "unavailable") throw new Error("locked"); return response as never; };
+    const session = new ReleaseSession(prepared, config, h.client, { wallet: () => h.wallet, storage: () => h.storage, account: () => curator });
+    t.after(() => session.stop()); session.start(); await flush();
+    assert.equal(session.getSnapshot().account, "");
+    await session.perform("support"); assert.equal(h.calls.length, 0);
+  }
+  const h = harness(); h.wallet.request = async () => [];
+  const embedded = new ReleaseSession(prepared, config, h.client, { wallet: () => h.wallet, storage: () => h.storage, account: () => curator, embedded: () => true });
+  t.after(() => embedded.stop()); embedded.start(); await flush();
+  assert.equal(embedded.getSnapshot().account, curator);
+});
+
+test("a late external account-check failure cannot overwrite a newly selected provider", async t => {
+  const h = harness(), old = deferred<unknown>();
+  let selected: WalletProvider = h.wallet, account = curator;
+  h.wallet.request = () => old.promise as never;
+  const session = new ReleaseSession(prepared, config, h.client, { wallet: () => selected, storage: () => h.storage, account: () => account });
+  t.after(() => session.stop()); session.start();
+  const replacement = new Wallet(); replacement.account = makerWallet;
+  selected = replacement; account = makerWallet; session.syncWallet(); await flush();
+  assert.equal(session.getSnapshot().account, makerWallet);
+  old.reject(new Error("old wallet locked")); await flush();
+  assert.equal(session.getSnapshot().account, makerWallet);
+});
+
+test("an obsolete connection cannot return after a provider round trip or a stop and restart", async t => {
+  for (const change of ["provider", "lifecycle"]) {
+    const h = harness(), connected = deferred<Awaited<ReturnType<typeof h.client.connect>>>();
+    let selected: WalletProvider = h.wallet;
+    h.client.connect = () => connected.promise;
+    const session = new ReleaseSession(prepared, config, h.client, { wallet: () => selected, storage: () => h.storage, account: () => undefined });
+    t.after(() => session.stop()); session.start(); const pending = session.connect(); await flush();
+    if (change === "provider") { selected = new Wallet(); session.syncWallet(); selected = h.wallet; session.syncWallet(); }
+    else { session.stop(); session.start(); }
+    connected.resolve({ browser: undefined as never, account: curator }); await pending;
+    assert.equal(session.getSnapshot().account, "");
+    assert.match(session.getSnapshot().error, /wallet or network changed/);
+  }
+});
+
+test("an explicit payout connection may deliberately switch networks before final checks", async t => {
+  const h = harness(); t.after(() => h.session.stop());
+  h.client.connect = async () => { h.wallet.emit("chainChanged"); return { browser: undefined as never, account: curator }; };
+  h.session.start(); await h.session.connect();
+  assert.equal(h.session.getSnapshot().account, curator);
+});
