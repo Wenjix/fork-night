@@ -827,6 +827,9 @@ export function SharedPilot() {
     if (draft || hasActive) {
       select(draft?.parentId ?? operation!.parent_id);
       setComposing(true);
+    } else if (pilotPath(moments, roomId, selected.id).length >= 13) {
+      setJoinOpen(true);
+      return;
     } else start();
     setFocusNameEntry(true);
   }
@@ -1323,11 +1326,14 @@ export function SharedPilot() {
           </div>
         </>
       ) : (
-        <div className="pilot-loading" role="status">
-          {pathError
-            ? "Reconnect to read the complete path."
-            : "Opening the shared story…"}
-        </div>
+        <>
+          <div className="pilot-loading" role="status">
+            {pathError
+              ? "Reconnect to read the complete path."
+              : "Opening the shared story…"}
+          </div>
+          {recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
+        </>
       )}
       <footer className="pilot-footer">
         <span>{room?.description}</span>

@@ -196,3 +196,20 @@ test("the lightweight path reports only the server-confirmed idea and its actual
     assert.equal(h.records.length, 0); assert.match(h.errors.at(-1)!, /could not be confirmed/);
   }
 });
+
+test("the header join action opens the join dialog when the selected path cannot take another continuation", () => {
+  const fullPath = Array.from({ length: 13 }, (_, index) => ({ id: `moment-${index}`, room_id: FIRST_NIGHT_ROOM_ID, parent_id: index ? `moment-${index - 1}` : null }));
+  const calls: string[] = [];
+  const env = {
+    selected: fullPath[12], moments: fullPath, roomId: FIRST_NIGHT_ROOM_ID, busy: false, releaseBusy: false, wrenBusy: false, wrenPreviewId: undefined,
+    account: { loading: false }, draft: undefined, hasActive: false, operation: undefined, pilotPath,
+    setJoinOpen: (open: boolean) => calls.push(`join:${open}`), setView: (view: string) => calls.push(`view:${view}`),
+    select() { calls.push("select"); }, setComposing() { calls.push("compose"); }, start() { calls.push("start"); },
+    setFocusNameEntry: (focus: boolean) => calls.push(`focus:${focus}`),
+  };
+  run(shared("focusStorytellerName"), env)();
+  assert.deepEqual(calls, ["join:false", "view:read", "join:true"]);
+  calls.length = 0;
+  run(shared("focusStorytellerName"), { ...env, selected: fullPath[3] })();
+  assert.deepEqual(calls, ["join:false", "view:read", "start", "focus:true"]);
+});

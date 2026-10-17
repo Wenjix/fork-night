@@ -15,7 +15,8 @@ test("a room loading or switching cannot show another room's recorded treasury",
   for (const [roomId, loadedRoom] of [["paper-moon", ""], ["midnight-signal", "paper-moon"], ["paper-moon", "midnight-signal"], ["", ""]])
     assert.equal(renderToStaticMarkup(createElement(PilotRoomFunding, { roomId, loadedRoom })), "");
   const moon = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon", creditsAvailable: 30 }));
-  assert.match(moon, /Funded by a 3-person guild · 30 credits left · <strong>See how →<\/strong>/);
+  assert.match(moon, /Funded by a 3-person guild · added 5 credits · 30 room credits left · <strong>See how →<\/strong>/);
+  assert.match(renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon" })), /Funded by a 3-person guild · added 5 credits · <strong>See how →<\/strong>/);
   assert.match(moon, /<details class="guild-funding-drawer"/);
   assert.match(moon, /Guild funding rehearsal/);
   assert.match(moon, /Squads v4.*2 of 3 steward wallets approved/);

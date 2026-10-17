@@ -165,9 +165,11 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
     closeGuildFundingVisit(window);
   }
 
+  const plural = (count: number) => count === 1 ? "credit" : "credits";
+  const addedText = `added ${record.appCredit.added} ${plural(record.appCredit.added)}`;
   const creditsText = typeof creditsAvailable === "number"
-    ? `${creditsAvailable} ${creditsAvailable === 1 ? "credit" : "credits"} left`
-    : `${record.appCredit.historicalAfter} credits recorded`;
+    ? `${addedText} · ${creditsAvailable} room ${plural(creditsAvailable)} left`
+    : addedText;
   return (
     <aside className="guild-funding-summary fn-network-card" aria-label="Recorded guild funding">
       <details className="guild-funding-drawer">
