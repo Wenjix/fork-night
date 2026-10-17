@@ -125,7 +125,7 @@ test("reservation and expiry require fresh bounded authorization, not just a bal
   );
 });
 
-test("one personal balance funds two open projects and concurrent quotes cannot overspend", () => {
+test("own credits fund two open projects and concurrent quotes cannot overspend", () => {
   let state = createDemoState();
   state = withdraw(state, { userId: "priya", amount: 3 * DEMO_UNIT });
   assert.equal(
@@ -295,7 +295,7 @@ test("group top-ups buy neither permissions nor allowance, and empty pools never
   state.generationSpent += removedAvailable;
   assert.throws(
     () => reserve(state, terms),
-    /personal balance will not be charged/,
+    /own credits will not be charged/,
   );
   assert.deepEqual(
     getFundingAccount(state, "priya", "midnight-signal"),
