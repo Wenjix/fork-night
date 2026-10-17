@@ -1,5 +1,6 @@
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight, GitBranch } from "lucide-react";
 import { featuredRooms } from "@/lib/featured-stories";
+import { BrandBadge, BrandStrip, Chip } from "./brand-badge";
 import { StoryArt } from "./story-art";
 
 export function FeaturedStories() {
@@ -16,15 +17,17 @@ export function FeaturedStories() {
           </div>
           <div className="fn-featured-copy">
             <h3>{room.title}</h3>
-            <p className="fn-featured-focus">{room.focus}</p>
+            <BrandStrip label={room.focus} className="fn-featured-stack">
+              {room.stack.length
+                ? room.stack.map(item => <BrandBadge key={item.brand} brand={item.brand} role={"role" in item ? item.role : undefined} />)
+                : <Chip icon={GitBranch}>{room.focus}</Chip>}
+            </BrandStrip>
             <p className="fn-featured-description">{room.description}</p>
             <p className="fn-featured-status">{room.status}</p>
           </div>
           <div className="fn-featured-actions">
             <a className="fn-featured-cta" href={room.href}>{room.action} <ArrowRight size={16} aria-hidden="true" /></a>
-            {room.record && <a className="fn-featured-record" href={room.record.href} target="_blank" rel="noreferrer">
-              {room.record.label}<ExternalLink size={13} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span>
-            </a>}
+            {room.record && <BrandBadge brand={room.record.brand} label={room.record.label} net={false} href={room.record.href} />}
           </div>
         </li>)}
       </ul>

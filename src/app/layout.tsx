@@ -4,6 +4,7 @@ import "./globals.css";
 import "./room-networks.css";
 import "./guild-funding.css";
 import "./first-night.css";
+import "./brand-badge.css";
 
 const interfaceFont = localFont({
   src: "../../public/fonts/inter-latin.woff2",
