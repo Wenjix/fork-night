@@ -30,6 +30,7 @@ export function RoomNetworkPlate({
             {networks.map((demo) => {
               const brand = NETWORK_BRANDS[demo.network];
               const external = demo.proof.href.startsWith("https://");
+              const labelIncludesExternalGlyph = demo.proof.label.includes("↗");
               return (
                 <li key={demo.network} className="fn-network-row">
                   <NetworkBrandMark network={demo.network} />
@@ -50,7 +51,7 @@ export function RoomNetworkPlate({
                           {demo.summary}{" "}
                           <span className="fn-network-proof-label">
                             {demo.proof.label}{" "}
-                            {external ? <ExternalLink size={16} aria-hidden="true" /> : <ArrowRight size={16} aria-hidden="true" />}
+                            {!labelIncludesExternalGlyph && (external ? <ExternalLink size={16} aria-hidden="true" /> : <ArrowRight size={16} aria-hidden="true" />)}
                           </span>
                         </span>
                       </a>

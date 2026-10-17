@@ -24,7 +24,8 @@ test("a room loading or switching cannot show another room's recorded treasury",
   assert.match(moon, /Solana devnet.*founder-operated rehearsal/);
   assert.doesNotMatch(moon, /<dialog|5 credits available/);
   const monad = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "midnight-signal", loadedRoom: "midnight-signal" }));
-  assert.match(monad, /View release contract/);
+  assert.match(monad, /This story paid its makers on Monad: 1 MON split across 4 wallets, all claimed/);
+  assert.match(monad, /View on MonadScan ↗/);
   assert.doesNotMatch(monad, /Guild funding rehearsal|Squads/);
   assert.equal(renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "unassigned", loadedRoom: "unassigned" })), "");
 });

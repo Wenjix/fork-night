@@ -5,9 +5,10 @@ import { Check, ChevronDown, Download, ExternalLink, Layers3, RefreshCw, Wallet 
 import { formatEther, getAddress, ZeroAddress } from "ethers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../lib/supabase/database.types.ts";
-import type { PilotMoment } from "../lib/pilot.ts";
+import { pilotPath, type PilotMoment } from "../lib/pilot.ts";
 import { releaseConfig, type ReleaseConfig } from "../lib/onchain/config.ts";
 import { DEFAULT_SUPPORT_MON, prepareRelease, releaseRoom, RELEASE_TERMS, type PreparedRelease } from "../lib/onchain/model.ts";
+import { MIDNIGHT_SIGNAL_RELEASE_TIP_ID } from "../lib/onchain/records.ts";
 import { ReleaseClient, type WalletProvider, type Operation, type Snapshot } from "../lib/onchain/client.ts";
 import { preparedWorkApproval, releaseJourney, shortAddress, walletBylines } from "../lib/onchain/journey.ts";
 import { ReleaseSession } from "../lib/onchain/session.ts";
@@ -22,13 +23,15 @@ export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, cli
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
   onChoosePath: (id: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(roomId === "midnight-signal");
   const config = useMemo(releaseConfig, []);
+  const displayTipId = releaseDisplayTipId(roomId, moments, tipId);
+  useEffect(() => setOpen(roomId === "midnight-signal"), [roomId]);
   const prepared = useMemo(() => {
-    if (!releaseRoom(roomId) || !tipId || !config) return { value: null, error: "" };
-    try { return { value: prepareRelease(moments, roomId, tipId, config.curator), error: "" }; }
+    if (!releaseRoom(roomId) || !displayTipId || !config) return { value: null, error: "" };
+    try { return { value: prepareRelease(moments, roomId, displayTipId, config.curator), error: "" }; }
     catch (error) { return { value: null, error: error instanceof Error ? error.message : "This story's release could not be prepared." }; }
-  }, [roomId, moments, tipId, config]);
+  }, [roomId, moments, displayTipId, config]);
   if (!releaseRoom(roomId) || !tipId) return null;
   return <section className="pilot-release" aria-label="Story release and support">
     {prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} open={open} onToggle={() => setOpen(!open)} /> : <>
@@ -36,6 +39,17 @@ export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, cli
       {open && <p id="payout-body" className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>}
     </>}
   </section>;
+}
+
+export function releaseDisplayTipId(roomId: string, moments: PilotMoment[], tipId: string) {
+  if (roomId !== "midnight-signal" || !tipId || !moments.some(moment => moment.id === MIDNIGHT_SIGNAL_RELEASE_TIP_ID)) return tipId;
+  try {
+    return pilotPath(moments, roomId, tipId).some(moment => moment.id === MIDNIGHT_SIGNAL_RELEASE_TIP_ID)
+      ? MIDNIGHT_SIGNAL_RELEASE_TIP_ID
+      : tipId;
+  } catch {
+    return tipId;
+  }
 }
 
 export function PreparedWorkWallet({ prepared, snapshot, config, account, blocked, onApprove }: {
@@ -117,7 +131,8 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
       <div className="pilot-release-heading"><div><h2>{journey.title}</h2><p>Equal shares per distinct registered wallet. The released split stays fixed.</p></div><button className="pilot-icon-button" type="button" disabled={walletBusy} onClick={() => void session.refresh()} aria-label="Refresh onchain release"><RefreshCw size={18} aria-hidden="true" /></button></div>
       <ol className="pilot-release-steps" aria-label="Release stages">{["Wallets", "Scenes", "Release", "Support", "Claims"].map((label, index) => {
         const stage = ["project", "wallets"].includes(journey.stage) ? 0 : journey.stage === "scenes" ? 1 : journey.stage === "release" ? 2 : journey.stage === "support" ? 3 : 4;
-        return <li key={label} aria-current={stage === index ? "step" : undefined} data-complete={index < stage || journey.stage === "claimed"}>{index < stage || journey.stage === "claimed" ? <Check size={14} aria-hidden="true" /> : <span aria-hidden="true">{index + 1}</span>}{label}</li>;
+        const complete = index === 0 ? !!account && (index < stage || journey.stage === "claimed") : index < stage || journey.stage === "claimed";
+        return <li key={label} aria-current={stage === index ? "step" : undefined} data-complete={complete}>{complete ? <Check size={14} aria-hidden="true" /> : <span aria-hidden="true">{index + 1}</span>}{label}</li>;
       })}</ol>
       <div className="pilot-release-wallet">
         <Wallet size={21} aria-hidden="true" /><div><strong>{journey.role}</strong><span>{account ? <span title={account}>{shortAddress(account)} · {config.name}</span> : "A wallet is only needed for testnet actions."}{makerName && <span>Making as {makerName}</span>}</span></div>
@@ -149,7 +164,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
         <PreparedWorkWallet key={prepared.projectId + account} prepared={prepared} snapshot={snapshot} config={config} account={account} blocked={blocked} onApprove={(index, address) => session.perform("approve", index, address)} />
         <details className="pilot-release-makers" key={prepared.id + String(journey.released)} open={!journey.released}>
           <summary><span>The makers in this path</span><span>{journey.registered} of {prepared.scenes.length} scenes registered</span></summary>
-          <ReleaseScenes prepared={prepared} snapshot={snapshot} account={account} accepted={accepted} busy={walletBusy} pending={pending} onAction={perform} client={client} onInspect={onInspect} />
+          <ReleaseScenes prepared={prepared} snapshot={snapshot} account={account} accepted={accepted} busy={walletBusy} pending={pending} onAction={perform} client={client} onInspect={onInspect} explorer={config.explorer} />
         </details>
         {!journey.released && <div className="pilot-release-next"><p>{journey.registered === prepared.scenes.length ? `${journey.wallets} registered wallets will share this release equally.` : "Each approved wallet registers its scenes after their parents."}</p>{journey.curator ? <button className="button primary" type="button" disabled={blocked || journey.registered !== prepared.scenes.length} onClick={() => perform("release")}>Freeze this release</button> : <span>The curator freezes the release once every scene is registered.</span>}</div>}
       </>}

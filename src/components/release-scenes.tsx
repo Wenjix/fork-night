@@ -8,11 +8,11 @@ import { releaseByline, releaseRoom, sameAddress, type PreparedRelease } from ".
 import { pilotPanels } from "../lib/pilot.ts";
 import { PilotImage } from "./pilot-panels.tsx";
 
-export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pending, onAction, onInspect, client }: {
+export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pending, onAction, onInspect, client, explorer }: {
   prepared: PreparedRelease; snapshot: Snapshot; account: string;
   accepted: boolean; busy: boolean; pending: boolean;
   onAction: (operation: Operation, index: number, address?: string) => void;
-  onInspect?: (id: string) => void; client?: SupabaseClient<Database>;
+  onInspect?: (id: string) => void; client?: SupabaseClient<Database>; explorer?: string;
 }) {
   return <ol className="pilot-release-path">{prepared.scenes.map((scene, index) => {
     const record = snapshot.scenes[index], approved = record.maker !== ZeroAddress;
@@ -28,10 +28,7 @@ export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pen
         <strong>{scene.moment.title}</strong>
         <span>{releaseByline(scene.moment)}{scene.moment.parent_id === null ? " · original opening" : ""}</span>
         {preparedWork && <span>Sample byline: {scene.moment.maker_label}</span>}
-        <span className="pilot-release-scene-state">{record.registered ? <Check size={15} aria-hidden="true" /> : <Clock3 size={15} aria-hidden="true" />}
-          {record.registered ? "Scene registered" : approved ? "Wallet approved · scene not registered" : "Awaiting wallet approval"}
-          {approved && <span title={record.maker}>{shortAddress(record.maker)}</span>}
-        </span>
+        <SceneRegistrationState record={record} approved={approved} explorer={explorer} />
       </div>
       <div className="pilot-release-scene-action">
         {own && !record.registered && <>
@@ -43,4 +40,18 @@ export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pen
       </div>
     </li>;
   })}</ol>;
+}
+
+function SceneRegistrationState({ record, approved, explorer }: {
+  record: Snapshot["scenes"][number]; approved: boolean; explorer?: string;
+}) {
+  const contents = <>
+    {record.registered ? <Check size={15} aria-hidden="true" /> : <Clock3 size={15} aria-hidden="true" />}
+    {record.registered ? "Scene registered" : approved ? "Wallet approved · scene not registered" : "Awaiting wallet approval"}
+    {approved && <span title={record.maker}>{shortAddress(record.maker)}</span>}
+  </>;
+  const tx = record.registered && record.transactionHash && explorer ? `${explorer}/tx/${record.transactionHash}` : "";
+  return tx
+    ? <a className="pilot-release-scene-state" href={tx} target="_blank" rel="noreferrer">{contents}</a>
+    : <span className="pilot-release-scene-state">{contents}</span>;
 }
