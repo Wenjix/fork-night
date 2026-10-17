@@ -6,6 +6,7 @@ import "./guild-funding.css";
 import "./first-night.css";
 import "./brand-badge.css";
 import "./disclosure.css";
+import "./room-theme-neon.css";
 
 const interfaceFont = localFont({
   src: "../../public/fonts/inter-latin.woff2",
