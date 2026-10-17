@@ -4,7 +4,7 @@ import type { ReleaseConfig } from "./config.ts";
 import { DEFAULT_SUPPORT_MON, sameAddress, supportAmount, type PreparedRelease } from "./model.ts";
 
 type Client = Pick<ReleaseClient, "load" | "verify" | "connect" | "execute" | "recover" | "retry" | "destroy">;
-type Ports = { wallet: () => WalletProvider | undefined; storage: () => StoragePort; account?: () => string };
+type Ports = { wallet: () => WalletProvider | undefined; storage: () => StoragePort; account?: () => string | undefined; embedded?: () => boolean };
 export type ReleaseState = {
   releaseId: string; snapshot?: Snapshot; account: string; accepted: boolean;
   loading: boolean; busy: Operation | "connect" | "recover" | "retry" | null;
@@ -33,6 +33,8 @@ export class ReleaseSession {
   private wallet?: WalletProvider;
   private walletVersion = 0;
   private accountVersion = 0;
+  private contextVersion = 0;
+  private accountHint?: string;
   private inFlight = false;
   private disposal?: ReturnType<typeof setTimeout>;
   private config: ReleaseConfig;
@@ -56,7 +58,8 @@ export class ReleaseSession {
     clearTimeout(this.disposal);
     this.active = true;
     this.bindWallet(this.ports.wallet());
-    void this.syncAccount(this.ports.account?.() ?? "");
+    this.accountHint = this.ports.account?.();
+    void this.syncAccount(this.accountHint ?? "");
     void this.refresh();
   }
   private bindWallet(wallet: WalletProvider | undefined) {
@@ -69,6 +72,8 @@ export class ReleaseSession {
   }
   stop() {
     this.active = false;
+    this.contextVersion++;
+    this.accountVersion++;
     this.readVersion++;
     this.read = undefined;
     this.loadError = "";
@@ -80,7 +85,7 @@ export class ReleaseSession {
   private walletChanged = () => {
     this.walletVersion++;
     const account = this.ports.account?.() ?? "";
-    this.update({ account: "", accepted: false, pending: false, receipt: "", notice: account ? "Wallet changed. Checking the signed-in wallet for this release." : "Wallet changed. Sign in again before sending a release action." });
+    this.update({ account: "", accepted: false, pending: false, receipt: "", notice: account ? "Wallet changed. Checking the signed-in wallet for this release." : "Wallet changed. Connect the selected browser payout wallet again before sending a release action." });
     void this.syncAccount(account, true);
   };
   private async syncAccount(account: string, fresh = false) {
@@ -91,28 +96,42 @@ export class ReleaseSession {
       return;
     }
     const wallet = this.wallet;
+    const context = this.contextVersion;
+    const current = () => this.active && version === this.accountVersion && wallet === this.wallet && context === this.contextVersion;
     try {
       if (wallet) {
         const accounts = await wallet.request({ method: "eth_accounts" });
-        if (version !== this.accountVersion || wallet !== this.wallet) return;
-        if (Array.isArray(accounts) && accounts.length && !accounts.some(value => typeof value === "string" && sameAddress(value, next))) {
+        if (!current()) return;
+        if ((!Array.isArray(accounts) || !accounts.length) && this.ports.embedded?.()) {
+          this.update({ account: next, pending: this.pending(next) });
+          return;
+        }
+        if (!Array.isArray(accounts) || typeof accounts[0] !== "string" || !sameAddress(accounts[0], next)) {
           this.update({ account: "", accepted: false, pending: false, notice: "Choose the wallet you signed in with before sending a release action." });
           return;
         }
       }
-      this.update({ account: next, pending: this.pending(next), error: this.state.error === "Reconnect your wallet to continue." ? "" : this.state.error });
+      if (current()) this.update({ account: next, accepted: sameAddress(this.state.account, next) && this.state.accepted, pending: this.pending(next), error: this.state.error === "Reconnect your wallet to continue." ? "" : this.state.error });
     } catch {
       // Some embedded wallets do not expose eth_accounts until their bridge is ready. The
       // page-level account still identifies the role; sending will require a provider.
-      if (version === this.accountVersion) this.update({ account: next, pending: this.pending(next) });
+      if (!current()) return;
+      if (this.ports.embedded?.()) this.update({ account: next, pending: this.pending(next) });
+      else this.update({ account: "", accepted: false, pending: false, notice: "Unlock and connect the selected browser payout wallet before continuing." });
     }
   }
-  syncWallet(account = this.ports.account?.() ?? "") {
+  syncWallet(account = this.ports.account?.()) {
     const next = this.ports.wallet();
     const changed = next !== this.wallet;
+    const accountChanged = account !== this.accountHint;
+    this.accountHint = account;
     this.bindWallet(next);
-    if (changed && this.state.account && !account) this.walletChanged();
-    else void this.syncAccount(account);
+    if (changed || accountChanged) {
+      this.contextVersion++;
+      this.accountVersion++;
+      this.walletChanged();
+    }
+    if (account !== undefined) void this.syncAccount(account);
   }
   setPrepared(prepared: PreparedRelease) {
     this.prepared = prepared;
@@ -169,13 +188,16 @@ export class ReleaseSession {
     this.update({ busy: "connect", account: "", accepted: false, receipt: "", pending: false, error: "", notice: "" });
     try {
       const wallet = this.ports.wallet();
+      const context = this.contextVersion;
       if (!wallet) throw new Error("Open this page in a browser with an Ethereum-compatible wallet extension enabled.");
       this.bindWallet(wallet);
       await this.client.verify();
+      if (!this.active || context !== this.contextVersion || wallet !== this.ports.wallet())
+        throw new Error("The selected wallet or network changed. Reconnect and review it before continuing.");
       const { account } = await this.client.connect(wallet);
       const version = this.walletVersion;
       const [accounts, chain] = await Promise.all([wallet.request({ method: "eth_accounts" }), wallet.request({ method: "eth_chainId" })]);
-      if (wallet !== this.ports.wallet() || version !== this.walletVersion || !Array.isArray(accounts) || !accounts[0] || !sameAddress(accounts[0], account) || Number(chain) !== this.config.chainId)
+      if (!this.active || context !== this.contextVersion || wallet !== this.ports.wallet() || version !== this.walletVersion || !Array.isArray(accounts) || !accounts[0] || !sameAddress(accounts[0], account) || Number(chain) !== this.config.chainId)
         throw new Error("The selected wallet or network changed. Reconnect and review it before continuing.");
       this.update({ account, accepted: false, receipt: "", pending: this.pending(account), notice: "Wallet connected. Your guest name stays the same; this wallet selects your testnet role." });
       await this.refresh(true);

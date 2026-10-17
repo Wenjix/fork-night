@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type Ref } from "react";
 import { Check, ChevronDown, Download, ExternalLink, Layers3, RefreshCw } from "lucide-react";
 import { formatEther, getAddress, ZeroAddress } from "ethers";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -19,6 +19,7 @@ import { WalletRequests } from "./wallet-requests.tsx";
 import { PrivyMark } from "./auth-branding.tsx";
 import { PilotDialog } from "./pilot-dialog.tsx";
 import { walletAccountIdentity } from "../lib/supabase/wallet-login.ts";
+import type { BrowserSignInWallet } from "../lib/wallets/browser-wallets.ts";
 
 export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, client, onInspect, onChoosePath, onBusyChange }: {
   roomId: string; moments: PilotMoment[]; tipId: string; makerId?: string; makerName?: string;
@@ -89,16 +90,23 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   onChoosePath: (id: string) => void;
 }) {
   const identity = usePilotAccount();
+  const actorId = identity?.user?.id ?? "";
+  const [browserPayoutOwner, setBrowserPayoutOwner] = useState<string | null>(null);
   const signInWallet = walletAccountIdentity(identity?.user);
+  const usingBrowserPayout = browserPayoutOwner === actorId;
   const sharedAccount = identity?.walletMode === "embedded"
     ? identity.wallet.address
-    : signInWallet?.chain === "ethereum" ? signInWallet.address : "";
-  const selectedProvider = identity?.walletMode === "embedded" ? identity.wallet.provider : identity?.externalProvider ?? browserWallet();
+    : !usingBrowserPayout && signInWallet?.chain === "ethereum" ? signInWallet.address : undefined;
+  const selectedProvider = identity?.walletMode === "embedded" ? identity.wallet.provider : identity ? identity.externalProvider : browserWallet();
+  const ethereumWallets = identity?.browserWallets?.filter((wallet): wallet is Extract<BrowserSignInWallet, { chain: "ethereum" }> => wallet.chain === "ethereum") ?? [];
+  const payoutSelect = useRef<HTMLSelectElement>(null);
   const walletRef = useRef<WalletProvider | undefined>(selectedProvider);
   const accountRef = useRef(sharedAccount);
+  const embeddedRef = useRef(identity?.walletMode === "embedded");
   walletRef.current = selectedProvider;
   accountRef.current = sharedAccount;
-  const session = useMemo(() => new ReleaseSession(prepared, config, new ReleaseClient(config), { wallet: () => walletRef.current, storage: () => window.localStorage, account: () => accountRef.current }), [config, prepared.projectId]);
+  embeddedRef.current = identity?.walletMode === "embedded";
+  const session = useMemo(() => new ReleaseSession(prepared, config, new ReleaseClient(config), { wallet: () => walletRef.current, storage: () => window.localStorage, account: () => accountRef.current, embedded: () => embeddedRef.current }), [config, prepared.projectId, actorId, identity?.walletMode]);
   const current = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot);
   const state = current.releaseId === prepared.id ? current : { ...current, snapshot: undefined, accepted: false, loading: true };
   const { snapshot, account, loading, busy, pending, receipt, notice, error } = state;
@@ -134,8 +142,15 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   async function signInWithGoogle() {
     if (!identity || signInWorking) return;
     setSignInWorking(true);
-    try { await identity.signIn("return"); }
+    try { await identity.signIn(identity.user?.is_anonymous ? "link" : "return"); setSignInWorking(false); }
     catch (reason) { session.feedback("", reason instanceof Error ? reason.message : "Google sign-in could not start. Try again."); setSignInWorking(false); }
+  }
+  async function connectBrowserPayout() {
+    if (walletBusy || pending || !selectedProvider || identity?.walletMode === "embedded") return;
+    setBrowserPayoutOwner(actorId);
+    accountRef.current = undefined;
+    session.syncWallet();
+    await session.connect();
   }
   const requiresProvider = account && !selectedProvider && !pending;
   const progress = `${journey.registered} of ${prepared.scenes.length} scenes registered`;
@@ -143,8 +158,11 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   const ownScene = ownUnregisteredIndex >= 0 ? prepared.scenes[ownUnregisteredIndex] : undefined;
   const registrationBlocked = ownScene && snapshot ? registrationReason({ prepared, snapshot, index: ownUnregisteredIndex, account, accepted: true, busy: walletBusy, pending }) : "";
   const makerNeedsApproval = !!makerId && prepared.scenes.some((scene, index) => scene.moment.maker_id === makerId && snapshot?.scenes[index]?.maker === ZeroAddress);
-  const nextAction = !account
-    ? { label: "Sign in to take part", onClick: () => void signInWithGoogle(), disabled: !identity?.enabled || signInWorking }
+  const needsBrowserChoice = !pending && identity?.walletMode !== "embedded" && !selectedProvider && ethereumWallets.length > 1;
+  const nextAction = needsBrowserChoice
+    ? { label: "Choose a browser payout wallet", onClick: () => payoutSelect.current?.focus(), disabled: walletBusy }
+    : !account
+    ? { label: identity?.user?.is_anonymous ? "Save this guest with Google" : "Sign in with Google", onClick: () => void signInWithGoogle(), disabled: !identity?.enabled || signInWorking }
     : requiresProvider
       ? { label: "Sign in with Google (no extension needed)", onClick: () => void signInWithGoogle(), disabled: !identity?.enabled || signInWorking }
       : pending
@@ -184,15 +202,16 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
       <p id={nextStepId} className="pilot-release-card-copy">{actionCopy({ journey, snapshot, ownScene, prepared, registrationBlocked })}</p>
       <div className="pilot-release-actions"><button className="button primary" type="button" aria-describedby={nextStepId} disabled={nextAction.disabled} onClick={nextAction.onClick}>{nextAction.label}</button>{config.explorer && <a href={`${config.explorer}/address/${config.address}`} target="_blank" rel="noreferrer">Release contract on MonadScan <ExternalLink size={14} aria-hidden="true" /></a>}</div>
       {identity?.user?.is_anonymous === false && <div className="pilot-wallet-options" role="group" aria-label="Choose release wallet">
-        <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "embedded"} onClick={() => identity.chooseWallet("embedded")}>In-app wallet <PrivyMark /></button>
-        <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "external"} onClick={() => identity.chooseWallet("external")}>Use browser sign-in wallet</button>
+        <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "embedded"} onClick={() => { setBrowserPayoutOwner(null); identity.chooseWallet("embedded"); }}>In-app wallet <PrivyMark /></button>
+        <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "external"} onClick={() => { setBrowserPayoutOwner(actorId); identity.chooseWallet("external"); }}>Use browser payout wallet</button>
       </div>}
+      {identity?.walletMode !== "embedded" && <BrowserPayoutWallet wallets={ethereumWallets} provider={selectedProvider} account={account} blocked={walletBusy || pending} connecting={busy === "connect"} selectRef={payoutSelect} onChoose={choice => identity?.selectBrowserWallet?.(choice)} onConnect={() => void connectBrowserPayout()} />}
       {identity?.walletMode === "embedded" && account && !selectedProvider && <p role="status" className="pilot-release-loading">{identity.wallet.error || "Preparing your in-app wallet…"}</p>}
       {loading && <p role="status" className="pilot-release-loading">Reading the recorded path…</p>}
       {busy && <p role="status" className="pilot-release-working"><RefreshCw size={16} aria-hidden="true" />{operationLabel(busy)} on Monad… You can keep reading.</p>}
       {receipt && config.explorer && <a className="pilot-release-receipt" href={`${config.explorer}/tx/${receipt}`} target="_blank" rel="noreferrer">View transaction on MonadScan <ExternalLink size={14} aria-hidden="true" /></a>}
       {notice && <p role="status" className="pilot-release-notice"><Check size={16} aria-hidden="true" />{notice}</p>}
-      {error && !/Ethereum-compatible wallet/.test(error) && <p role="alert" className="pilot-release-error">{error}</p>}
+      {error && <p role="alert" className="pilot-release-error">{error}</p>}
       {pending && <div className="pilot-release-recovery"><strong>Still waiting for Monad?</strong><p>Check again resumes the saved action and never sends twice.</p><div className="button-row"><button className="button secondary" type="button" disabled={walletBusy} onClick={() => void session.recover()}>Check again</button><button className="text-button" type="button" disabled={walletBusy} onClick={() => void session.recover(true)}>Retry saved action</button></div></div>}
       {account && (journey.curator || makerNeedsApproval) && <WalletRequests prepared={prepared} snapshot={snapshot} config={config} moments={moments} account={account} makerId={makerId} provider={selectedProvider} client={client} blocked={!!busy || pending || !snapshot || snapshot.curator === ZeroAddress} sessionError={error} onApprove={(index, address) => session.perform("approve", index, address)} onChoosePath={onChoosePath} onWorking={setRequestWorking} onFeedback={message => session.feedback(message)} />}
       {snapshot && snapshot.curator !== ZeroAddress && <PreparedWorkWallet key={prepared.projectId + account} prepared={prepared} snapshot={snapshot} config={config} account={account} blocked={blocked} onApprove={(index, address) => session.perform("approve", index, address)} />}
@@ -218,6 +237,22 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
     </div>
     {confirm && <ReleaseConfirmation confirm={confirm} account={account} busy={walletBusy} rememberedTerms={rememberedTerms} accepted={confirmTerms} onAccept={setConfirmTerms} onConfirm={() => void confirmAction()} onClose={() => { if (!walletBusy) setConfirm(null); }} />}
   </>;
+}
+
+export function BrowserPayoutWallet({ wallets, provider, account, blocked, connecting, selectRef, onChoose, onConnect }: {
+  wallets: Extract<BrowserSignInWallet, { chain: "ethereum" }>[]; provider?: WalletProvider; account: string;
+  blocked: boolean; connecting: boolean; selectRef?: Ref<HTMLSelectElement>;
+  onChoose: (wallet: Extract<BrowserSignInWallet, { chain: "ethereum" }>) => void; onConnect: () => void;
+}) {
+  return <div className="pilot-browser-payout">
+    <p>Use an existing browser payout wallet while keeping this storyteller’s byline and drafts.</p>
+    {wallets.length > 0 && <label>Browser payout wallet<select ref={selectRef} disabled={blocked} value={wallets.find(wallet => wallet.provider === provider)?.id ?? ""} onChange={event => {
+      const choice = wallets.find(wallet => wallet.id === event.target.value);
+      if (choice) onChoose(choice);
+    }}><option value="" disabled>Choose a wallet</option>{wallets.map(wallet => <option key={wallet.id} value={wallet.id}>{wallet.name}</option>)}</select></label>}
+    <button type="button" className="button secondary" disabled={blocked || !provider} onClick={onConnect}>{connecting ? "Connecting payout wallet…" : account ? "Reconnect browser payout wallet" : "Connect existing browser payout wallet"}</button>
+    {!wallets.length && !provider && <p>No browser payout wallet is available. Enable an Ethereum-compatible wallet extension, or use Google sign-in.</p>}
+  </div>;
 }
 
 type ReleaseConfirmationAction = { operation: Operation; index: number; address?: string; title: string; body: string; terms: boolean };

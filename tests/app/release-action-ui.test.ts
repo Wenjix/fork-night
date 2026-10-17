@@ -11,7 +11,7 @@ import { prepareRelease, releaseByline, releaseRoom, RELEASE_TERMS, TERMS_HASH }
 import type { Snapshot } from "../../src/lib/onchain/client.ts";
 import { config, curator, makerWallet, makers, moments, otherWallet, prepared, snapshot } from "./release-fixtures.ts";
 
-const { ReleaseConfirmation } = await tsImport("../../src/components/testnet-release.tsx", import.meta.url);
+const { BrowserPayoutWallet, ReleaseConfirmation } = await tsImport("../../src/components/testnet-release.tsx", import.meta.url);
 
 // Execute the real callbacks with fake navigation/storage ports, as the focus and recovery tests do.
 async function sourceFile(path: string) {
@@ -88,7 +88,7 @@ function action({ account = otherWallet, state = snapshot(), pending = false } =
   const ownUnregisteredIndex = state.scenes.findIndex(scene => !scene.registered && scene.maker.toLowerCase() === account.toLowerCase());
   const ownScene = prepared.scenes[ownUnregisteredIndex];
   const registrationBlocked = ownScene ? registrationReason({ prepared, snapshot: state, index: ownUnregisteredIndex, account, accepted: true, busy: false, pending }) : "";
-  const env = { account, requiresProvider: false, pending, snapshot: state, journey, ownScene, prepared, ownUnregisteredIndex, registrationBlocked,
+  const env = { account, needsBrowserChoice: false, requiresProvider: false, pending, snapshot: state, journey, ownScene, prepared, ownUnregisteredIndex, registrationBlocked,
     allRegistered: journey.registered === prepared.scenes.length, blocked: pending, walletBusy: false, identity: { enabled: true }, signInWorking: false,
     formatEther, ZeroAddress, confirmCopy: confirmation, signInWithGoogle: () => calls.push(["sign in"]), setConfirm: (value: unknown) => calls.push(["confirm", value]),
     session: { recover: () => calls.push(["recover"]), refresh: () => calls.push(["refresh"]) },
@@ -103,6 +103,60 @@ test("Return to story inspects the chosen tip without changing its path or openi
   assert.deepEqual(result.calls, []);
   result.next.onClick();
   assert.deepEqual(result.calls, [["inspect", moments.at(-1)!.id]]);
+});
+
+test("a named guest saves Google onto the same storyteller while a signed-out visitor uses returning sign-in", async () => {
+  for (const anonymous of [true, false]) {
+    const user = anonymous ? { id: "named-guest", is_anonymous: true } : undefined;
+    const modes: string[] = [], busy: boolean[] = [];
+    const signIn = run(definition("signInWithGoogle"), { identity: { user, signIn: async (mode: string) => { modes.push(mode); } }, signInWorking: false,
+      setSignInWorking: (value: boolean) => busy.push(value), session: { feedback: () => assert.fail("the valid sign-in path must not fail") } });
+    await signIn();
+    assert.deepEqual(modes, [anonymous ? "link" : "return"]);
+    assert.deepEqual(busy, [true, false]);
+    if (user) assert.equal(user.id, "named-guest");
+  }
+});
+
+test("a restored login with several wallets waits for a provider choice instead of using window.ethereum", () => {
+  const selected = release(node => ts.isVariableDeclaration(node) && node.name.getText() === "selectedProvider" ? node.initializer : undefined);
+  let fallbacks = 0;
+  const identity = { walletMode: "external", externalProvider: undefined };
+  const legacy = { request: async () => [] };
+  assert.equal(run(selected, { identity, browserWallet: () => { fallbacks++; return legacy; } }), undefined);
+  assert.equal(fallbacks, 0);
+  const chosen = { request: async () => [] };
+  assert.equal(run(selected, { identity: { ...identity, externalProvider: chosen }, browserWallet: () => legacy }), chosen);
+});
+
+test("choosing a payout provider never signs in or connects until the explicit connect action", () => {
+  const first = { id: "metamask", name: "MetaMask", chain: "ethereum" as const, provider: { request: async () => [] } };
+  const second = { id: "phantom", name: "Phantom", chain: "ethereum" as const, provider: { request: async () => [] } };
+  const calls: unknown[][] = [];
+  const props = { wallets: [first, second], account: "", blocked: false, connecting: false,
+    onChoose: (choice: unknown) => calls.push(["choose", choice]), onConnect: () => calls.push(["connect"]) };
+  type Element = React.ReactElement<{ children?: React.ReactNode; onChange?: (event: { target: { value: string } }) => void; onClick?: () => void; disabled?: boolean }>;
+  const nodes = (node: React.ReactNode): Element[] => Array.isArray(node) ? node.flatMap(nodes)
+    : React.isValidElement<Element["props"]>(node) ? [node, ...nodes(node.props.children)] : [];
+  const initial = nodes(BrowserPayoutWallet(props));
+  assert.equal(initial.find(node => node.type === "button")?.props.disabled, true);
+  initial.find(node => node.type === "select")?.props.onChange?.({ target: { value: second.id } });
+  assert.deepEqual(calls, [["choose", second]]);
+  const selected = nodes(BrowserPayoutWallet({ ...props, provider: second.provider }));
+  const connect = selected.find(node => node.type === "button");
+  assert.equal(connect?.props.disabled, false);
+  connect?.props.onClick?.();
+  assert.deepEqual(calls, [["choose", second], ["connect"]]);
+  assert.match(renderToStaticMarkup(React.createElement(BrowserPayoutWallet, props)), /keeping this storyteller.*byline and drafts/);
+});
+
+test("switching an EVM sign-in account to an existing payout wallet clears the shared hint before connecting", async () => {
+  const events: unknown[][] = [];
+  const accountRef: { current: string | undefined } = { current: curator };
+  const connect = run(definition("connectBrowserPayout"), { walletBusy: false, pending: false, selectedProvider: {}, identity: { walletMode: "external" }, actorId: "original-storyteller", accountRef,
+    setBrowserPayoutOwner: (owner: string) => events.push(["owner", owner]), session: { syncWallet: () => events.push(["sync", accountRef.current]), connect: async () => events.push(["connect", accountRef.current]) } });
+  await connect();
+  assert.deepEqual(events, [["owner", "original-storyteller"], ["sync", undefined], ["connect", undefined]]);
 });
 
 test("the primary registration action names and respects an unfinished ancestor", () => {

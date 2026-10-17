@@ -14,6 +14,11 @@
 .pilot-release-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .pilot-release-actions .button { min-height: 42px; }
 .pilot-release-card > .pilot-wallet-options { margin-top: 12px; }
+.pilot-browser-payout { display: grid; justify-items: start; gap: 12px; margin-top: 20px; }
+.pilot-browser-payout p { margin: 0; max-width: 65ch; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.pilot-browser-payout label { display: grid; gap: 7px; max-width: 100%; font-size: 14px; font-weight: 600; }
+.pilot-browser-payout select { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
+.pilot-browser-payout select:focus-visible { outline: 3px solid var(--violet); outline-offset: 4px; }
 .pilot-release-card > .pilot-my-wallet-request { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
 .pilot-release-confirm { width: min(560px, calc(100vw - 32px)); }
 .pilot-release-confirm footer { margin-top: 18px; }
