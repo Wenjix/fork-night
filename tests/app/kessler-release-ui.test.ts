@@ -34,10 +34,10 @@ test("Kessler exposes its release panel while unrelated rooms remain outside it"
   }
 });
 
-test("Midnight Signal defaults to the completed six-scene release when a newer child is selected", () => {
+test("Midnight Signal keeps a newer selected child actionable instead of pinning to the proof release", () => {
   const released = { ...moments.at(-1)!, id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
   const child = { ...moments.at(-1)!, id: "10000000-0000-4000-8000-000000000099", parent_id: MIDNIGHT_SIGNAL_RELEASE_TIP_ID };
-  assert.equal(releaseDisplayTipId("midnight-signal", [...moments.slice(0, -1), released, child], child.id), MIDNIGHT_SIGNAL_RELEASE_TIP_ID);
+  assert.equal(releaseDisplayTipId("midnight-signal", [...moments.slice(0, -1), released, child], child.id), child.id);
   assert.equal(releaseDisplayTipId("midnight-signal", [...moments, released], moments.at(-1)!.id), moments.at(-1)!.id);
   assert.equal(releaseDisplayTipId("kessler-ward", [released, child], child.id), child.id);
 });
