@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowLeft, Dices, RotateCcw, Check } from "lucide-react";
+import { ArrowLeft, ChevronRight, Dices, RotateCcw, Check } from "lucide-react";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { AppHeader } from "../app-header";
 import { useWrenLook } from "./use-wren-look";
 import {
   ACCESSORIES, DEFAULT_LOOK, FACES, NAME_LIMIT, PATTERNS, PRESETS, YARNS,
@@ -75,10 +76,10 @@ export function WrenMaker({ compact = false }: { compact?: boolean }) {
         </div>
         <p className="ws-tag" aria-live="polite"><span>{look.name}</span><small>AI agent · your Wren</small></p>
         <div className="ws-stage-actions">
-          <button type="button" className="ws-button" onClick={() => apply(randomLook(look.name))}><Dices size={18} aria-hidden="true" />Surprise me</button>
+          <button type="button" className="ws-button" onClick={() => apply(randomLook(look.name))}><Dices size={20} aria-hidden="true" />Surprise me</button>
           <button type="button" className="ws-button ws-button-quiet" onClick={() => apply(DEFAULT_LOOK)}><RotateCcw size={16} aria-hidden="true" />Start over</button>
         </div>
-        <p className="ws-saved" role="status">{!mounted ? "" : persisted ? <><Check size={15} aria-hidden="true" />Saved in this browser</> : "This browser can’t save looks; your changes last until you leave."}</p>
+        <p className="ws-saved" role="status">{!mounted ? "" : persisted ? <><Check size={16} aria-hidden="true" />Saved in this browser</> : "This browser can’t save looks; your changes last until you leave."}</p>
       </section>
 
       <section className="ws-panel" aria-labelledby={`${ids}-make`}>
@@ -127,13 +128,14 @@ export function WrenBadge({ className = "" }: { className?: string }) {
 export function WrenStudio() {
   return <div className="ws-page">
     <a className="ws-skip" href="#ws-main">Skip to the studio</a>
-    <header className="ws-header">
-      <a className="ws-brand" href="/">Fork Night</a>
-      <a className="ws-back" href="/agents"><ArrowLeft size={16} aria-hidden="true" />Meet the agents</a>
-    </header>
+    <AppHeader current="agents" />
+    <nav className="ws-crumb" aria-label="Breadcrumb">
+      <a href="/agents"><ArrowLeft size={16} aria-hidden="true" />Meet the agents</a>
+      <ChevronRight size={16} aria-hidden="true" />
+      <span aria-current="page">Wren’s studio</span>
+    </nav>
     <main id="ws-main" className="ws-main">
       <div className="ws-intro">
-        <p className="ws-kicker">Wren’s studio</p>
         <h1>Make your Wren</h1>
         <p>Every maker’s Wren can look like their own. Pick its yarn, pattern, face and one small accessory, then give it a name.</p>
       </div>

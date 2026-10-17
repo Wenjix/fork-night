@@ -1,0 +1,184 @@
+/* Shared by /agents and /tempo (components/agents/agent-ui.tsx): numbered steps and explorer links.
+   Colour comes from the surrounding text and the theme contract, so the same markup reads on navy and on paper. */
+
+/* StepStrip: an ordered list of numbered steps. */
+.ag-strip {
+  --step-tile: 28px;
+  --step-bg: var(--agent);
+  --step-ink: var(--agent-ink);
+  --strip-gap: 28px;
+  --strip-line: color-mix(in srgb, var(--agent) 38%, transparent);
+  --strip-fill: color-mix(in srgb, var(--agent) 8%, transparent);
+  --strip-hair: color-mix(in srgb, currentColor 18%, transparent);
+  display: grid;
+  gap: var(--strip-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ag-strip[data-tone="paper"] {
+  --step-bg: var(--violet-wash);
+  --step-ink: var(--accent-strong);
+  --strip-hair: var(--line);
+}
+.ag-num {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--step-tile, 28px);
+  height: var(--step-tile, 28px);
+  border-radius: var(--radius-sm);
+  background: var(--step-bg, var(--agent));
+  color: var(--step-ink, var(--agent-ink));
+  font: 700 var(--text-sm) / 1 var(--font-interface), sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.ag-step {
+  color: inherit;
+  text-decoration: none;
+}
+.ag-step-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.ag-step-text strong {
+  font-size: var(--text-base);
+  font-weight: 650;
+  line-height: var(--leading-snug);
+}
+.ag-step-text strong:only-child {
+  font-weight: 500;
+}
+.ag-step-body {
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+/* flow: chips that run across, joined by chevrons. */
+.ag-strip[data-variant="flow"] > li {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.ag-strip[data-variant="flow"] .ag-step {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 14px 10px 12px;
+  border: 1px solid var(--strip-line);
+  border-radius: var(--radius-lg);
+  background: var(--strip-fill);
+}
+.ag-strip-link {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + (var(--strip-gap) - 16px) / 2);
+  transform: translateY(-50%);
+  opacity: 0.7;
+}
+a.ag-step:hover {
+  border-color: var(--agent);
+  background: color-mix(in srgb, var(--agent) 16%, transparent);
+}
+a.ag-step:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+a.ag-step:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+@media (min-width: 721px) {
+  .ag-strip[data-variant="flow"] {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .ag-strip[data-variant="flow"] {
+    --strip-gap: 24px;
+  }
+  .ag-strip-link {
+    top: calc(100% + (var(--strip-gap) - 16px) / 2);
+    left: calc(12px + var(--step-tile) / 2 - 8px);
+    transform: rotate(90deg);
+  }
+}
+
+/* list: a numbered column with hairlines, for steps that carry longer copy. */
+.ag-strip[data-variant="list"] {
+  gap: 0;
+}
+.ag-strip[data-variant="list"] .ag-step {
+  display: grid;
+  grid-template-columns: var(--step-tile) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--strip-hair);
+}
+.ag-strip[data-variant="list"] .ag-step-text strong {
+  font-size: var(--text-md);
+}
+.ag-strip[data-variant="list"] .ag-step-body {
+  font-size: var(--text-md);
+}
+/* A badge inside a step's sentence keeps the line height of the text around it. */
+.ag-step-body .fn-badge {
+  --badge-h: 24px;
+  --badge-tile: 18px;
+  --badge-font: var(--text-xs);
+}
+@media (min-width: 900px) {
+  .ag-strip[data-variant="list"][data-columns="2"] {
+    grid-auto-flow: column;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(var(--rows), auto);
+    column-gap: var(--space-8);
+  }
+}
+
+/* AddressLink: a short mono value that opens the explorer. */
+.ag-address {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  max-width: 100%;
+}
+.ag-address .ag-address-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  max-width: 100%;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.ag-address .ag-address-link code {
+  color: inherit;
+  font: 500 var(--text-sm) / 1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+.ag-address .ag-address-link:hover {
+  text-decoration-thickness: 2px;
+}
+.ag-address[data-inline] {
+  display: inline;
+}
+.ag-address[data-inline] .ag-address-link {
+  min-height: 0;
+}
+@media (max-width: 760px), (pointer: coarse) {
+  .ag-address:not([data-inline]) .ag-address-link {
+    min-height: var(--control-h);
+  }
+}

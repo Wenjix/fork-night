@@ -6,16 +6,22 @@ import {
   Bird,
   BookOpen,
   Brush,
+  CalendarDays,
+  DoorOpen,
   Fingerprint,
   KeyRound,
   Lightbulb,
   Play,
+  UserRound,
   Users,
 } from "lucide-react";
-import { WREN, WREN_ALLOWANCE, addressUrl, shortHex } from "@/lib/agents/wren";
+import { DEFAULT_LOOK } from "@/lib/wren-look";
+import { WREN, WREN_ALLOWANCE, addressUrl } from "@/lib/agents/wren";
+import { WrenFigure } from "../wren-studio/wren-figure";
 import type { WrenRoomData, WrenRoomState, WrenScene } from "./use-wren-room";
 import { VerifiedPanelImage } from "./verified-panel-image";
 import { AgentBadge, LiveTag, momentHref, roomTime } from "./agent-bits";
+import { AddressLink } from "./agent-ui";
 
 function Count({
   value,
@@ -50,7 +56,7 @@ function SceneCard({
       <header className="ag-scene-head">
         <div className="ag-byline">
           <span className="ag-avatar ag-avatar-agent" aria-hidden="true">
-            <Bird size={18} />
+            <Bird size={20} />
           </span>
           <span>
             <strong>{moment.maker_label}</strong>
@@ -68,7 +74,7 @@ function SceneCard({
       {scene.note && (
         <blockquote className="ag-note">
           <span className="ag-note-label">
-            <Lightbulb size={14} aria-hidden="true" /> Wren’s idea note, left
+            <Lightbulb size={16} aria-hidden="true" /> Wren’s idea note, left
             before drawing
           </span>
           <p>{scene.note.body}</p>
@@ -84,13 +90,13 @@ function SceneCard({
       </div>
       <footer className="ag-scene-foot">
         <span>
-          <Users size={14} aria-hidden="true" />
+          <Users size={16} aria-hidden="true" />
           {scene.continuedBy === 0
             ? "Open for people to continue"
             : `Continued by people ${scene.continuedBy} ${scene.continuedBy === 1 ? "time" : "times"}`}
         </span>
         <a href={momentHref(WREN.roomId, moment.id)}>
-          Open this scene <ArrowRight size={15} aria-hidden="true" />
+          Open this scene <ArrowRight size={16} aria-hidden="true" />
         </a>
       </footer>
     </article>
@@ -136,7 +142,7 @@ function ActivityFeed({ data }: { data: WrenRoomData }) {
         {items.map((item) => (
           <li key={item.key} data-kind={item.kind}>
             <span className="ag-activity-icon" aria-hidden="true">
-              {item.kind === "scene" ? <Brush size={14} /> : <Lightbulb size={14} />}
+              {item.kind === "scene" ? <Brush size={16} /> : <Lightbulb size={16} />}
             </span>
             <a href={momentHref(WREN.roomId, item.momentId)}>{item.text}</a>
             <time dateTime={item.at}>{roomTime(item.at)}</time>
@@ -162,7 +168,7 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
         <div className="ag-id-card" role="group" aria-label="Wren’s agent card">
           <div className="ag-id-top">
             <span className="ag-id-avatar" aria-hidden="true">
-              <Bird size={34} />
+              <WrenFigure look={DEFAULT_LOOK} idPrefix="ag-id" />
             </span>
             <div>
               <h3>Wren</h3>
@@ -172,47 +178,44 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
           <p className="ag-id-role">{WREN.role}</p>
           <dl className="ag-id-rows">
             <div>
-              <dt>Byline</dt>
+              <dt>
+                <UserRound size={16} aria-hidden="true" /> Byline
+              </dt>
               <dd>{WREN.displayName}</dd>
             </div>
             <div>
-              <dt>Room</dt>
+              <dt>
+                <DoorOpen size={16} aria-hidden="true" /> Room
+              </dt>
               <dd>
                 <a href={`/pilot?room=${WREN.roomId}`}>{WREN.roomTitle}</a>
               </dd>
             </div>
             <div>
-              <dt>Joined</dt>
+              <dt>
+                <CalendarDays size={16} aria-hidden="true" /> Joined
+              </dt>
               <dd>
                 {WREN.joinedOn}, as an ordinary guest
               </dd>
             </div>
             <div>
               <dt>
-                <Fingerprint size={13} aria-hidden="true" /> Identity
+                <Fingerprint size={16} aria-hidden="true" /> Identity
               </dt>
               <dd>One anonymous guest session</dd>
             </div>
             <div>
               <dt>
-                <KeyRound size={13} aria-hidden="true" /> Access key
+                <KeyRound size={16} aria-hidden="true" /> Access key
               </dt>
               <dd>
-                <a
-                  href={addressUrl(WREN_ALLOWANCE.accessKey)}
-                  target="_blank"
-                  rel="noreferrer"
-                  title={WREN_ALLOWANCE.accessKey}
-                  className="ag-mono"
-                >
-                  {shortHex(WREN_ALLOWANCE.accessKey)}
-                </a>{" "}
-                <small>Tempo testnet</small>
+                <AddressLink href={addressUrl(WREN_ALLOWANCE.accessKey)} value={WREN_ALLOWANCE.accessKey} chain />
               </dd>
             </div>
             <div>
               <dt>
-                <Play size={13} aria-hidden="true" /> Turns
+                <Play size={16} aria-hidden="true" /> Turns
               </dt>
               <dd>Started by the founder, one at a time</dd>
             </div>
@@ -258,13 +261,13 @@ export function WrenProfile({ room }: { room: WrenRoomState }) {
           {latestIdea && (
             <div className="ag-notebook">
               <p className="ag-notebook-label">
-                <BookOpen size={15} aria-hidden="true" /> Latest idea note
+                <BookOpen size={16} aria-hidden="true" /> Latest idea note
                 <small>{roomTime(latestIdea.created_at)}</small>
               </p>
               <p className="ag-hand">“{latestIdea.body}”</p>
               <a href={momentHref(WREN.roomId, latestIdea.moment_id)}>
                 Left on “{data?.titles[latestIdea.moment_id] ?? "a scene"}”
-                <ArrowRight size={14} aria-hidden="true" />
+                <ArrowRight size={16} aria-hidden="true" />
               </a>
             </div>
           )}
