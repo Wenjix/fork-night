@@ -38,7 +38,7 @@ test("the tile is decorative: the brand name beside it is the accessible name", 
   assert.match(privy, /<span class="fn-badge-tile"[^>]*aria-hidden="true"/);
   assert.match(privy, /<img src="\/brands\/privy-symbol-black\.svg" alt=""/);
   assert.match(html(createElement(BrandBadge, { brand: "kimi" })), /data-mono="true"[^>]*aria-hidden="true"[^>]*><b>K<\/b>/);
-  assert.match(html(createElement(BrandBadge, { brand: "usdc" })), /data-round="true"/);
+  assert.match(html(createElement(BrandBadge, { brand: "mon" })), /data-round="true"/);
 });
 
 test("a receipt badge is a link that says it opens a new tab and carries no network flag", () => {

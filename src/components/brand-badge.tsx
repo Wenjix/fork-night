@@ -13,7 +13,7 @@ export function BrandTile({ brand, size = "sm" }: { brand: BrandId; size?: Brand
   const Glyph = GLYPHS[brand];
   const style = entry.accent ? ({ "--badge-accent": entry.accent } as CSSProperties) : undefined;
   return (
-    <span className="fn-badge-tile" data-fit={entry.fit ?? "contain"} data-mono={entry.mark ? undefined : "true"} data-size={size} data-round={entry.kind === "token" ? "true" : undefined} style={style} aria-hidden="true">
+    <span className="fn-badge-tile" data-mono={entry.mark ? undefined : "true"} data-size={size} data-round={entry.kind === "token" ? "true" : undefined} style={style} aria-hidden="true">
       {entry.mark ? <img src={entry.mark} alt="" width={24} height={24} /> : Glyph ? <Glyph strokeWidth={2.1} /> : <b>{entry.monogram ?? entry.name.slice(0, 2)}</b>}
     </span>
   );

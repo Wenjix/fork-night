@@ -11,8 +11,6 @@ export type Brand = {
   kind: BrandKind;
   /** Public path of an official mark. Without one the badge draws a monogram or a glyph. */
   mark?: string;
-  /** `bleed` when the mark is already a filled shape that should be the whole tile. */
-  fit?: "contain" | "bleed";
   /** One or two characters drawn on the tile when there is no mark. */
   monogram?: string;
   /** Tint for the monogram or glyph tile, as a hex colour. Neutral ink unless the brand's colour is certain. */
@@ -28,7 +26,6 @@ export const BRANDS = {
   solana: { name: "Solana", kind: "chain", mark: "/brands/networks/solana.svg", accent: "#9945ff", net: "Devnet" },
   base: { name: "Base", kind: "chain", mark: "/brands/networks/base.svg", accent: "#0000ff", net: "Sepolia" },
   tempo: { name: "Tempo", kind: "chain", mark: "/brands/networks/tempo.svg", accent: INK, net: "Moderato testnet" },
-  usdc: { name: "USDC", kind: "token", mark: "/brands/networks/usdc.svg", fit: "bleed", accent: "#0b53bf" },
   mon: { name: "MON", kind: "token", mark: "/brands/networks/monad.svg", accent: "#6e54ff" },
   pathusd: { name: "pathUSD", kind: "token", mark: "/brands/networks/tempo.svg", accent: INK },
   x402: { name: "x402", kind: "protocol", accent: INK },

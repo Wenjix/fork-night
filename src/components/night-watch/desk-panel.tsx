@@ -519,7 +519,7 @@ export function DeskPanel({ api, world, me, meError, signedIn, accountLoading, f
       <aside className="nw-card nw-consent" aria-labelledby={`${ids}-consent`}>
         <CardHeading id={`${ids}-consent`} title="What this Night Watch may do" kind={serverTerms ? "Terms the server set" : "Consent"} icon={KeyRound} />
         <BrandStrip label="The limits at a glance" className="nw-consent-glance">
-          <BrandBadge brand="usdc" label={formatUsdc(glance.totalAllowanceAtomic)} />
+          <Chip icon={Wallet}>{formatUsdc(glance.totalAllowanceAtomic)}</Chip>
           {glance.maxPayments > 0 && <BrandBadge brand="base" />}
           <Chip icon={Clock3}>Signing stops at {clockTime(glance.deadline)}</Chip>
           <Chip icon={Images}>{plural(glance.attemptAllowance, "candidate")}</Chip>
