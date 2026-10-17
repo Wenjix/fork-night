@@ -45,9 +45,12 @@ test("a saved idea whose generation never started can be retried, but not while 
   const idle = renderToStaticMarkup(createElement(PilotContinuation, { ...props, operation: saved }));
   assert.match(idle, /reserved when generation starts/);
   assert.match(idle, /Try again<\/button>/);
+  assert.match(idle, /Not started yet/);
+  assert.doesNotMatch(idle, /starting now|pilot-generation-active/);
   assert.doesNotMatch(idle, /Generate saved idea/);
   const starting = renderToStaticMarkup(createElement(PilotContinuation, { ...props, operation: saved, busy: true }));
   assert.match(starting, /Starting your panel/);
+  assert.match(starting, /pilot-generation-active/);
   assert.doesNotMatch(starting, /Try again/);
 });
 test("guest entry and wallet identity remain separate and do not promise that a name selects a payout", () => {

@@ -174,6 +174,7 @@ function startingFresh(patch: Record<string, unknown> = {}) {
   const confirms: string[] = [], notices: string[] = [], starts: unknown[][] = [], store = storage();
   const env = {
     draft: { requestId: resultId, submitted: true }, hasActive: false, profile: { id: actor }, roomId: FIRST_NIGHT_ROOM_ID,
+    wrenBusy: false, wrenPreviewId: undefined, releaseBusy: false, moments: [root], selected: root, pilotPath,
     pendingKey: (id: string, room: string) => `${id}:${room}`, localStorage: store,
     window: { confirm: (text: string) => { confirms.push(text); return true; } },
     setNotice: (notice: string) => { notices.push(notice); }, setDraft() {}, setDraftRecovery() {}, setComposing() {}, setError() {},
@@ -206,6 +207,18 @@ test("start fresh explains active generation instead of asking first, and asks o
   unsent.startFresh();
   assert.deepEqual(unsent.confirms, [], "a draft that was never submitted needs no confirmation");
   assert.equal(unsent.starts.length, 1);
+});
+
+test("start fresh keeps the saved draft when a new continuation could not start", () => {
+  for (const patch of [{ wrenBusy: true }, { wrenPreviewId: resultId }, { releaseBusy: true }, { selected: undefined }]) {
+    const blocked = startingFresh(patch);
+    blocked.store.setItem(`${actor}:${FIRST_NIGHT_ROOM_ID}`, "saved draft");
+    blocked.startFresh();
+    assert.deepEqual(blocked.confirms, []);
+    assert.deepEqual(blocked.starts, []);
+    assert.equal(blocked.store.values.size, 1);
+    assert.ok(blocked.notices.length > 0);
+  }
 });
 
 function posting(response: unknown, visitor = false) {
