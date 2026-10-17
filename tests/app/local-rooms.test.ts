@@ -117,6 +117,8 @@ test("the room's skin sits on one wrapper that holds the toolbar, the preview ba
   assert.deepEqual([...at].sort((a, b) => a - b), at, "in that order");
   assert.doesNotMatch(source, /<main[^>]*data-room-theme/, "the story area no longer wears the skin by itself");
   assert.match(source, /data-room-theme=\{skin\}/);
+  // The outer shell wears the same skin, so the header and guide band above the room sit on the room's canvas, not on cream paper.
+  assert.match(source, /className=\{inProject \? "app-shell" : "social-root"\}\s*data-room-theme=\{inProject \? roomSkin : undefined\}/);
   assert.match(source, /accessible\s*\? fanStory\?\.theme\s*: roomTheme\(/, "an open room keeps its own theme; a room that is not available takes the skin of the room asked for");
 });
 

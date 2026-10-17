@@ -788,6 +788,7 @@ export function ForkNight() {
   return (
     <div
       className={inProject ? "app-shell" : "social-root"}
+      data-room-theme={inProject ? roomSkin : undefined}
     >
       {inProject && (
         <>
