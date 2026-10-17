@@ -46,7 +46,7 @@ function SceneRegistrationState({ record, approved, explorer }: {
   record: Snapshot["scenes"][number]; approved: boolean; explorer?: string;
 }) {
   const contents = <>
-    {record.registered ? <Check size={15} aria-hidden="true" /> : <Clock3 size={15} aria-hidden="true" />}
+    {record.registered ? <Check size={16} aria-hidden="true" /> : <Clock3 size={16} aria-hidden="true" />}
     {record.registered ? "Scene registered" : approved ? "Wallet approved · scene not registered" : "Awaiting wallet approval"}
     {approved && <span title={record.maker}>{shortAddress(record.maker)}</span>}
   </>;

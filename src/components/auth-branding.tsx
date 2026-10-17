@@ -1,14 +1,16 @@
 import type { ButtonHTMLAttributes } from "react";
+import { BrandBadge, BrandTile } from "./brand-badge";
 
+/** Google's own neutral button, with the G on the shared brand tile so it sits the same as every other mark. */
 export function GoogleButton({ children, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button {...props} className={`pilot-google-button ${className}`}>
-    <img src="/brands/google-g.png" width={20} height={20} alt="" aria-hidden="true" />
+    <BrandTile brand="google" size="md" />
     <span>{children}</span>
   </button>;
 }
 
 export function PrivyMark({ className = "" }: { className?: string }) {
-  return <span className={`pilot-privy-mark ${className}`}><img src="/brands/privy-symbol-black.svg" width={18} height={18} alt="" aria-hidden="true" /><span>Privy</span></span>;
+  return <BrandBadge brand="privy" className={`pilot-privy-mark ${className}`.trim()} />;
 }
 
 export function WalletProviderNote() {

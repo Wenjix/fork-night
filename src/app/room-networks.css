@@ -1,6 +1,5 @@
 .fn-network-plate {
   min-width: 0;
-  color-scheme: light;
 }
 .fn-network-card {
   display: block;
@@ -8,14 +7,14 @@
   padding: 0;
   gap: 0;
   border: 1px solid var(--line);
-  border-radius: 14px 14px 5px 5px;
+  border-radius: var(--radius-xl);
   background: var(--surface);
   color: var(--ink);
   box-shadow: none;
   font-family: var(--font-interface), sans-serif;
 }
 .fn-network-content {
-  padding: 16px;
+  padding: var(--space-4);
 }
 .fn-network-list {
   list-style: none;
@@ -23,10 +22,6 @@
   padding: 0;
 }
 .fn-network-row {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  align-items: start;
-  gap: 12px;
   min-width: 0;
 }
 .fn-network-row + .fn-network-row {
@@ -41,7 +36,7 @@
   height: 42px;
   flex-shrink: 0;
   margin-top: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   background: var(--surface);
 }
 .fn-network-mark {
@@ -68,44 +63,22 @@
 .fn-network-copy {
   min-width: 0;
 }
+/* The chain is a brand badge (name, mark, test network); the currency is a chip beside it. */
 .fn-network-brand {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 8px;
+  gap: 6px var(--space-2);
 }
-.fn-network-name {
-  color: var(--ink);
-  font-family: var(--font-display), sans-serif;
-  font-size: 21px;
-  font-weight: 650;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-}
-.fn-network-card .fn-network-testnet {
-  padding: 4px 8px;
-  border: 1px solid var(--line-strong);
-  border-radius: 5px;
-  background: var(--paper);
+.fn-network-brand .fn-network-currency {
   color: var(--muted);
-  font-family: var(--font-interface), sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.25;
-}
-.fn-network-currency {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
 }
 .fn-network-currency img {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: var(--badge-tile);
+  height: var(--badge-tile);
   flex-shrink: 0;
+  border-radius: 50%;
   object-fit: contain;
 }
 .fn-network-card .fn-network-summary {
@@ -113,20 +86,20 @@
   margin: 6px 0 0;
   max-width: 70ch;
   color: var(--ink);
-  font-size: 15px;
+  font-size: var(--text-md);
   font-weight: 400;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
 .fn-network-card .fn-network-link {
   max-width: 100%;
-  min-height: 44px;
+  min-height: var(--control-h);
   padding: 0;
   justify-content: flex-start;
-  gap: 8px;
-  color: var(--violet);
+  gap: var(--space-2);
+  color: var(--accent);
   font-family: var(--font-interface), sans-serif;
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   line-height: 1.4;
   text-align: left;
@@ -138,7 +111,7 @@
 .fn-network-card .fn-network-proof {
   display: block;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   background: transparent;
   color: var(--ink);
   font-weight: 400;
@@ -146,8 +119,8 @@
   box-shadow: none;
 }
 .fn-network-proof-label {
-  color: var(--violet);
-  font-size: 14px;
+  color: var(--accent);
+  font-size: var(--text-base);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -160,10 +133,10 @@
   vertical-align: -3px;
 }
 .fn-network-card .fn-network-proof:hover {
-  background: var(--violet-soft);
+  background: var(--accent-soft);
 }
 .fn-network-proof:hover .fn-network-proof-label {
-  color: var(--violet-dark);
+  color: var(--accent-strong);
 }
 .fn-network-card .fn-network-related {
   padding-inline: 0;
@@ -172,10 +145,10 @@
   text-underline-offset: 4px;
 }
 .fn-network-card .fn-network-related:hover {
-  color: var(--violet-dark);
+  color: var(--accent-strong);
 }
 .fn-network-card .fn-network-link:focus-visible {
-  outline: 3px solid var(--violet);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 .fn-network-card .fn-network-footnote {
@@ -183,14 +156,14 @@
   padding-top: 10px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 400;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
 @media (max-width: 680px) {
   .fn-network-content {
-    padding: 12px;
+    padding: var(--space-3);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -199,16 +172,3 @@
   }
 }
 
-@media (max-width: 360px) {
-  .fn-network-content {
-    padding: 12px;
-  }
-  .fn-network-row {
-    grid-template-columns: 32px minmax(0, 1fr);
-  }
-  .fn-network-row .fn-network-mark-mount,
-  .fn-network-row .fn-network-mark {
-    width: 32px;
-    height: 32px;
-  }
-}

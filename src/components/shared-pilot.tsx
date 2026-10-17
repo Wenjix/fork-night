@@ -4,9 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import {
   ArrowUp,
-  BookOpen,
   GitBranch,
-  RefreshCw,
   Sparkles,
   Map as MapIcon,
   Share2,
@@ -45,13 +43,14 @@ import { roomLink, validRoomId, newPublications, definitelyRejected, type RoomSn
 import { PilotCreditRefill } from "./pilot-credit-refill";
 import { PilotRoomActivity } from "./pilot-generation-status";
 import { SectionPlate } from "./visual-plates";
+import { Disclosure } from "./disclosure";
 import { PilotRoomFunding } from "./guild-funding";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
-import { getRecordedGuildFunding } from "@/lib/guild-funding";
 import { featuredStoryLinks, proofRoomIds } from "@/lib/featured-stories";
 import { KESSLER_OPENING_ID, KESSLER_ROOM_ID } from "../lib/kessler-room";
+import { roomTheme } from "../lib/room-theme";
 import {
   IDEA_DRAG_TYPE,
   parseComposerDraft,
@@ -80,7 +79,7 @@ const message = (error: unknown) =>
 function KesslerTurnCard() {
   return <aside className="pilot-kessler-turn" aria-label="Try Kessler Ward">
     <div><strong>Your turn.</strong> Read Kessler Ward and leave an idea for what comes next.</div>
-    <a className="button secondary" href={featuredStoryLinks.kessler}>Continue in Kessler <ArrowRight size={17} aria-hidden="true" /></a>
+    <a className="button secondary" href={featuredStoryLinks.kessler}>Continue in Kessler <ArrowRight size={16} aria-hidden="true" /></a>
   </aside>;
 }
 
@@ -101,6 +100,9 @@ export function SharedPilot() {
   // Resolve the shared link before fetching any story. A slow room list must
   // not briefly offer actions on the default room underneath that link.
   const [roomId, setRoomId] = useState("");
+  // The link names the room, so its skin is known on the very first render, before any room data arrives.
+  const [linkedRoom] = useState(() => typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("room"));
+  const theme = roomTheme(roomId || linkedRoom);
   const [moments, setMoments] = useState<PilotMoment[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [tipId, setTipId] = useState("");
@@ -829,7 +831,7 @@ export function SharedPilot() {
         document.getElementById(result.kind === "idea" ? "pilot-ideas" : "pilot-contribution-credits");
       if (target instanceof HTMLDetailsElement) target.open = true;
       target?.scrollIntoView({ block: "start" });
-      target?.focus({ preventScroll: true });
+      (target instanceof HTMLDetailsElement ? target.querySelector("summary") : target)?.focus({ preventScroll: true });
     });
   }
   function readFirstNightOpening() {
@@ -1005,7 +1007,6 @@ export function SharedPilot() {
         onSaved={(idea) => recordFirstNightResult({ roomId: idea.room_id, actorId: idea.maker_id, kind: "idea", id: idea.id, parentId: idea.moment_id })}
       />
     ) : null;
-  const recordedGuildFunding = !!getRecordedGuildFunding(roomId);
   const proofRoom = proofRoomIds.has(roomId);
   const identityDisabled = !selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || !!account?.loading || !!account?.error && !account.user || (profile ? hasActive || !!draft : false);
   const releasePanel = client && selected && loadedRoom === roomId && path.length ? <TestnetRelease
@@ -1025,13 +1026,14 @@ export function SharedPilot() {
 
   if (unavailable) return <><AppHeader current="rooms" guide={false} /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
 
+  const storytellerCount = new Set(path.map((item) => item.maker_id ?? item.maker_label)).size;
   return (
-    <>
+    <div className="pilot-room-page" data-room-theme={theme}>
       <a className="skip-link" href="#shared-story">Skip to story</a>
       <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} account={false} />
-      <main className="pilot-shell" id="shared-story" data-room-theme={roomId === KESSLER_ROOM_ID ? "neon" : undefined} tabIndex={-1}>
+      <main className="pilot-shell" id="shared-story" data-room-theme={theme} tabIndex={-1}>
       <div className="pilot-room-toolbar">
-        <a className="fn-context-link" href="/pilot"><ArrowLeft size={17} aria-hidden="true" />All shared rooms</a>
+        <a className="fn-context-link" href="/pilot"><ArrowLeft size={16} aria-hidden="true" />All shared rooms</a>
         <label className="pilot-room-choice">
           <span>Story room</span>
           <select
@@ -1061,16 +1063,16 @@ export function SharedPilot() {
             ))}
           </select>
         </label>
+        <button
+          className="button secondary pilot-map-toggle"
+          onClick={() => setView(view === "map" ? "read" : "map")}
+          disabled={!selected}
+        >
+          <MapIcon size={16} aria-hidden="true" />
+          {view === "map" ? "Back to story" : "Map"}
+        </button>
         <div className="pilot-header-actions">
           <PilotIdentity profile={profile} disabled={identityDisabled} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={profile ? () => setJoinOpen(true) : focusStorytellerName} />
-          <button
-            className="button secondary pilot-map-toggle"
-            onClick={() => setView(view === "map" ? "read" : "map")}
-            disabled={!selected}
-          >
-            <MapIcon size={19} />
-            {view === "map" ? "Back to story" : "Map"}
-          </button>
         </div>
       </div>
       <div className="pilot-intro">
@@ -1078,13 +1080,18 @@ export function SharedPilot() {
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
         {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">Explore two prepared branches, then leave an idea at any scene. Each new published scene keeps its storyteller’s byline.</p>}
       </div>
-      {roomId === "midnight-signal" && !composing && !hasActive && !wrenBusy && !reviewing && releasePanel}
+      <div className="pilot-context">
+        {roomId === "midnight-signal" && !composing && !hasActive && !wrenBusy && !reviewing && releasePanel}
+        {roomId === KESSLER_ROOM_ID
+          ? <Disclosure className="pilot-context-disclosure" summary="About testnet releases"><PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} /></Disclosure>
+          : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
+      </div>
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
-        <details className="pilot-roster"><summary>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></summary><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</details>
+        <Disclosure className="pilot-roster" summary={<>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></>}><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</Disclosure>
         {!joinedRoom && profile && <button className="button secondary" disabled={busy} onClick={() => setJoinOpen(true)}>Join this room</button>}
         {joinedRoom && <span>You joined this room</span>}
-        {proofRoom && <a className="button secondary" href={featuredStoryLinks.kessler}>Continue in Kessler <ArrowRight size={17} aria-hidden="true" /></a>}
-        <button className="button secondary" type="button" onClick={() => void invite()}><Share2 size={17} aria-hidden="true" />Invite storytellers</button>
+        {proofRoom && <a className="text-button" href={featuredStoryLinks.kessler}>Continue in Kessler <ArrowRight size={16} aria-hidden="true" /></a>}
+        <button className="button secondary" type="button" onClick={() => void invite()}><Share2 size={16} aria-hidden="true" />Invite storytellers</button>
         {invitation && <label className="pilot-invitation-link">Room invitation<input readOnly value={invitation} onFocus={event => event.target.select()} /></label>}
       </section>}
       {publications.length > 0 && <section className="pilot-publication-notice" aria-label="New published moments"><p role="status">{publications.length === 1 ? `${publications[0].maker_label} published a new branch.` : `${publications.length} new moments.`}</p><ul>{publications.map(moment => <li key={moment.id}><span>{moment.title} · {moment.maker_label}</span><button className="text-button" onClick={() => select(moment.id, true)}>Read it</button></li>)}</ul><button className="text-button" onClick={() => setPublications([])}>Dismiss</button></section>}
@@ -1096,9 +1103,6 @@ export function SharedPilot() {
         {error && <p role="alert">{error}</p>}
         <button className="button primary" disabled={busy || (!profile && !joinName.trim())} onClick={() => void act(async () => { if (profile) await joinRoom(); else { await join(joinName); setJoinOpen(false); } })}>{busy ? "Joining…" : "Join this room"}</button>
       </PilotDialog>}
-      {!recordedGuildFunding && (roomId === KESSLER_ROOM_ID
-        ? <details className="pilot-network-details"><summary>About testnet releases</summary><PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} /></details>
-        : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />)}
       {loadedRoom === roomId && credits && <PilotRoomActivity credits={{ ...credits, ...activity }} interrupted={!!syncError} />}
       {roomId === KESSLER_ROOM_ID && loadedRoom === roomId && credits && credits.available === 0 && <p className="pilot-reading-status">Reading and ideas are open. New images need room credits.</p>}
       {(error || syncError || pathError || account?.error) && (
@@ -1152,14 +1156,14 @@ export function SharedPilot() {
                 <SectionPlate
                   title="The whole story"
                   icon={MapIcon}
-                  tone="lavender"
+                  variant="inline"
                   description={<>
-                    <ArrowUp size={16} /> Every moment opens a possibility ·{" "}
+                    <ArrowUp size={16} aria-hidden="true" /> Every moment opens a possibility ·{" "}
                     {moments.length}{" "}
                     {moments.length === 1 ? "moment" : "moments"}
                   </>}
                   action={<button className="text-button" onClick={() => setView("read")}>
-                    <ArrowLeft size={17} /> Back to your moment
+                    <ArrowLeft size={16} aria-hidden="true" /> Back to your moment
                   </button>}
                   className="pilot-map-sign"
                 />
@@ -1197,46 +1201,44 @@ export function SharedPilot() {
                 aria-label="Read and continue the story"
               >
                 <header className="pilot-scene-plate">
-                  <div className="pilot-moment-context">
-                    <span className="pilot-letter">
-                      {reviewing ? <Sparkles size={20} /> : selectedLabel}
-                    </span>
-                    <div>
-                      <p>
-                        {reviewing
-                          ? "Private preview · only you can see this"
-                          : `Moment ${selectedIndex + 1} on this path`}
-                        {!reviewing && updates.newIds.has(selected.id) && (
-                          <small className="pilot-new">New</small>
-                        )}
-                      </p>
-                      <p className="pilot-byline">
-                        <strong>
-                          {reviewing
-                            ? profile?.display_name
-                            : selected.maker_label}
-                        </strong>
-                        {(reviewing ? operation.id === wrenOperationId : wrenMoments.has(selected.id)) && <span> · with Wren’s help</span>}
-                        {reviewing ? (
-                          " · ready for your review"
-                        ) : parent ? (
-                          <>
-                            {" "}
-                            {roomId === KESSLER_ROOM_ID && !selected.maker_id ? "continues" : "built on"}{" "}
-                            <button
-                              className="text-button"
-                              onClick={() => select(parent.id)}
-                            >
-                              {roomId === KESSLER_ROOM_ID && !selected.maker_id ? parent.title : parent.maker_label}
-                            </button>
-                          </>
-                        ) : (
-                          roomId === KESSLER_ROOM_ID && !selected.maker_id ? " · opening scene" : " started this story"
-                        )}
-                      </p>
-                    </div>
-                  </div>
+                  <span className="pilot-letter">
+                    {reviewing ? <Sparkles size={20} aria-hidden="true" /> : selectedLabel}
+                  </span>
                   <h2>{reviewing ? operation.title : selected.title}</h2>
+                  <div className="pilot-moment-context">
+                    <p>
+                      {reviewing
+                        ? "Private preview · only you can see this"
+                        : `Moment ${selectedIndex + 1} on this path`}
+                      {!reviewing && updates.newIds.has(selected.id) && (
+                        <small className="pilot-new">New</small>
+                      )}
+                    </p>
+                    <p className="pilot-byline">
+                      <strong>
+                        {reviewing
+                          ? profile?.display_name
+                          : selected.maker_label}
+                      </strong>
+                      {(reviewing ? operation.id === wrenOperationId : wrenMoments.has(selected.id)) && <span> · with Wren’s help</span>}
+                      {reviewing ? (
+                        " · ready for your review"
+                      ) : parent ? (
+                        <>
+                          {" "}
+                          {roomId === KESSLER_ROOM_ID && !selected.maker_id ? "continues" : "built on"}{" "}
+                          <button
+                            className="text-button"
+                            onClick={() => select(parent.id)}
+                          >
+                            {roomId === KESSLER_ROOM_ID && !selected.maker_id ? parent.title : parent.maker_label}
+                          </button>
+                        </>
+                      ) : (
+                        roomId === KESSLER_ROOM_ID && !selected.maker_id ? " · opening scene" : " started this story"
+                      )}
+                    </p>
+                  </div>
                 </header>
                 <PilotArtwork
                   key={reviewing ? operation.id : selected.id}
@@ -1278,7 +1280,6 @@ export function SharedPilot() {
                     },
                   }}
                 />
-                {recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
                 {!reviewing && !(operation?.status === "published" && operation.published_moment_id === selected.id) && (
                   <div
                     className="pilot-story-actions"
@@ -1301,7 +1302,7 @@ export function SharedPilot() {
                       disabled={busy || releaseBusy || wrenBusy}
                       onClick={() => start()}
                     >
-                      <GitBranch size={18} />
+                      <GitBranch size={16} aria-hidden="true" />
                       {draft || hasActive
                         ? "Return to your continuation"
                         : "Add the next part"}
@@ -1311,7 +1312,7 @@ export function SharedPilot() {
                       disabled={busy || releaseBusy}
                       onClick={() => void share()}
                     >
-                      <Share2 size={18} /> Share this moment
+                      <Share2 size={16} aria-hidden="true" /> Share this moment
                     </button>
                   </div>
                 )}
@@ -1336,7 +1337,7 @@ export function SharedPilot() {
                 {roomId === KESSLER_ROOM_ID && <div hidden={composing || hasActive || wrenBusy || reviewing}>{releasePanel}</div>}
                 {credits && (
                   <p className="pilot-credit-line">
-                    <Sparkles size={15} />
+                    <Sparkles size={16} aria-hidden="true" />
                     {credits.enabled
                       ? `${credits.available} room ${credits.available === 1 ? "credit" : "credits"} available`
                       : "Generation is paused"}
@@ -1354,20 +1355,11 @@ export function SharedPilot() {
                   />
                 )}
                 {proofRoom && !reviewing && <KesslerTurnCard />}
-                <details className="pilot-credits" id="pilot-contribution-credits" tabIndex={-1}>
-                  <summary>
-                    {roomId === KESSLER_ROOM_ID ? "Scenes and credits" : <>Made together by{" "}
-                    {
-                      new Set(
-                        path.map((item) => item.maker_id ?? item.maker_label),
-                      ).size
-                    }{" "}
-                    {new Set(
-                      path.map((item) => item.maker_id ?? item.maker_label),
-                    ).size === 1
-                      ? "storyteller"
-                      : "storytellers"}</>}
-                  </summary>
+                <Disclosure
+                  className="pilot-credits"
+                  id="pilot-contribution-credits"
+                  summary={roomId === KESSLER_ROOM_ID ? "Scenes and credits" : <>Made together by {storytellerCount} {storytellerCount === 1 ? "storyteller" : "storytellers"}</>}
+                >
                   <ol>
                     {path.map((item) => (
                       <li key={item.id}>
@@ -1381,14 +1373,14 @@ export function SharedPilot() {
                       </li>
                     ))}
                   </ol>
-                </details>
+                </Disclosure>
                 {!reviewing &&
                   moments.some((item) => item.parent_id === selected.id) && (
                     <nav
                       className="pilot-continuations"
                       aria-label="What others made next"
                     >
-                      <SectionPlate title="Where others took it" icon={GitBranch} tone="lavender" level={3} className="pilot-branch-sign" />
+                      <SectionPlate title="Where others took it" icon={GitBranch} variant="inline" level={3} className="pilot-branch-sign" />
                       {moments
                         .filter((item) => item.parent_id === selected.id)
                         .map((item) => (
@@ -1400,7 +1392,7 @@ export function SharedPilot() {
                               <strong>{item.title}</strong>
                               <small>by {item.maker_label}</small>
                             </span>
-                            <ArrowRight size={18} />
+                            <ArrowRight size={16} aria-hidden="true" />
                           </button>
                         ))}
                     </nav>
@@ -1417,7 +1409,6 @@ export function SharedPilot() {
               ? "Reconnect to read the complete path."
               : "Opening the shared story…"}
           </div>
-          {recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
         </>
       )}
       <footer className="pilot-footer">
@@ -1425,7 +1416,7 @@ export function SharedPilot() {
         <a href="/pilot">Back to shared rooms</a>
       </footer>
     </main>
-    </>
+    </div>
   );
 }
 
