@@ -57,8 +57,10 @@ html:has(.hy-page) { background: var(--night); color-scheme: dark; scrollbar-col
 .hy-hero-copy { min-width: 0; }
 .hy-hero h1 { font-size: clamp(40px, 4.5vw, 58px); line-height: 1.06; letter-spacing: -0.03em; }
 .hy-hero h1 span { display: block; }
-.hy-byline { margin-top: 20px; color: var(--hy-muted); font-size: var(--text-sm); line-height: 2; }
+/* The sponsor line keeps its butter-yellow lead-in; the chips inside it read in the page's ink. */
+.hy-byline { margin-top: 20px; color: var(--hy-yellow); font-size: var(--text-md); font-weight: 600; line-height: 2; }
 .hy-byline .fn-badge { margin-inline: 2px; color: var(--hy-ink); }
+.hy-nowrap { white-space: nowrap; }
 .hy-lede { max-width: 44ch; margin-top: 16px; color: var(--hy-muted); font-size: 19px; line-height: 1.6; }
 .hy-video { min-width: 0; }
 .hy-video video, .hy-video iframe, .hy-video-placeholder { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-2xl); background: #000; border: 1px solid var(--hy-line); }

@@ -66,7 +66,7 @@ export function WrenAllowance() {
             Machine Payments Protocol (MPP) · {a.network}
           </p>
           <BrandStrip label="Payment tools" className="ag-tools">
-            <BrandBadge brand="tempo" />
+            <BrandBadge brand="tempo" size="md" />
             <BrandBadge brand="mpp" />
             <BrandBadge brand="pathusd" net="test" />
           </BrandStrip>

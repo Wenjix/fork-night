@@ -72,14 +72,11 @@ html:has(.night-watch) { background: var(--night); color-scheme: dark; scrollbar
 .nw-invitation .nw-entrance-action:hover { background: var(--yellow-hover); }
 .night-watch .nw-invitation :focus-visible { outline-color: var(--focus-ring); }
 .nw-demo-note { color: var(--muted); font-size: var(--text-sm); text-align: center; }
-/* The hosted explainer: copy at a readable measure, and beside it, after a hairline, the tools it names. */
+/* The hosted explainer: copy at a readable measure. The hero above already names the tools. */
 .nw-local-explanation { margin-bottom: 40px; align-items: flex-start; }
-.nw-local-explanation .fn-plate-copy { flex: 0 1 38rem; }
 .nw-local-explanation .fn-plate-description { max-width: 64ch; }
 .nw-local-explanation .fn-plate-description p + p { margin-top: var(--space-4); }
 .nw-local-explanation a { color: var(--accent-strong); text-underline-offset: 4px; white-space: nowrap; }
-.nw-local-explanation .fn-plate-action { display: flex; align-items: center; align-self: stretch; margin-left: 0; padding-left: var(--space-7); border-left: 1px solid var(--plate-edge); }
-.nw-local-explanation .fn-badges { flex-direction: column; align-items: flex-start; }
 /* Two kinds of agent: Wren on /agents, and this page's Night Watch. */
 .nw-agent-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); margin: var(--space-6) 0 0; padding: var(--space-5) 0; border-bottom: 1px solid var(--nw-line); list-style: none; }
 .nw-agent-roles li { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; }
@@ -394,18 +391,14 @@ html:has(.night-watch) { background: var(--night); color-scheme: dark; scrollbar
   .nw-invitation .fn-badge[data-size="md"] { --badge-h: 28px; --badge-tile: 20px; --badge-font: 13px; padding-right: 10px; }
   .nw-local-explanation { flex-wrap: wrap; }
   .nw-local-explanation .fn-plate-copy { flex: 1 1 calc(100% - 62px); }
-  .nw-local-explanation .fn-plate-action { flex: 1 1 100%; align-self: auto; margin-left: 62px; padding-left: 0; border-left: 0; }
-  .nw-local-explanation .fn-badges { flex-direction: row; flex-wrap: wrap; }
 }
-/* Where the plate's mount shrinks to 40px (visual-plates.css), the heading keeps the first row beside it and the copy and
-   the tools take the plate's full width, so the demo and README links no longer break in a narrow indented column. */
+/* Where the plate's mount shrinks to 40px (visual-plates.css), the heading keeps the first row beside it and the copy
+   takes the plate's full width, so the demo and README links no longer break in a narrow indented column. */
 @media (max-width: 680px) {
   .nw-local-explanation { gap: var(--space-3); }
   .nw-local-explanation .fn-plate-copy { display: contents; }
   .nw-local-explanation .fn-plate-heading { flex: 1 1 calc(100% - 52px); }
   .nw-local-explanation .fn-plate-description { flex: 1 1 100%; margin-top: 0; }
-  /* The hero above already shows these same tools; on a phone the second row only adds length. */
-  .nw-local-explanation .fn-plate-action { display: none; }
 }
 
 @media (max-width: 720px) {

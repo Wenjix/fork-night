@@ -1,9 +1,9 @@
 import { Children, type CSSProperties, type ReactNode } from "react";
-import { Coins, Cpu, ExternalLink, Fingerprint, Wallet, type LucideIcon } from "lucide-react";
+import { Bot, Coins, ExternalLink, Fingerprint, Wallet, type LucideIcon } from "lucide-react";
 import { BRANDS, type Brand, type BrandId } from "@/lib/brands";
 
 /** Brands without an official mark in the repo that read better as a drawn glyph than as letters. */
-const GLYPHS: Partial<Record<BrandId, LucideIcon>> = { x402: Coins, mpp: Cpu, erc8004: Fingerprint, metamask: Wallet, phantom: Wallet };
+const GLYPHS: Partial<Record<BrandId, LucideIcon>> = { x402: Coins, mpp: Bot, erc8004: Fingerprint, metamask: Wallet, phantom: Wallet };
 
 export type BrandSize = "sm" | "md" | "lg";
 

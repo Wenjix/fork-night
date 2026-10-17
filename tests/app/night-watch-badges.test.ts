@@ -50,7 +50,7 @@ test("a payment chain, a model and the router read as their words inside a sente
   assert.match(html(React.createElement(RouterBadge)), /<span class="fn-badge-name">via TokenRouter<\/span>/);
 });
 
-test("the hosted pages show the tools twice (hero and explainer), the Privy lockup, and the testnet line, with every word kept", async (t) => {
+test("the hosted pages show the tools once (in the hero), the Privy lockup, and the testnet line, with every word kept", async (t) => {
   const saved = process.env.PILOT_LOCAL_CONTROLS;
   delete process.env.PILOT_LOCAL_CONTROLS;
   t.after(() => {
@@ -59,7 +59,7 @@ test("the hosted pages show the tools twice (hero and explainer), the Privy lock
   });
   for (const privyDemo of [false, true]) {
     const page = html(await NightWatchPageContent({ privyDemo }));
-    assert.equal([...page.matchAll(/<ul class="fn-badges[^"]*" aria-label="(?:Tools and networks|Built with)"/g)].length, 2, "the hero and the explainer plate, each named for what it lists");
+    assert.equal([...page.matchAll(/<ul class="fn-badges[^"]*" aria-label="(?:Tools and networks|Built with)"/g)].length, 1, "one list, in the hero; the explainer below does not repeat it");
     assert.match(page, /<p class="nw-promise">[\s\S]*<ul class="fn-badges nw-invitation-tools" aria-label="Tools and networks">[\s\S]*<\/ul><a href="\/pilot"[^>]*nw-entrance-action/, "the tools sit between the promise and the button");
     assert.match(page, /<footer class="nw-footer"><p>Fork Night · testnet only\. Test USDC, test MON and test credits have no redemption value\. Images are operator-paid inference\.<\/p><\/footer>/);
     assert.match(heard(page), /Night Watch never publishes and never closes an edition\./);

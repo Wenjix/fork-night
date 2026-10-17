@@ -61,7 +61,7 @@ export const COPY: Record<Lang, Copy> = {
     languageLabel: "Language",
     skip: "Skip to the article",
     tryRoom: "Try the room",
-    byline: <>A sponsor spotlight on <BrandBadge brand="hunyuan" label="Tencent Hunyuan" />, used through <BrandBadge brand="gmi" /></>,
+    byline: <>A sponsor spotlight on <BrandBadge brand="hunyuan" label="Tencent Hunyuan" />, <span className="hy-nowrap">used through <BrandBadge brand="gmi" /></span></>,
     title: ["One story, many branches.", "Hunyuan keeps them one film."],
     pageTitle: "How Hunyuan keeps a forked story one film · Fork Night",
     lede: "Fork Night lets people make a story together by forking it. In our Blade Runner room, Hunyuan image models give every branch scenes that belong to the same world, and let a maker redraw a whole branch in a new style without losing who is in it.",
