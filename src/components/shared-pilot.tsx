@@ -49,6 +49,7 @@ import { PilotRoomFunding } from "./guild-funding";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
+import { getRecordedGuildFunding } from "@/lib/guild-funding";
 import { KESSLER_ROOM_ID } from "../lib/kessler-room";
 import {
   IDEA_DRAG_TYPE,
@@ -107,6 +108,9 @@ export function SharedPilot() {
   const [activity, setActivity] = useState<Pick<Credits, "queued_requests" | "generating_requests" | "checking_requests">>();
   const [operation, setOperation] = useState<GenerationOperation>();
   const [draft, setDraft] = useState<Draft>();
+  const [draftRecovery, setDraftRecovery] = useState(false);
+  const draftRef = useRef<Draft | undefined>(undefined);
+  draftRef.current = draft;
 
   const [releaseBusy, setReleaseBusy] = useState(false);
   const [wrenBusy, setWrenBusy] = useState(false);
@@ -127,6 +131,7 @@ export function SharedPilot() {
   const [firstNightStarter, setFirstNightStarter] = useState<ReturnType<typeof parseFirstNightStarter>>(null);
   const mutation = useRef(false);
   const taskHeading = useRef<HTMLHeadingElement>(null);
+  const [focusNameEntry, setFocusNameEntry] = useState(false);
   const actorId = account?.loading ? null : account?.user?.id ?? null;
   const firstNightJourney = useFirstNightJourney({ roomId: roomId || undefined, actorId });
 
@@ -241,6 +246,7 @@ export function SharedPilot() {
       first = true;
     setOperation(undefined);
     setDraft(undefined);
+    setDraftRecovery(false);
     setRecoveryScope(undefined);
     setSnapshot(undefined); setPublications([]); setInvitation(""); setOtherWork(undefined);
     seenMoments.current = null;
@@ -267,8 +273,10 @@ export function SharedPilot() {
           roomId,
         );
         if (saved) {
+          // A draft already open in memory (e.g. just saved by join) is not a recovery.
+          const alreadyOpen = draftRef.current?.requestId === saved.requestId;
           setDraft(saved);
-
+          setDraftRecovery(!alreadyOpen);
           setComposing(true);
         }
       } catch {
@@ -447,6 +455,15 @@ export function SharedPilot() {
   }, [firstNightStarter, roomId, loadedRoom, moments, recoveryScope, profileLoadedFor, actorId, account?.loading, draft, operation, busy, releaseBusy]);
 
   useEffect(() => {
+    if (!focusNameEntry || profile || view !== "read" || !composing) return;
+    const target = document.querySelector<HTMLInputElement>("[data-pilot-storyteller-name]");
+    if (!target) return;
+    target.scrollIntoView({ block: "center" });
+    target.focus({ preventScroll: true });
+    setFocusNameEntry(false);
+  }, [focusNameEntry, profile, view, composing, draft, operation]);
+
+  useEffect(() => {
     if (!selected || loadedRoom !== roomId || visit.current?.roomId !== roomId)
       return;
     try {
@@ -477,6 +494,7 @@ export function SharedPilot() {
       /* Recovered server operation wins over its idempotent local intent. */
     }
     setDraft(undefined);
+    setDraftRecovery(false);
   }, [operation, draft, profile, roomId]);
 
   async function join(name: string) {
@@ -630,10 +648,27 @@ export function SharedPilot() {
         "Your draft is kept in this browser. Reconnect and try saving it again.",
       );
     }
-    setOperation(saved.data);
     localStorage.removeItem(pendingKey(profile.id, roomId));
     setDraft(undefined);
-    await enqueue(saved.data);
+    setDraftRecovery(false);
+    const panelCount = Array.isArray(saved.data.requested_captions) ? saved.data.requested_captions.length : input.captions.length;
+    const optimistic: GenerationOperation = {
+      ...saved.data,
+      status: "dispatching",
+      pilot_jobs: {
+        operation_id: saved.data.id,
+        state: "starting",
+        panel_count: panelCount,
+        updated_at: new Date().toISOString(),
+      },
+    };
+    setOperation(optimistic);
+    try {
+      await enqueue(saved.data);
+    } catch (reason) {
+      setOperation(saved.data);
+      throw reason;
+    }
   }
 
   function select(id: string, changePath = false) {
@@ -654,7 +689,7 @@ export function SharedPilot() {
     }
     if (!hasActive && !draft) setComposing(false);
   }
-  function start(idea?: Tables<"pilot_ideas">, invitation?: { parentId: string; prompt: string }) {
+  function start(idea?: Tables<"pilot_ideas">, invitation?: { parentId: string; prompt: string }, options: { replaceDraft?: boolean } = {}) {
     if (!selected) return;
     if (wrenBusy || wrenPreviewId) { setNotice("Wren has your saved fork. Check its request before starting another continuation."); return; }
     if (releaseBusy) {
@@ -686,7 +721,7 @@ export function SharedPilot() {
       requestAnimationFrame(() => taskHeading.current?.focus());
       return;
     }
-    if (hasActive || draft) {
+    if ((hasActive || draft) && !options.replaceDraft) {
       setNotice(
         "Your earlier continuation is still here. Finish or cancel it before starting another.",
       );
@@ -708,7 +743,8 @@ export function SharedPilot() {
       roomId,
       captions: [],
       stage: "idea",
-      thought: invitation?.prompt ?? "",
+      thought: "",
+      thoughtPlaceholder: invitation?.prompt || undefined,
       idea: idea
         ? {
             id: idea.id,
@@ -720,6 +756,7 @@ export function SharedPilot() {
     };
     setOperation(undefined);
     setDraft(next);
+    setDraftRecovery(false);
 
     setComposing(true);
     setView("read");
@@ -808,8 +845,22 @@ export function SharedPilot() {
       recoveryScope?.roomId !== roomId || recoveryScope.actorId !== (profile?.id ?? null)) return;
     start();
   }
+  function focusStorytellerName() {
+    if (!selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || account?.loading) return;
+    setJoinOpen(false);
+    setView("read");
+    if (draft || hasActive) {
+      select(draft?.parentId ?? operation!.parent_id);
+      setComposing(true);
+    } else if (pilotPath(moments, roomId, selected.id).length >= 13) {
+      setJoinOpen(true);
+      return;
+    } else start();
+    setFocusNameEntry(true);
+  }
   function changeDraft(next: Draft) {
     setDraft(next);
+    setDraftRecovery(false);
     if (!profile) return true;
     try {
       localStorage.setItem(
@@ -853,7 +904,41 @@ export function SharedPilot() {
       }
     }
     setDraft(undefined);
+    setDraftRecovery(false);
     setComposing(false);
+  }
+  function continueRecoveredDraft() {
+    setDraftRecovery(false);
+    setComposing(true);
+    setView("read");
+    requestAnimationFrame(() => taskHeading.current?.focus());
+  }
+  function startFreshDraft() {
+    if (!draft) return;
+    if (hasActive) {
+      setNotice("Your generation is still in progress. Review or discard it before starting fresh.");
+      setDraftRecovery(false);
+      setComposing(true);
+      return;
+    }
+    if (wrenBusy || wrenPreviewId) { setNotice("Wren has your saved fork. Check its request before starting another continuation."); return; }
+    if (releaseBusy) { setNotice("Finish the current wallet action before starting a new continuation."); return; }
+    if (!selected || pilotPath(moments, roomId, selected.id).length >= 13) {
+      setNotice("This path has reached the pilot’s length limit. Choose an earlier moment before starting fresh. Your draft is still saved.");
+      return;
+    }
+    if (draft.submitted && !window.confirm("This continuation may already have generation in progress. Start fresh anyway?")) return;
+    if (profile) {
+      try {
+        localStorage.removeItem(pendingKey(profile.id, roomId));
+      } catch {
+        setError("This browser could not clear the saved draft. Try again before leaving.");
+        return;
+      }
+    }
+    setDraft(undefined);
+    setDraftRecovery(false);
+    start(undefined, undefined, { replaceDraft: true });
   }
 
   async function publishMoment() {
@@ -866,6 +951,7 @@ export function SharedPilot() {
     setMoments(items => items.some(item => item.id === result.data.id) ? items : [...items, result.data]);
     select(result.data.id, true);
     setDraft(undefined);
+    setDraftRecovery(false);
     setComposing(false);
   }
   async function discardMoment() {
@@ -873,6 +959,7 @@ export function SharedPilot() {
     const result = await client.rpc("pilot_discard", { p_operation_id: operation.id });
     if (result.error) throw new Error("Discard could not be confirmed. Your saved result remains available.");
     setOperation({ ...operation, status: "discarded" });
+    setDraftRecovery(false);
   }
 
   async function recoverWrenPreview(operationId: string) {
@@ -907,6 +994,8 @@ export function SharedPilot() {
         onSaved={(idea) => recordFirstNightResult({ roomId: idea.room_id, actorId: idea.maker_id, kind: "idea", id: idea.id, parentId: idea.moment_id })}
       />
     ) : null;
+  const recordedGuildFunding = !!getRecordedGuildFunding(roomId);
+  const identityDisabled = !selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || !!account?.loading || !!account?.error && !account.user || (profile ? hasActive || !!draft : false);
 
   if (unavailable) return <><AppHeader current="rooms" guide={false} /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
 
@@ -947,7 +1036,7 @@ export function SharedPilot() {
           </select>
         </label>
         <div className="pilot-header-actions">
-          <PilotIdentity profile={profile} disabled={!selected || busy || releaseBusy || wrenBusy || !!wrenPreviewId || hasActive || !!draft || !!account?.loading} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={() => setJoinOpen(true)} />
+          <PilotIdentity profile={profile} disabled={identityDisabled} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={profile ? () => setJoinOpen(true) : focusStorytellerName} />
           <button
             className="button secondary pilot-map-toggle"
             onClick={() => setView(view === "map" ? "read" : "map")}
@@ -979,7 +1068,7 @@ export function SharedPilot() {
         {error && <p role="alert">{error}</p>}
         <button className="button primary" disabled={busy || (!profile && !joinName.trim())} onClick={() => void act(async () => { if (profile) await joinRoom(); else { await join(joinName); setJoinOpen(false); } })}>{busy ? "Joining…" : "Join this room"}</button>
       </PilotDialog>}
-      <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />
+      {!recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} />}
       {loadedRoom === roomId && credits && <PilotRoomActivity credits={{ ...credits, ...activity }} interrupted={!!syncError} />}
       {(error || syncError || pathError || account?.error) && (
         <div className="pilot-notice" role="alert">
@@ -1137,7 +1226,7 @@ export function SharedPilot() {
                 <PilotContinuation
                   key={profile?.id ?? account?.user?.id ?? "visitor"}
                   client={client} selected={selected} moments={moments} profile={profile} authenticated={isSavedAccount(account?.user)}
-                  operation={operation} draft={draft} composing={composing} composerVisible={view === "read"} busy={busy || releaseBusy || wrenBusy && !reviewing || !!account?.loading || !!account?.error && !account.user}
+                  operation={operation} draft={draft} recoveredDraft={draftRecovery} composing={composing} composerVisible={view === "read"} busy={busy || releaseBusy || wrenBusy && !reviewing || !!account?.loading || !!account?.error && !account.user}
                   interrupted={!!syncError} credits={credits} inspecting={inspectingSource}
                   heading={taskHeading}
                   actions={{
@@ -1150,12 +1239,15 @@ export function SharedPilot() {
                     continue: () => start(), share: () => void share(),
                     change: changeDraft, generate: () => void act(generate), cancel: cancelDraft,
                     useIdea: (id) => void pickUpIdea(id),
+                    continueDraft: continueRecoveredDraft,
+                    startFresh: startFreshDraft,
                     inspect: () => {
                       if (inspectingSource && selectedId === draft?.parentId) setInspectingSource(false);
                       else if (draft) select(draft.parentId);
                     },
                   }}
                 />
+                {recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
                 {!reviewing && !(operation?.status === "published" && operation.published_moment_id === selected.id) && (
                   <div
                     className="pilot-story-actions"
@@ -1173,7 +1265,7 @@ export function SharedPilot() {
                     }}
                   >
                     <button
-                      className="button primary"
+                      className={hasActive ? "text-button pilot-return-link" : "button primary"}
                       hidden={composing && !!draft}
                       disabled={busy || releaseBusy || wrenBusy}
                       onClick={() => start()}
@@ -1298,11 +1390,14 @@ export function SharedPilot() {
           </div>
         </>
       ) : (
-        <div className="pilot-loading" role="status">
-          {pathError
-            ? "Reconnect to read the complete path."
-            : "Opening the shared story…"}
-        </div>
+        <>
+          <div className="pilot-loading" role="status">
+            {pathError
+              ? "Reconnect to read the complete path."
+              : "Opening the shared story…"}
+          </div>
+          {recordedGuildFunding && <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
+        </>
       )}
       <footer className="pilot-footer">
         <span>{room?.description}</span>

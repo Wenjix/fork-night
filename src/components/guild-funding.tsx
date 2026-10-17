@@ -102,7 +102,7 @@ export function GuildFundingHistory({ record, onClose, returnFocus }: {
             <ReceiptLinks receipts={[receipts.deposit]} />
           </FundingStep>
           <FundingStep number={2} title="Allowance approved">
-            <p>{approvalsComplete ? <><strong>{governance.threshold} of {governance.stewardWallets} guild members</strong> approved a </> : <>The recorded policy requires <strong>{governance.threshold} of {governance.stewardWallets} guild members</strong> to approve a </>}<strong>{usdc(amounts.allowance)}</strong> allowance, with no periodic reset. Only the authorized payer could draw, and only to its own wallet.</p>
+            <p>{approvalsComplete ? <><strong>{governance.threshold} of {governance.stewardWallets} guild members</strong> approved a </> : <>The recorded policy requires <strong>{governance.threshold} of {governance.stewardWallets} guild members</strong> to approve a</>}<strong>{usdc(amounts.allowance)}</strong> allowance, with no periodic reset. Only the authorized payer could draw, and only to its own wallet.</p>
             <ReceiptLinks receipts={receipts.approvals} approved />
             <ReceiptLinks receipts={[receipts.proposal, receipts.allowance]} />
           </FundingStep>
@@ -155,7 +155,7 @@ export function GuildFundingHistory({ record, onClose, returnFocus }: {
   );
 }
 
-export function GuildFundingSummary({ record }: { record: RecordedGuildFunding }) {
+export function GuildFundingSummary({ record, creditsAvailable }: { record: RecordedGuildFunding; creditsAvailable?: number }) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => watchGuildFundingVisit(window, record.roomId, setOpen), [record.roomId]);
@@ -165,71 +165,83 @@ export function GuildFundingSummary({ record }: { record: RecordedGuildFunding }
     closeGuildFundingVisit(window);
   }
 
+  const plural = (count: number) => count === 1 ? "credit" : "credits";
+  const addedText = `added ${record.appCredit.added} ${plural(record.appCredit.added)}`;
+  const creditsText = typeof creditsAvailable === "number"
+    ? `${addedText} · ${creditsAvailable} room ${plural(creditsAvailable)} left`
+    : addedText;
   return (
     <aside className="guild-funding-summary fn-network-card" aria-label="Recorded guild funding">
-      <div className="guild-funding-featured">
-        <div className="guild-funding-summary-heading">
-          <NetworkBrandMark network="solana" />
-          <div>
-            <h2>Guild funding rehearsal</h2>
-            <p>{record.governance.threshold} of {record.governance.stewardWallets} guild members approved</p>
-            <div className="fn-network-brand guild-funding-meta">
-              <Badge variant="outline" className="fn-network-testnet">Solana Devnet</Badge>
-              <span className="fn-network-currency">
-                <img src="/brands/networks/usdc.svg" width={32} height={32} alt="" />
-                {record.token.label}
-              </span>
-              <strong>Recorded addition: +{record.appCredit.added} room credits</strong>
-            </div>
-            <p className="guild-funding-environment">Solana devnet · test run by the founder</p>
-          </div>
-        </div>
-        <Button ref={trigger} type="button" className="guild-funding-open" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
-          See how this room was funded <ArrowRight size={17} aria-hidden="true" />
-        </Button>
-      </div>
-      <section className="guild-funding-other" aria-label="Other recorded funding">
-        <h3>Other recorded funding</h3>
-        <ul className="fn-network-list">
-          {getRoomNetworkShowcase(record.roomId).map((demo) => {
-            const brand = NETWORK_BRANDS[demo.network];
-            return (
-              <li key={demo.network} className="fn-network-row">
-                <NetworkBrandMark network={demo.network} />
-                <div className="fn-network-copy">
-                  <Button asChild variant="link" className="fn-network-link fn-network-proof">
-                    <a href={demo.proof.href} target="_blank" rel="noreferrer">
-                      <span className="fn-network-brand">
-                        <strong className="fn-network-name">{brand.name}</strong>
-                        <Badge variant="outline" className="fn-network-testnet">{brand.testnet}</Badge>
-                        <span className="fn-network-currency">
-                          {brand.currency === "test USDC" && <img src="/brands/networks/usdc.svg" width={32} height={32} alt="" />}
-                          {brand.currency}
-                        </span>
-                      </span>
-                      <span className="fn-network-summary">
-                        {demo.summary}{" "}
-                        <span className="fn-network-proof-label">{demo.proof.label} <ExternalLink size={16} aria-hidden="true" /></span>
-                        <span className="sr-only"> (opens in a new tab)</span>
-                      </span>
-                    </a>
-                  </Button>
+      <details className="guild-funding-drawer">
+        <summary className="guild-funding-drawer-summary">
+          <span>Funded by a {record.governance.stewardWallets}-person guild · {creditsText} · <strong>See how →</strong></span>
+        </summary>
+        <div className="guild-funding-drawer-body">
+          <div className="guild-funding-featured">
+            <div className="guild-funding-summary-heading">
+              <NetworkBrandMark network="solana" />
+              <div>
+                <h2>Guild funding rehearsal</h2>
+                <p>{record.governance.threshold} of {record.governance.stewardWallets} guild members approved</p>
+                <div className="fn-network-brand guild-funding-meta">
+                  <Badge variant="outline" className="fn-network-testnet">Solana Devnet</Badge>
+                  <span className="fn-network-currency">
+                    <img src="/brands/networks/usdc.svg" width={32} height={32} alt="" />
+                    {record.token.label}
+                  </span>
+                  <strong>Recorded addition: +{record.appCredit.added} room credits</strong>
                 </div>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+                <p className="guild-funding-environment">Solana devnet · test run by the founder</p>
+              </div>
+            </div>
+            <Button ref={trigger} type="button" className="guild-funding-open" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+              See how this room was funded <ArrowRight size={17} aria-hidden="true" />
+            </Button>
+          </div>
+          <section className="guild-funding-other" aria-label="Other recorded funding">
+            <h3>Other recorded funding</h3>
+            <ul className="fn-network-list">
+              {getRoomNetworkShowcase(record.roomId).map((demo) => {
+                const brand = NETWORK_BRANDS[demo.network];
+                return (
+                  <li key={demo.network} className="fn-network-row">
+                    <NetworkBrandMark network={demo.network} />
+                    <div className="fn-network-copy">
+                      <Button asChild variant="link" className="fn-network-link fn-network-proof">
+                        <a href={demo.proof.href} target="_blank" rel="noreferrer">
+                          <span className="fn-network-brand">
+                            <strong className="fn-network-name">{brand.name}</strong>
+                            <Badge variant="outline" className="fn-network-testnet">{brand.testnet}</Badge>
+                            <span className="fn-network-currency">
+                              {brand.currency === "test USDC" && <img src="/brands/networks/usdc.svg" width={32} height={32} alt="" />}
+                              {brand.currency}
+                            </span>
+                          </span>
+                          <span className="fn-network-summary">
+                            {demo.summary}{" "}
+                            <span className="fn-network-proof-label">{demo.proof.label} <ExternalLink size={16} aria-hidden="true" /></span>
+                            <span className="sr-only"> (opens in a new tab)</span>
+                          </span>
+                        </a>
+                      </Button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </div>
+      </details>
       {open && <GuildFundingHistory record={record} onClose={close} returnFocus={() => trigger.current} />}
     </aside>
   );
 }
 
-export function PilotRoomFunding({ roomId, loadedRoom }: { roomId: string; loadedRoom: string }) {
+export function PilotRoomFunding({ roomId, loadedRoom, creditsAvailable }: { roomId: string; loadedRoom: string; creditsAvailable?: number }) {
   if (!roomId || loadedRoom !== roomId) return null;
   const record = getRecordedGuildFunding(roomId);
   return record
-    ? <GuildFundingSummary key={roomId} record={record} />
+    ? <GuildFundingSummary key={roomId} record={record} creditsAvailable={creditsAvailable} />
     : <RoomNetworkPlate roomId={roomId} />;
 }
 

@@ -25,8 +25,20 @@ test("a queued request is visibly waiting, distinct from real generation, and ex
   assert.match(queued, /2.*room credits reserved/);
   assert.doesNotMatch(queued, /pilot-generation-active/);
   assert.match(generating, /Generating your images/);
+  assert.match(generating, /Usually about 30 seconds/);
   assert.match(generating, /pilot-generation-active/);
   assert.notEqual(generationStatus(operation).title, generationStatus({ ...operation, status: "dispatching" }).title);
+});
+test("a saved operation starts with spinner copy and no second generate button", () => {
+  const html = renderToStaticMarkup(createElement(PilotGenerationStatus, { operation: { ...operation, status: "draft" } }));
+  assert.match(html, /Starting your panel…/);
+  assert.match(html, /Image generation is starting now/);
+  assert.match(html, /pilot-generation-active/);
+  assert.doesNotMatch(html, /Saved, ready to generate|Generate saved idea/);
+  const idle = renderToStaticMarkup(createElement(PilotGenerationStatus, { operation: { ...operation, status: "draft" }, starting: false }));
+  assert.match(idle, /Not started yet/);
+  assert.match(idle, /Try again to start it/);
+  assert.doesNotMatch(idle, /starting now|pilot-generation-active/);
 });
 test("stale and interrupted work does not animate as if new progress were arriving", () => {
   const old = { ...operation, status: "dispatching", pilot_jobs: { operation_id: operation.id, state: "running", panel_count: 3, updated_at: "2020-01-01T00:00:00Z" } };

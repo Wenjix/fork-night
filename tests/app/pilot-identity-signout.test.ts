@@ -40,13 +40,15 @@ const evaluate = (code: string, env: Record<string, unknown>) => new Function(..
 async function signOutWiring(path: string) {
   const source = await tsx(path);
   const block = find(source, node => ts.isVariableDeclaration(node) && node.name.getText() === "signOutBlock") as ts.VariableDeclaration;
+  const identityDisabled = find(source, node => ts.isVariableDeclaration(node) && node.name.getText() === "identityDisabled") as ts.VariableDeclaration | undefined;
   const identity = find(source, element("PilotIdentity"));
   assert.ok(block?.initializer && identity);
   const prop = (name: string) => { const value = attr(identity, name); return value && js(value); };
   const [blockCode, disabled, signOutDisabled, reason] = [js(block.initializer), prop("disabled")!, prop("signOutDisabled"), prop("signOutBlockedReason")];
   return (state: Record<string, unknown>) => {
-    const env = { roomSignOutBlock, ...state };
-    const view = { ...env, signOutBlock: evaluate(blockCode, env) };
+    const env = { roomSignOutBlock, profile: undefined, ...state };
+    const view: Record<string, unknown> = { ...env, signOutBlock: evaluate(blockCode, env) };
+    if (identityDisabled?.initializer) view.identityDisabled = evaluate(js(identityDisabled.initializer), view);
     const off = evaluate(disabled, view);
     return { disabled: off, signOutDisabled: signOutDisabled ? evaluate(signOutDisabled, view) : off, reason: reason ? evaluate(reason, view) : "" };
   };

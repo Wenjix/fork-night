@@ -286,7 +286,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
         {!restored ? (
           <div className="social-loading" role="status">
             <Lamp size={32} />
-            <h1>Opening the doors…</h1>
+            {route.kind === "lobby" ? <h2>Opening the doors…</h2> : <h1>Opening the doors…</h1>}
             <p>Finding your stories and spaces.</p>
           </div>
         ) : (
@@ -590,7 +590,7 @@ function Lobby(props: ViewProps) {
     <div className="lobby-layout">
       <section className="room-browser" aria-label="Open creative rooms">
         <div className="lobby-heading">
-          <h1>Who’s making what tonight?</h1>
+          <h2>Who’s making what tonight?</h2>
           <span className="small-drawing" aria-hidden="true">
             <Feather />
           </span>

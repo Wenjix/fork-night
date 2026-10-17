@@ -21,6 +21,7 @@ export function PilotArtwork({
 }) {
   const [page, setPage] = useState(0);
   const [inspecting, setInspecting] = useState<number | null>(null);
+  const showCaption = (caption: string) => caption.trim().toLocaleLowerCase() !== title.trim().toLocaleLowerCase();
   function pager(index: number, change: (n: number) => void, className = "") {
     return (
       <nav
@@ -64,7 +65,7 @@ export function PilotArtwork({
                 <Maximize2 size={18} />
               </button>
             </div>
-            <figcaption>{panel.caption}</figcaption>
+            {showCaption(panel.caption) && <figcaption>{panel.caption}</figcaption>}
           </figure>
         ))}
       </div>
@@ -80,7 +81,7 @@ export function PilotArtwork({
           </p>
           <figure>
             <PilotImage client={client} panel={panels[inspecting]} />
-            <figcaption>{panels[inspecting].caption}</figcaption>
+            {showCaption(panels[inspecting].caption) && <figcaption>{panels[inspecting].caption}</figcaption>}
           </figure>
           {pager(inspecting, setInspecting)}
         </PilotDialog>

@@ -1,17 +1,21 @@
 import { Check, CircleAlert, Clock3, RefreshCw, Sparkles } from "lucide-react";
 import { generationStatus, roomActivity, type GenerationOperation, type PilotCredits } from "../lib/pilot-generation.ts";
 
-export function PilotGenerationStatus({ operation, interrupted = false }: { operation: GenerationOperation; interrupted?: boolean }) {
-  const status = generationStatus(operation);
-  const Icon = status.phase === "ready" ? Check : status.phase === "generating" ? RefreshCw : status.phase === "checking" ? CircleAlert : Clock3;
+export function PilotGenerationStatus({ operation, interrupted = false, starting = true }: { operation: GenerationOperation; interrupted?: boolean; starting?: boolean }) {
+  const status = operation.status === "draft" && !starting
+    ? { phase: "draft", step: -1, title: "Not started yet", detail: "Your panel plan is saved, but image generation did not start. Try again to start it.", reserved: 0 }
+    : generationStatus(operation);
+  const active = (status.phase === "generating" || status.phase === "starting") && !interrupted;
+  const Icon = status.phase === "ready" ? Check : status.phase === "generating" || status.phase === "starting" ? RefreshCw : status.phase === "checking" ? CircleAlert : Clock3;
   return <div className="pilot-generation-status" data-phase={status.phase} role="status" aria-live="polite" aria-atomic="true">
-    <div className="pilot-generation-state"><Icon size={20} aria-hidden="true" className={status.phase === "generating" && !interrupted ? "pilot-generation-active" : undefined} /><strong>{status.title}</strong></div>
+    <div className="pilot-generation-state"><Icon size={20} aria-hidden="true" className={active ? "pilot-generation-active" : undefined} /><strong>{status.title}</strong></div>
     <p>{status.detail}</p>
     <ol className="pilot-generation-steps" aria-label="Image generation stages">
       {["Queued", "Generating", "Ready to review"].map((label, index) => <li key={label} aria-current={status.step === index ? "step" : undefined} data-complete={index < status.step}>
         {index < status.step ? <Check size={14} aria-hidden="true" /> : <span className="pilot-generation-step" aria-hidden="true" />}{label}
       </li>)}
     </ol>
+    {status.phase === "generating" && <small>Usually about 30 seconds.</small>}
     {status.reserved > 0 && <small>{status.reserved} {status.reserved === 1 ? "room credit reserved" : "room credits reserved"} for this request. Used only when every panel is ready.</small>}
     {interrupted && <small>Connection interrupted. Showing the last recorded state.</small>}
   </div>;
