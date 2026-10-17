@@ -746,7 +746,7 @@ function Lobby(props: ViewProps) {
               </h3>
               {entryActions}
               <small>
-                Open project · anyone can fork · uses your personal balance
+                Open project · anyone can fork · uses your own credits
               </small>
             </ContextPlate>
             {selectedStory?.visualStyles && (
@@ -1299,7 +1299,7 @@ function GuildHall(props: ViewProps & { guildId: string }) {
               {allowance?.canSpend
                 ? "Your assigned allowance applies."
                 : "You can read this project; spending is not enabled for you."}{" "}
-              Open projects use your personal balance.
+              Open projects use your own credits.
             </p>
           </section>
         ) : (
@@ -1307,7 +1307,7 @@ function GuildHall(props: ViewProps & { guildId: string }) {
             <BookOpen size={26} />
             <h2>Start with an open story.</h2>
             <p>
-              Use your personal balance when you decide to make a fork. Reading
+              Use your own credits when you decide to make a fork. Reading
               costs nothing.
             </p>
           </section>
