@@ -1,17 +1,17 @@
 /* One entrance and destination vocabulary across the product. */
 .fn-header {
-  --fn-header-bg: #10152f;
-  --fn-header-text: #f8f6ff;
-  --fn-header-muted: #c0c5e0;
-  --fn-header-line: #484b79;
+  --fn-header-bg: var(--night);
+  --fn-header-text: var(--night-ink);
+  --fn-header-muted: var(--night-muted);
+  --fn-header-line: var(--night-line);
   --fn-header-current: #9778ff;
-  --fn-header-focus: #ffdb67;
+  --fn-header-focus: var(--night-yellow);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 32px;
+  gap: var(--space-2) var(--space-7);
   min-height: 81px;
-  padding: 12px 32px;
+  padding: var(--space-3) var(--gutter);
   border-bottom: 1px solid var(--fn-header-line);
   background: var(--fn-header-bg);
   color: var(--fn-header-text);
@@ -23,8 +23,8 @@
   gap: 9px;
   min-height: 44px;
   color: var(--fn-header-text);
-  font: 700 36px/1 "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
-  letter-spacing: -0.025em;
+  font: 700 36px/1 var(--font-hand);
+  letter-spacing: var(--tracking-display);
   text-decoration: none;
   white-space: nowrap;
   transform: rotate(-3deg);
@@ -49,7 +49,7 @@
 .fn-mark[data-tone="paper"] svg { color: var(--violet); }
 .fn-mark:focus-visible { outline: 3px solid var(--night-yellow); outline-offset: 3px; border-radius: var(--radius-xs); }
 .fn-mark[data-tone="paper"]:focus-visible { outline-color: var(--violet); }
-.fn-primary-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 0 24px; }
+.fn-primary-nav { display: flex; align-items: center; gap: 0 var(--space-6); min-width: 0; }
 .fn-header .fn-primary-nav a {
   display: inline-flex;
   align-items: center;
@@ -63,7 +63,7 @@
   line-height: 1.4;
   text-decoration: none;
   white-space: nowrap;
-  transition: color 160ms ease, border-color 160ms ease;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
 .fn-header .fn-primary-nav a:hover { color: var(--fn-header-text); border-bottom-color: var(--fn-header-line); }
 .fn-header .fn-primary-nav a[aria-current] { color: var(--fn-header-text); border-bottom-color: var(--fn-header-current); }
@@ -79,8 +79,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0 24px;
-  padding: 8px 32px;
+  gap: 0 var(--space-6);
+  padding: var(--space-2) var(--gutter);
   border-bottom: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
@@ -106,12 +106,38 @@ nav.fn-section-nav a:focus-visible { outline: 3px solid var(--violet); outline-o
   .fn-header { padding-bottom: 0; }
 }
 @media (max-width: 640px) {
-  .fn-header { padding: 12px 16px 0; gap: 6px 12px; }
+  .fn-header { gap: 6px var(--space-3); }
   .fn-header .fn-brand { font-size: 29px; }
   .fn-brand svg { width: 23px; }
-  .fn-primary-nav { justify-content: flex-start; column-gap: 20px; }
+  /* One row of five links, 48px tall. The track runs 8px past the gutter on both sides so a link's padding and its focus
+     ring are never clipped, while the first word still lines up with the wordmark; it scrolls sideways, hides its bar,
+     and fades whichever edge has more behind it (data-fade, set by AppHeader). */
+  .fn-primary-nav {
+    flex: none;
+    width: calc(100% + 2 * var(--space-2));
+    margin-inline: calc(-1 * var(--space-2));
+    gap: 0 var(--space-1);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .fn-primary-nav::-webkit-scrollbar { display: none; }
+  .fn-primary-nav[data-fade="end"] {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+  }
+  .fn-primary-nav[data-fade="start"] {
+    -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent);
+  }
+  .fn-primary-nav[data-fade="both"] {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+  }
+  .fn-header .fn-primary-nav a { padding-inline: var(--space-2); }
+  .fn-header .fn-primary-nav a:focus-visible { outline-offset: -3px; border-radius: var(--radius-xs); }
   .fn-header-actions { flex-wrap: wrap; }
-  .fn-section-nav { padding: 6px 16px; gap: 0 20px; }
+  .fn-section-nav { padding-block: 6px; gap: 0 20px; }
   .fn-section-nav > span { flex-basis: 100%; padding-top: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -119,7 +145,7 @@ nav.fn-section-nav a:focus-visible { outline: 3px solid var(--violet); outline-o
 }
 
 /* The agent pages' secondary navigation: a quiet disclosure under the main header, closed by default. */
-.fn-agent-spaces { padding: 0 32px; color-scheme: dark; }
+.fn-agent-spaces { padding: 0 var(--gutter); color-scheme: dark; }
 .fn-agent-spaces > summary { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; color: #c0c5e0; font-size: 14px; font-weight: 600; list-style: none; }
 .fn-agent-spaces > summary::-webkit-details-marker { display: none; }
 .fn-agent-spaces > summary::after { content: ""; width: 7px; height: 7px; margin-left: 4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform 150ms ease; }
@@ -132,5 +158,4 @@ nav.fn-section-nav a:focus-visible { outline: 3px solid var(--violet); outline-o
 .fn-agent-spaces > nav.fn-section-nav a:hover { color: #f8f6ff; border-bottom-color: #6c6a9e; }
 .fn-agent-spaces > nav.fn-section-nav a[aria-current] { color: #f8f6ff; border-bottom-color: #ffdb67; }
 .fn-agent-spaces > nav.fn-section-nav a:focus-visible { outline-color: #ffdb67; }
-@media (max-width: 640px) { .fn-agent-spaces { padding: 0 16px; } }
 @media (prefers-reduced-motion: reduce) { .fn-agent-spaces > summary::after { transition: none; } }
