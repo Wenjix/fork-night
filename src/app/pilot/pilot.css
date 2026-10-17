@@ -474,6 +474,7 @@
 }
 .pilot-kessler-turn {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -490,6 +491,12 @@
 }
 .pilot-kessler-turn .button {
   flex-shrink: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+.pilot-kessler-turn > div { flex: 1 1 180px; min-width: 0; }
+@media (max-width: 540px) {
+  .pilot-kessler-turn .button { width: 100%; justify-content: space-between; }
 }
 .pilot-credit-line {
   display: flex;
