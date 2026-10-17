@@ -4,6 +4,7 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { tsImport } from "tsx/esm/api";
 import { ZeroAddress } from "ethers";
+import { MIDNIGHT_SIGNAL_REGISTRATIONS, MONAD_RELEASE_CONTRACT, registrationTransaction } from "../../src/lib/onchain/records.ts";
 import { curator, makerWallet, otherWallet, prepared, snapshot } from "./release-fixtures.ts";
 
 const { ReleaseScenes } = await tsImport("../../src/components/release-scenes.tsx", import.meta.url);
@@ -71,4 +72,18 @@ test("registered scene state links to its MonadScan transaction when the receipt
   assert.match(markup, /href="https:\/\/testnet\.monadscan\.com\/tx\/0x[a]+"/);
   assert.match(markup, /Scene registered/);
   assert.match(markup, /0x0000/);
+});
+
+test("the archived release's registration receipts resolve only on the chain and contract that recorded them", () => {
+  assert.equal(MIDNIGHT_SIGNAL_REGISTRATIONS.length, 6);
+  for (const { sceneId, transactionHash } of MIDNIGHT_SIGNAL_REGISTRATIONS) {
+    assert.match(sceneId, /^0x[a-f0-9]{64}$/);
+    assert.match(transactionHash, /^0x[a-f0-9]{64}$/);
+    assert.equal(registrationTransaction(10143, MONAD_RELEASE_CONTRACT, sceneId), transactionHash);
+  }
+  const [first] = MIDNIGHT_SIGNAL_REGISTRATIONS;
+  assert.equal(registrationTransaction(10143, MONAD_RELEASE_CONTRACT.toLowerCase(), first.sceneId.toUpperCase().replace("0X", "0x")), first.transactionHash);
+  assert.equal(registrationTransaction(31337, MONAD_RELEASE_CONTRACT, first.sceneId), undefined);
+  assert.equal(registrationTransaction(10143, "0x0000000000000000000000000000000000000001", first.sceneId), undefined);
+  assert.equal(registrationTransaction(10143, MONAD_RELEASE_CONTRACT, `0x${"1".repeat(64)}`), undefined);
 });
