@@ -51,6 +51,25 @@
   background: var(--plate-mount);
   border: 1px solid var(--plate-edge);
 }
+/* Inside a panel the heading is a row, not a second card. */
+.fn-section-plate[data-variant="inline"] {
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.fn-section-plate[data-variant="inline"] .fn-plate-mount {
+  width: auto;
+  height: auto;
+  flex: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.fn-section-plate[data-variant="inline"] .fn-plate-heading {
+  font-size: var(--text-card);
+}
 .fn-plate-copy {
   flex: 1;
   min-width: 0;

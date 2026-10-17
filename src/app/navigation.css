@@ -30,6 +30,25 @@
   transform: rotate(-3deg);
 }
 .fn-brand svg { color: var(--fn-header-focus); transform: rotate(6deg); }
+/* The same wordmark outside .fn-header (components/fork-night-mark.tsx). */
+.fn-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  color: var(--night-ink);
+  font: 700 36px / 1 var(--font-hand);
+  letter-spacing: var(--tracking-display);
+  text-decoration: none;
+  white-space: nowrap;
+  transform: rotate(-3deg);
+}
+.fn-mark svg { color: var(--night-yellow); transform: rotate(6deg); }
+.fn-mark[data-size="sm"] { gap: 7px; font-size: 26px; }
+.fn-mark[data-tone="paper"] { color: var(--ink); }
+.fn-mark[data-tone="paper"] svg { color: var(--violet); }
+.fn-mark:focus-visible { outline: 3px solid var(--night-yellow); outline-offset: 3px; border-radius: var(--radius-xs); }
+.fn-mark[data-tone="paper"]:focus-visible { outline-color: var(--violet); }
 .fn-primary-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 0 24px; }
 .fn-header .fn-primary-nav a {
   display: inline-flex;

@@ -1,9 +1,9 @@
 import { Children, type CSSProperties, type ReactNode } from "react";
-import { Coins, Cpu, ExternalLink, Wallet, type LucideIcon } from "lucide-react";
+import { Coins, Cpu, ExternalLink, Fingerprint, Wallet, type LucideIcon } from "lucide-react";
 import { BRANDS, type Brand, type BrandId } from "@/lib/brands";
 
 /** Brands without an official mark in the repo that read better as a drawn glyph than as letters. */
-const GLYPHS: Partial<Record<BrandId, LucideIcon>> = { x402: Coins, mpp: Cpu, metamask: Wallet, phantom: Wallet };
+const GLYPHS: Partial<Record<BrandId, LucideIcon>> = { x402: Coins, mpp: Cpu, erc8004: Fingerprint, metamask: Wallet, phantom: Wallet };
 
 export type BrandSize = "sm" | "md" | "lg";
 
@@ -49,7 +49,7 @@ export function BrandBadge({ brand, size = "sm", role, label, net, href, classNa
       {role && <span className="fn-badge-role">{role}</span>}
       {status && <NetFlag>{status}</NetFlag>}
       {external && <ExternalLink className="fn-badge-out" size={14} aria-hidden="true" />}
-      {external && <span className="fn-sr-only"> (opens in a new tab)</span>}
+      {external && <span className="sr-only"> (opens in a new tab)</span>}
     </>
   );
   const props = { className: `fn-badge ${className}`.trim(), "data-size": size, "data-kind": entry.kind };

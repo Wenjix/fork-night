@@ -13,6 +13,7 @@ export function SectionPlate({
   level = 2,
   headingId,
   className = "",
+  variant = "plate",
 }: {
   title: ReactNode;
   description?: ReactNode;
@@ -22,12 +23,14 @@ export function SectionPlate({
   level?: 2 | 3;
   headingId?: string;
   className?: string;
+  /** `inline` is a heading row for use inside a panel: no card, no tile. Top-level sections keep the plate. */
+  variant?: "plate" | "inline";
 }) {
   const Heading = level === 3 ? "h3" : "h2";
   return (
-    <Card className={`fn-section-plate ${className}`} data-tone={tone}>
+    <Card className={`fn-section-plate ${className}`} data-tone={tone} data-variant={variant}>
       <span className="fn-plate-mount" aria-hidden="true">
-        <Icon size={24} strokeWidth={1.75} />
+        <Icon size={variant === "inline" ? 20 : 24} strokeWidth={1.75} />
       </span>
       <CardContent className="fn-plate-copy">
         <Heading id={headingId} className="fn-plate-heading">

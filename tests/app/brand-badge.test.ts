@@ -65,3 +65,16 @@ test("the badge stylesheet is global, uses the surrounding text colour, and carr
   assert.match(css, /color-mix\(in srgb, currentColor/);
   assert.doesNotMatch(css, /user-select|backdrop-filter/);
 });
+
+test("tokens reuse their chain's mark, and protocols without a mark draw a glyph, not letters", () => {
+  const mon = html(createElement(BrandBadge, { brand: "mon" }));
+  assert.match(mon, /data-round="true"/);
+  assert.match(mon, /<img src="\/brands\/networks\/monad\.svg"/);
+  assert.doesNotMatch(mon, /fn-net/);
+  assert.match(html(createElement(BrandBadge, { brand: "pathusd" })), /<img src="\/brands\/networks\/tempo\.svg"/);
+  for (const brand of ["x402", "mpp", "erc8004"]) {
+    const badge = html(createElement(BrandBadge, { brand }));
+    assert.match(badge, /data-mono="true"[^>]*aria-hidden="true"[^>]*><svg/, `${brand} should draw a glyph tile`);
+    assert.doesNotMatch(badge, /<b>/);
+  }
+});
