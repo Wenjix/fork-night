@@ -2250,6 +2250,12 @@
     min-width: var(--control-h);
     min-height: var(--control-h);
   }
+  .social-breadcrumb a,
+  .spaces-discover a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-h);
+  }
 }
 @media (min-width: 1500px) {
   .room-grid,

@@ -72,6 +72,9 @@
   background: var(--backdrop);
 }
 
+/* The shared room sets the theme on a wrapper and on its main region; the main takes the wrapper's backdrop rather than painting a second one, which would start a visible edge under the guide. */
+:root [data-room-theme="neon"] [data-room-theme="neon"] { background: none; }
+
 /* Browser surfaces take the room's palette: the selection, the focus ring and placeholders. */
 :root [data-room-theme="neon"]::selection,
 :root [data-room-theme="neon"] ::selection { background: var(--selection); color: var(--ink); }

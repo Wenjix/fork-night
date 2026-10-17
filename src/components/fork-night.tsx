@@ -801,7 +801,7 @@ export function ForkNight() {
           >
             Skip to your story
           </a>
-          <AppHeader current="spaces" onLocalNavigate={navigate}>
+          <AppHeader current="spaces" onLocalNavigate={navigate} tone={roomSkin === "neon" ? "night" : undefined}>
             <label className="user-switch workspace-user-switch">
               <span className="avatar" style={{ backgroundColor: user.color }}>{user.initials}</span>
               <select aria-label="Preview as collaborator" value={userId} onChange={event => switchUser(event.target.value)}>

@@ -892,7 +892,7 @@ svg {
 input,
 textarea {
   width: 100%;
-  border: 1px solid #c7c3d2;
+  border: 1px solid var(--edge);
   border-radius: 9px;
   background: var(--surface);
   color: var(--ink);
@@ -928,7 +928,8 @@ form .fine-print {
 .quote-idea {
   margin: 23px 0;
   padding: 16px;
-  background: #f4f1fa;
+  background: var(--violet-wash);
+  color: var(--ink);
   border-radius: 10px;
   font-size: 16px;
   overflow-wrap: anywhere;
@@ -1055,11 +1056,11 @@ form .fine-print {
   margin: 25px 0 15px;
   background: var(--navy);
   border-radius: 14px;
-  color: var(--surface);
+  color: var(--night-ink);
 }
 .personal-balance > span {
   display: block;
-  color: #cdcbe1;
+  color: var(--night-muted);
   margin-top: 20px;
   font-size: 14px;
 }

@@ -1673,6 +1673,14 @@
   .pilot-shell .pilot-byline .text-button {
     min-height: 0;
   }
+  .pilot-release-actions > a,
+  .pilot-release-record > a,
+  a.pilot-release-scene-state,
+  .pilot-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-h);
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
   .pilot-generation-active {

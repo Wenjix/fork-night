@@ -1030,7 +1030,7 @@ export function SharedPilot() {
   return (
     <div className="pilot-room-page" data-room-theme={theme}>
       <a className="skip-link" href="#shared-story">Skip to story</a>
-      <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} account={false} />
+      <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact tone={theme === "neon" ? "night" : "paper"} onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} account={false} />
       <main className="pilot-shell" id="shared-story" data-room-theme={theme} tabIndex={-1}>
       <div className="pilot-room-toolbar">
         <a className="fn-context-link" href="/pilot"><ArrowLeft size={16} aria-hidden="true" />All shared rooms</a>

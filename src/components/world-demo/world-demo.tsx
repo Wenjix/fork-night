@@ -21,7 +21,7 @@ export function WorldDemo() {
   const landing = !state || !!location?.invite;
   return <div className="world-demo wd-night">
     <a className="wd-skip" href="#world-main">Skip to story</a>
-    <AppHeader current="rooms">
+    <AppHeader current="rooms" tone="night">
       <div className="wd-account">{state && <><button className="wd-icon-button" onClick={() => void demo.refresh()} aria-label="Refresh shared work" disabled={busy}><RefreshCw size={20} /></button><AccountSwitcher demo={demo} /></>}</div>
     </AppHeader>
     <div className="wd-room-navigation">
