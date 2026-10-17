@@ -236,6 +236,7 @@
 
 /* Concept */
 .ag-concepts { max-width: none; margin: 32px 0 0; padding-left: max(32px, calc((100% - 1216px) / 2)); padding-right: max(32px, calc((100% - 1216px) / 2)); border-top: 2px dashed #ffb3c966; background: var(--ag-deep); }
+.ag-concept-title { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .ag-concept-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; padding: 12px 16px; border-radius: 12px; border: 1.5px dashed #ffb3c999; background: #ffb3c90f; color: var(--ag-ink); font-size: 15px; }
 .ag-concept-block { display: flex; flex-direction: column; gap: 14px; padding: 24px; border-radius: 12px; border: 1.5px dashed #ffb3c966; background: #161b3acc; min-width: 0; }
 .ag-concept-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px 16px; flex-wrap: wrap; }

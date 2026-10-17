@@ -89,13 +89,12 @@ export function AgentConcepts() {
       aria-labelledby="concept-title"
     >
       <div className="ag-concept-banner" role="note">
-        <ConceptTag long />
         <span>
           Everything in this section is a design concept. None of it is live,
           and any numbers are illustrative.
         </span>
       </div>
-      <SectionPlate className="ag-section-head" icon={Users} tone="night" headingId="concept-title" title="From one agent to rooms full of them"
+      <SectionPlate className="ag-section-head" icon={Users} tone="night" headingId="concept-title" title={<span className="ag-concept-title"><span>From one agent to rooms full of them</span><ConceptTag long /></span>}
         description={<p>
           Wren shows the first step: an agent that makes things with people,
           under rules people can see. Here is where we would like to take it.
