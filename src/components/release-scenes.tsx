@@ -8,11 +8,11 @@ import { releaseByline, releaseRoom, sameAddress, type PreparedRelease } from ".
 import { pilotPanels } from "../lib/pilot.ts";
 import { PilotImage } from "./pilot-panels.tsx";
 
-export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pending, onAction, onInspect, client, explorer }: {
+export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pending, onAction, onInspect, client, explorer, actions = true }: {
   prepared: PreparedRelease; snapshot: Snapshot; account: string;
   accepted: boolean; busy: boolean; pending: boolean;
   onAction: (operation: Operation, index: number, address?: string) => void;
-  onInspect?: (id: string) => void; client?: SupabaseClient<Database>; explorer?: string;
+  onInspect?: (id: string) => void; client?: SupabaseClient<Database>; explorer?: string; actions?: boolean;
 }) {
   return <ol className="pilot-release-path">{prepared.scenes.map((scene, index) => {
     const record = snapshot.scenes[index], approved = record.maker !== ZeroAddress;
@@ -30,14 +30,14 @@ export function ReleaseScenes({ prepared, snapshot, account, accepted, busy, pen
         {preparedWork && <span>Sample byline: {scene.moment.maker_label}</span>}
         <SceneRegistrationState record={record} approved={approved} explorer={explorer} />
       </div>
-      <div className="pilot-release-scene-action">
+      {actions && <div className="pilot-release-scene-action">
         {own && !record.registered && <>
           <button className="button secondary" type="button" disabled={!!reason} aria-describedby={reason ? helpId : undefined} onClick={() => onAction("register", index)}>Register scene</button>
           {reason && <span id={helpId} role="status">{reason}</span>}
         </>}
         {!approved && <span>{preparedWork ? "The curator confirms the prepared story's actual rights holder and approves that wallet." : "The maker sends a signed wallet request for curator review."}</span>}
         {approved && !record.registered && account && !own && <span>Waiting for the approved wallet to register.</span>}
-      </div>
+      </div>}
     </li>;
   })}</ol>;
 }

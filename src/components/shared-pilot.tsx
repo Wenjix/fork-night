@@ -963,6 +963,16 @@ export function SharedPilot() {
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
         {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">The opening and its two branches are prepared examples. New published scenes carry their storyteller’s byline; Wren’s help is identified separately.</p>}
       </div>
+      {client && selected && loadedRoom === roomId && path.length && !composing && !hasActive && !wrenBusy && !reviewing && <TestnetRelease
+        roomId={roomId} moments={moments} tipId={path.at(-1)!.id}
+        makerId={profile?.id} makerName={profile?.display_name} client={client}
+        onBusyChange={setReleaseBusy}
+        onChoosePath={(id) => select(id, true)}
+        onInspect={(id) => {
+          select(id);
+          requestAnimationFrame(() => document.querySelector(".pilot-reader")?.scrollIntoView({ block: "start" }));
+        }}
+      />}
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
         <details className="pilot-roster"><summary>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></summary><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</details>
         {!joinedRoom && profile && <button className="button secondary" disabled={busy} onClick={() => setJoinOpen(true)}>Join this room</button>}
@@ -1210,18 +1220,6 @@ export function SharedPilot() {
                     />
                   </label>
                 )}
-                <div hidden={composing || hasActive || wrenBusy || reviewing}>
-                  <TestnetRelease
-                    roomId={roomId} moments={moments} tipId={path.at(-1)!.id}
-                    makerId={profile?.id} makerName={profile?.display_name} client={client}
-                    onBusyChange={setReleaseBusy}
-                    onChoosePath={(id) => select(id, true)}
-                    onInspect={(id) => {
-                      select(id);
-                      requestAnimationFrame(() => document.querySelector(".pilot-reader")?.scrollIntoView({ block: "start" }));
-                    }}
-                  />
-                </div>
                 {credits && (
                   <p className="pilot-credit-line">
                     <Sparkles size={15} />

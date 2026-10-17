@@ -1,8 +1,22 @@
 .pilot-release {
-  margin: 28px 0;
-  border-top: 1px solid var(--line);
+  margin: 18px 0 24px;
   color: var(--ink);
 }
+.pilot-release-card { border: 1px solid var(--violet); background: linear-gradient(180deg, #f5efff 0%, #fff 72%); border-radius: 12px; padding: 16px; box-shadow: 0 10px 28px rgba(109, 53, 212, 0.08); }
+.pilot-release-card-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+.pilot-release-kicker { margin: 0 0 5px; text-transform: uppercase; letter-spacing: .08em; font-size: 11px; color: var(--violet); font-weight: 800; }
+.pilot-release-card h2 { margin: 0; font-size: 21px; line-height: 1.2; letter-spacing: -0.02em; font-family: var(--font-display), sans-serif; font-weight: 700; }
+.pilot-release-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; color: var(--muted); font-size: 12px; }
+.pilot-release-badges > span { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; }
+.pilot-release-progress-copy { margin: 12px 0 7px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.pilot-release-progress { height: 7px; border-radius: 999px; background: var(--paper); overflow: hidden; }
+.pilot-release-progress > span { display: block; height: 100%; background: var(--violet); border-radius: inherit; }
+.pilot-release-card-copy { margin: 12px 0 14px; color: var(--ink); line-height: 1.55; font-size: 14px; max-width: 76ch; }
+.pilot-release-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pilot-release-actions .button { min-height: 42px; }
+.pilot-release-card > .pilot-wallet-options { margin-top: 12px; }
+.pilot-release-confirm { width: min(560px, calc(100vw - 32px)); }
+.pilot-release-confirm footer { margin-top: 18px; }
 .pilot-release-toggle {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) 18px;
