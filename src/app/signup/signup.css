@@ -49,7 +49,10 @@ html:has(.signup-shell) { background: var(--night, #10162e); color-scheme: dark;
 /* Header, main and footer share one container, so the wordmark, the headline and the footer line up. */
 .signup-header, .demo-main, .signup-main, .signup-footer { width: min(100%, var(--signup-max)); margin-inline: auto; }
 .signup-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 24px; }
-.signup-shell .fn-mark { color: var(--signup-text); }
+/* The shared wordmark (components/fork-night-mark.tsx). Its base rules are in navigation.css, which the hosted export does not ship. */
+.signup-shell .fn-mark { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; color: var(--signup-text); font: 700 36px / 1 var(--font-hand, "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive); letter-spacing: var(--tracking-display, -0.025em); text-decoration: none; white-space: nowrap; transform: rotate(-3deg); }
+.signup-shell .fn-mark svg { color: var(--signup-yellow); transform: rotate(6deg); }
+.signup-shell .fn-mark[data-size="sm"] { gap: 7px; font-size: 26px; }
 .signup-header-link { display: inline-flex; align-items: center; min-height: var(--signup-control); color: var(--signup-link); text-underline-offset: 5px; font-size: 14px; font-weight: 600; }
 .demo-controls { display: flex; gap: 20px; }
 .demo-controls button { background: transparent; border: 0; border-radius: var(--signup-radius); display: inline-flex; align-items: center; gap: 8px; color: var(--signup-muted); min-height: var(--signup-control); padding: 8px 0; font-size: 14px; font-weight: 600; }

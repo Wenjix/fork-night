@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
@@ -14,6 +14,34 @@ async function paths(directory, prefix = "") {
   }
   return result.sort();
 }
+
+/** Every relative or @/ import in the exported source that does not resolve to a file the export ships. */
+async function unresolvedImports(root) {
+  const missing = [];
+  const isFile = async path => (await stat(path).catch(() => null))?.isFile() === true;
+  for (const file of (await paths(root)).filter(path => /^src\/.*\.tsx?$/.test(path))) {
+    const source = await readFile(join(root, file), "utf8");
+    for (const [, specifier] of source.matchAll(/(?:^|\n)\s*(?:import|export)\s+(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/g)) {
+      if (!specifier.startsWith(".") && !specifier.startsWith("@/")) continue;
+      const base = specifier.startsWith("@/") ? join(root, "src", specifier.slice(2)) : join(root, dirname(file), specifier);
+      const found = await Promise.all(["", ".ts", ".tsx", ".d.ts", "/index.ts", "/index.tsx"].map(extension => isFile(base + extension)));
+      if (!found.includes(true)) missing.push(`${file} imports ${specifier}`);
+    }
+  }
+  return missing;
+}
+
+test("the export ships every file its own source imports, stylesheets and the shared wordmark included", async t => {
+  const temporary = await mkdtemp(join(tmpdir(), "fork-night-waitlist-imports-"));
+  t.after(() => rm(temporary, { recursive: true, force: true }));
+  const output = join(temporary, "app");
+  const script = fileURLToPath(new URL("../../scripts/export-waitlist.mjs", import.meta.url));
+  execFileSync(process.execPath, [script, output], { stdio: "pipe" });
+  assert.deepEqual(await unresolvedImports(output), []);
+  assert.ok((await paths(output)).includes("src/components/fork-night-mark.tsx"));
+  const layout = await readFile(join(output, "src/app/layout.tsx"), "utf8");
+  assert.doesNotMatch(layout, /import "\.\/(?!globals\.css")/, "the layout imports no stylesheet the export leaves out");
+});
 
 test("Cloudflare export contains only signup routes and runtime bindings, preserving source files", async t => {
   const temporary = await mkdtemp(join(tmpdir(), "fork-night-waitlist-"));

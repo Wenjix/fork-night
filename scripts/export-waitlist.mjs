@@ -16,7 +16,7 @@ catch (error) { if (error.code !== "ENOENT") throw error; }
 const files = [
   "src/app/demo/page.tsx", "src/app/signup/page.tsx", "src/app/signup/signup.css",
   "src/app/api/waitlist/route.ts", "src/app/layout.tsx",
-  "src/components/demo-controls.tsx", "src/components/waitlist-form.tsx",
+  "src/components/demo-controls.tsx", "src/components/fork-night-mark.tsx", "src/components/waitlist-form.tsx",
   "src/lib/waitlist.ts", "src/server/waitlist.ts", "src/server/waitlist-settings.ts", "src/types/qrcode.d.ts",
   "public/fonts/inter-latin.woff2", "public/fonts/OFL.txt", "LICENSE", "next.config.ts",
 ];
@@ -72,8 +72,9 @@ button:disabled { opacity: .58; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
 a { text-underline-offset: 4px; }
 `);
+// The app layout also imports the stylesheets of rooms this deployment leaves out. The export writes its own globals.css and signup.css ships with its page.
 const layout = await readFile(resolve(output, "src/app/layout.tsx"), "utf8");
-await writeFile(resolve(output, "src/app/layout.tsx"), layout.replace("Fork Night local prototype.", "Join the Fork Night waitlist."));
+await writeFile(resolve(output, "src/app/layout.tsx"), layout.replace(/^import "\.\/(?!globals\.css")[^"]+\.css";\n/gm, "").replace("Fork Night local prototype.", "Join the Fork Night waitlist."));
 await writeFile(resolve(output, ".gitignore"), "node_modules/\n.next/\n.wrangler/\n.cloudflare/\n.vinext/\ndist/\n.env*\n.dev.vars*\n*.tsbuildinfo\nnext-env.d.ts\n");
 if (cloudflare) {
   for (const [source, target] of [
