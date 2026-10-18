@@ -22,11 +22,13 @@ import { Disclosure } from "./disclosure.tsx";
 import { PilotDialog } from "./pilot-dialog.tsx";
 import { walletAccountIdentity } from "../lib/supabase/wallet-login.ts";
 import type { BrowserSignInWallet } from "../lib/wallets/browser-wallets.ts";
+import { KesslerContributions } from "./kessler-contributions.tsx";
 
-export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, client, onInspect, onChoosePath, onBusyChange }: {
+export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, client, assisted, onInspect, onChoosePath, onBusyChange }: {
   roomId: string; moments: PilotMoment[]; tipId: string; makerId?: string; makerName?: string;
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
   onChoosePath: (id: string) => void;
+  assisted?: ReadonlySet<string>;
 }) {
   const [open, setOpen] = useState(false);
   const config = useMemo(releaseConfig, []);
@@ -37,12 +39,8 @@ export function TestnetRelease({ roomId, moments, tipId, makerId, makerName, cli
     catch (error) { return { value: null, error: error instanceof Error ? error.message : "This story's release could not be prepared." }; }
   }, [roomId, moments, tipId, config]);
   if (!releaseRoom(roomId) || !tipId) return null;
-  const controls = prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} open={roomId === "midnight-signal" || open} /> : <p className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>;
-  return <section className="pilot-release" aria-label="Story release and support">
-    {roomId === "midnight-signal" ? controls : <>
-      <button className="pilot-release-toggle" type="button" aria-expanded={open} aria-controls="payout-body" onClick={() => setOpen(!open)}><Layers3 size={24} aria-hidden="true" /><span><strong>Release and support this story</strong><span>Making a moment never requires a wallet.</span></span><ChevronDown size={20} aria-hidden="true" /></button>
-      <div id="payout-body" className="pilot-release-body" hidden={!open}>{controls}</div>
-    </>}
+  return <section className="pilot-release" aria-label="Story contributions, release and support">
+    {prepared.value && config ? <ReleaseControls key={prepared.value.projectId} prepared={prepared.value} config={config} moments={moments} makerId={makerId} makerName={makerName} client={client} assisted={assisted} onInspect={onInspect} onChoosePath={onChoosePath} onBusyChange={onBusyChange} open={roomId === "midnight-signal" || open} onToggle={() => setOpen(!open)} /> : <p className="pilot-release-empty" role={prepared.error ? "alert" : undefined}>{prepared.error || "Testnet releases are awaiting setup. You can keep making and reading in this room."}</p>}
   </section>;
 }
 
@@ -85,12 +83,14 @@ export function PreparedWorkWallet({ prepared, snapshot, config, account, blocke
   </section>;
 }
 
-function ReleaseControls({ prepared, config, moments, makerId, makerName, client, onInspect, onChoosePath, onBusyChange, open }: {
+function ReleaseControls({ prepared, config, moments, makerId, makerName, client, assisted, onInspect, onChoosePath, onBusyChange, open, onToggle }: {
   prepared: PreparedRelease; config: ReleaseConfig; moments: PilotMoment[]; makerId?: string; makerName?: string;
   client?: SupabaseClient<Database>; onInspect?: (id: string) => void; onBusyChange?: (busy: boolean) => void;
   open: boolean;
+  assisted?: ReadonlySet<string>; onToggle: () => void;
   onChoosePath: (id: string) => void;
 }) {
+  const kessler = prepared.scenes[0].moment.room_id === "kessler-ward";
   const identity = usePilotAccount();
   const actorId = identity?.user?.id ?? "";
   const [browserPayoutOwner, setBrowserPayoutOwner] = useState<string | null>(null);
@@ -126,10 +126,10 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   useEffect(() => { session.syncWallet(sharedAccount); }, [session, selectedProvider, sharedAccount]);
   useEffect(() => { session.setPrepared(prepared); }, [session, prepared.id]);
   useEffect(() => {
-    if (!open) return;
+    if (!open && !kessler) return;
     void session.refresh();
-    return whileVisible(() => void session.refresh(), 8000);
-  }, [session, open]);
+    return whileVisible(() => void session.refresh(), open ? 8000 : 30000);
+  }, [session, open, kessler]);
   useEffect(() => { onBusyChange?.(walletBusy); return () => onBusyChange?.(false); }, [walletBusy, onBusyChange]);
   const perform = (operation: Operation, index = 0, address = "") => { void session.perform(operation, index, address, amount); };
   const ownUnregisteredIndex = snapshot?.scenes.findIndex(scene => !scene.registered && !!account && sameAddress(scene.maker, account)) ?? -1;
@@ -195,6 +195,11 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
     setConfirm(null);
   }
   return <>
+    {kessler && <>
+      <KesslerContributions prepared={prepared} moments={moments} snapshot={snapshot} loading={loading} error={error} config={config} assisted={assisted} onInspect={onInspect} onChoosePath={onChoosePath} />
+      <button className="pilot-release-toggle" type="button" disabled={walletBusy} aria-expanded={open} aria-controls="payout-body" onClick={onToggle}><Layers3 size={20} aria-hidden="true" /><span><strong>Release and support this path</strong><span>Register scenes, support a release or claim your share.</span></span><ChevronDown size={20} aria-hidden="true" /></button>
+    </>}
+    <div id={kessler ? "payout-body" : undefined} className={kessler ? "pilot-release-body" : undefined} hidden={kessler && !open}>
     <div className="pilot-release-card" aria-busy={walletBusy}>
       <div className="pilot-release-overview">
       <div className="pilot-release-summary">
@@ -268,6 +273,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
       </div>
     </div>
     {confirm && <ReleaseConfirmation confirm={confirm} account={account} busy={walletBusy} rememberedTerms={rememberedTerms} accepted={confirmTerms} onAccept={setConfirmTerms} onConfirm={() => void confirmAction()} onClose={() => { if (!walletBusy) setConfirm(null); }} />}
+    </div>
   </>;
 }
 

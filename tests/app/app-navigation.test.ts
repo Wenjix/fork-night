@@ -72,8 +72,8 @@ test("the initial shared-room entrance is navigable while data loads and does no
   assert.match(html, /Opening the shared stories/);
   assert.doesNotMatch(html, /No stories in the directory yet/);
   assert.match(html, /public stories, private previews/);
-  assert.match(html, /Every story starts somewhere/);
-  assert.match(html, /Finding the opening/);
+  assert.match(html, /Start in Kessler Ward/);
+  assert.match(html, /Start with an idea/);
   assert.match(html, /Join a story/);
   assert.match(html, /Make your mark/);
   assert.match(html, /href="\/pilot\?create=1"/);

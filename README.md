@@ -73,6 +73,8 @@ The **Your first night** guide follows your progress from reading to your first 
 
 Kessler's prepared moments are labeled **Prepared story**. The Uncharted Star retains the room ID `night-shift` and its earlier history. The room guide also links the relevant stories to their wallet, payment and treasury demonstrations.
 
+The Kessler centerpiece brings reading, branching, a Git-like contribution trail and room funding into one path. The trail follows the selected branch and distinguishes prepared scenes, published makers, Wren assistance and verified Monad registrations. Shared image credits, Wren's spending allowance and test MON support for creators stay separate. Public availability and receipts determine what the room reports; an empty pool or paused assistant remains visible.
+
 ## How it works
 
 ```mermaid

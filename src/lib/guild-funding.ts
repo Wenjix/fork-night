@@ -11,6 +11,7 @@ export type RecordedGuildFunding = Readonly<{
   token: Readonly<{ label: "test USDC"; decimals: 6 }>;
   accounts: Readonly<{ multisig: string; vault: string; allowance: string; payer: string }>;
   amounts: Readonly<{ deposit: string; allowance: string; draw: string; payment: string }>;
+  balances: Readonly<{ vaultBeforeDraw: string; vaultAfterDraw: string; allowanceAfterDraw: string }>;
   receipts: Readonly<{
     creation: FundingReceipt;
     deposit: FundingReceipt;
@@ -55,6 +56,7 @@ const PAPER_MOON_FUNDING: RecordedGuildFunding = {
     payer: "EFpvKAoQ6tAFDyNFtdfrF3i3nHRwZdrYtKFR1q3j7MXL",
   },
   amounts: { deposit: "5000000", allowance: "3000000", draw: "1000000", payment: "1000000" },
+  balances: { vaultBeforeDraw: "5000000", vaultAfterDraw: "4000000", allowanceAfterDraw: "2000000" },
   receipts: {
     creation: { label: "Multisig created", signature: "4Wz3Q4vRVFvhMPVV1oPkY1La2xaSYxvyGytdRLh163SRZQvrDeg41VLgzoKm6aabpUerQNpEMKDFWjFYGcGqaRyt" },
     deposit: { label: "Deposit receipt", signature: "8am75HgwckBxoBpxzRwehdnddmPuvmWoPdPBaDXj6aCEfD13ytL9LB8xCbsNLQcdgbgVEigPPzeX3MU8YmbpsWs" },

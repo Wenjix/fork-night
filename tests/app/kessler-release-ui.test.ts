@@ -34,9 +34,10 @@ function renderRelease(roomId: string, story: typeof moments = samples, tipId = 
 
 test("Kessler's opening keeps its release controls folded and uses its own story title", () => {
   const html = renderRelease("kessler-ward", samples, samples[0].id);
-  assert.match(html, /Story release and support/);
+  assert.match(html, /Story contributions, release and support/);
   assert.match(html, /class="pilot-release-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="payout-body"/);
   assert.match(html, /id="payout-body"[^>]*hidden=""/);
+  assert.ok(html.indexOf('id="kessler-contributions"') < html.indexOf('id="payout-body"'), "Contribution history stays outside the folded wallet controls");
   assert.match(html, /<h2>Kessler Ward<\/h2>/);
   assert.doesNotMatch(html, /Midnight Signal|The midnight signal/);
   assert.equal(renderRelease("paper-moon"), "");

@@ -48,6 +48,9 @@ import { PilotRoomFunding } from "./guild-funding";
 import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-generation";
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
+import { KesslerRoomGuide } from "./kessler-room-guide";
+import { useKesslerOverview } from "./use-kessler-overview";
+import { kesslerWrenState } from "../lib/kessler-overview";
 import { featuredStoryLinks, proofRoomIds } from "@/lib/featured-stories";
 import { KESSLER_OPENING_ID, KESSLER_ROOM_ID } from "../lib/kessler-room";
 import { roomTheme } from "../lib/room-theme";
@@ -100,6 +103,7 @@ export function SharedPilot() {
   // Resolve the shared link before fetching any story. A slow room list must
   // not briefly offer actions on the default room underneath that link.
   const [roomId, setRoomId] = useState("");
+  const kessler = useKesslerOverview(roomId === KESSLER_ROOM_ID);
   // The link names the room, so its skin is known on the very first render, before any room data arrives.
   const [linkedRoom] = useState(() => typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("room"));
   const theme = roomTheme(roomId || linkedRoom);
@@ -1012,6 +1016,7 @@ export function SharedPilot() {
   const releasePanel = client && selected && loadedRoom === roomId && path.length ? <TestnetRelease
     roomId={roomId} moments={moments} tipId={path.at(-1)!.id}
     makerId={profile?.id} makerName={profile?.display_name} client={client}
+    assisted={wrenMoments}
     onBusyChange={setReleaseBusy}
     onChoosePath={(id) => select(id, true)}
     onInspect={(id) => {
@@ -1078,12 +1083,15 @@ export function SharedPilot() {
       <div className="pilot-intro">
         <h1>{room?.title ?? "Opening the shared story…"}</h1>
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
-        {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">Explore two prepared branches, then leave an idea at any scene. Each new published scene keeps its storyteller’s byline.</p>}
+        {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">Two prepared branches start the story. Every scene you add keeps your byline, with Wren credited separately when it helps.</p>}
       </div>
       <div className="pilot-context">
         {roomId === "midnight-signal" && !composing && !hasActive && !wrenBusy && !reviewing && releasePanel}
         {roomId === KESSLER_ROOM_ID
-          ? <Disclosure className="pilot-context-disclosure" summary="About testnet releases"><PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} /></Disclosure>
+          ? <KesslerRoomGuide overview={kessler.overview} unavailable={kessler.unavailable} blocked={composing || hasActive || wrenBusy || reviewing} onNavigate={destination => {
+            setView("read");
+            requestAnimationFrame(() => { const target = document.getElementById(destination); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
+          }} />
           : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
       </div>
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
@@ -1316,8 +1324,10 @@ export function SharedPilot() {
                     </button>
                   </div>
                 )}
+                {roomId === KESSLER_ROOM_ID && <div id="pilot-contribution-credits" hidden={composing || hasActive || wrenBusy || reviewing}>{releasePanel}</div>}
                 {roomId === KESSLER_ROOM_ID && <WrenAssistant
                   key={`wren:${roomId}:${profile?.id ?? "visitor"}`} client={client} actorId={profile?.id}
+                  publicState={kessler.overview ? kesslerWrenState(kessler.overview) : kessler.unavailable ? "unavailable" : "loading"}
                   parent={moments.find(moment => moment.id === draft?.parentId) ?? selected} moments={moments}
                   initialBrief={draft?.stage === "idea" ? draft.thought : undefined}
                   originDraftId={draft?.requestId}
@@ -1334,7 +1344,6 @@ export function SharedPilot() {
                     />
                   </label>
                 )}
-                {roomId === KESSLER_ROOM_ID && <div hidden={composing || hasActive || wrenBusy || reviewing}>{releasePanel}</div>}
                 {credits && (
                   <p className="pilot-credit-line">
                     <Sparkles size={16} aria-hidden="true" />
@@ -1355,10 +1364,10 @@ export function SharedPilot() {
                   />
                 )}
                 {proofRoom && !reviewing && <KesslerTurnCard />}
-                <Disclosure
+                {roomId !== KESSLER_ROOM_ID && <Disclosure
                   className="pilot-credits"
                   id="pilot-contribution-credits"
-                  summary={roomId === KESSLER_ROOM_ID ? "Scenes and credits" : <>Made together by {storytellerCount} {storytellerCount === 1 ? "storyteller" : "storytellers"}</>}
+                  summary={<>Made together by {storytellerCount} {storytellerCount === 1 ? "storyteller" : "storytellers"}</>}
                 >
                   <ol>
                     {path.map((item) => (
@@ -1373,7 +1382,7 @@ export function SharedPilot() {
                       </li>
                     ))}
                   </ol>
-                </Disclosure>
+                </Disclosure>}
                 {!reviewing &&
                   moments.some((item) => item.parent_id === selected.id) && (
                     <nav

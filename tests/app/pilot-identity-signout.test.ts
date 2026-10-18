@@ -154,14 +154,14 @@ test("the entrance says why sign-out waits, whichever of its states holds it", a
   for (const [state, reason] of waits) assert.deepEqual(entrance({ ...idle, ...state }), { disabled: true, signOutDisabled: true, reason }, JSON.stringify(state));
 });
 
-test("the account's message sits right under the account bar, before the invitation or the create form; the page's own alert keeps its place", async () => {
+test("the account's message sits right under the account bar, before the featured room or the create form; the page's own alert keeps its place", async () => {
   const message = "Your account could not be signed out. Refresh and try again.";
   const entrance = (creating: boolean, signingOut = false) => renderToStaticMarkup(createElement(PilotAccountContext.Provider, { value: { ...account(guest), error: message, signingOut } }, createElement(PilotEntrance, { creating, navigate() {} })));
   for (const creating of [false, true]) {
     const html = entrance(creating);
     const bar = html.indexOf('class="pilot-entrance-account"');
     const alert = html.indexOf(`<div class="pilot-notice" role="alert"><p>${message}</p></div>`);
-    const next = html.indexOf(creating ? 'class="pilot-create-form"' : "fn-first-invitation");
+    const next = html.indexOf(creating ? 'class="pilot-create-form"' : "fn-featured-kessler");
     assert.ok(bar >= 0 && alert > bar && next > alert, `creating=${creating}: bar ${bar}, alert ${alert}, next ${next}`);
   }
   assert.ok(!entrance(false, true).includes(message), "held back while the sign-out runs: an earlier \"refresh\" would stop it");

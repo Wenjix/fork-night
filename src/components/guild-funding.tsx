@@ -107,7 +107,7 @@ export function GuildFundingHistory({ record, onClose, returnFocus }: {
             <ReceiptLinks receipts={[receipts.proposal, receipts.allowance]} />
           </FundingStep>
           <FundingStep number={3} title="Payer funded">
-            <p>The authorized payer withdrew <strong>{usdc(amounts.draw)}</strong>. The recorded vault balance went from 5 to 4 test USDC; unused allowance went from 3 to 2.</p>
+            <p>The authorized payer withdrew <strong>{usdc(amounts.draw)}</strong>. The recorded vault balance went from {formatFundingUsdc(record.balances.vaultBeforeDraw)} to {usdc(record.balances.vaultAfterDraw)}; unused allowance went from {formatFundingUsdc(amounts.allowance)} to {formatFundingUsdc(record.balances.allowanceAfterDraw)}.</p>
             <p className="guild-funding-note">The payer signs the next payment separately. The vault did not pay the room directly.</p>
             <ReceiptLinks receipts={[receipts.draw]} />
           </FundingStep>
@@ -126,7 +126,7 @@ export function GuildFundingHistory({ record, onClose, returnFocus }: {
         </ol>
         <section className="guild-funding-cleanup" aria-labelledby="guild-funding-cleanup-title">
           <h3 id="guild-funding-cleanup-title">Allowance closed after the rehearsal</h3>
-          <p>On <time dateTime={cleanup.recordedDate}>October 13, 2026</time>, a second 2-of-3 vote removed the allowance with <strong>{usdc(cleanup.unusedPermission)}</strong> of unused permission. This was permission to spend, not a token refund. The vault held <strong>{usdc(cleanup.vaultAtCleanup)}</strong> at cleanup.</p>
+          <p>On <time dateTime={cleanup.recordedDate}>{new Date(`${cleanup.recordedDate}T00:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" })}</time>, a second {governance.threshold}-of-{governance.stewardWallets} vote removed the allowance with <strong>{usdc(cleanup.unusedPermission)}</strong> of unused permission. This was permission to spend, not a token refund. The vault held <strong>{usdc(cleanup.vaultAtCleanup)}</strong> at cleanup.</p>
           <ReceiptLinks receipts={cleanup.receipts} />
           <p className="guild-funding-note">Cleanup has its own chain receipts; the earlier app record check does not verify it.</p>
         </section>

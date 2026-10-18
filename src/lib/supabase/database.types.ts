@@ -700,6 +700,8 @@ export type Database = {
       }
     }
     Functions: {
+      pilot_kessler_overview: { Args: Record<string, never>; Returns: Json }
+      pilot_refill_wren_room: { Args: { p_request_id: string; p_room_id: string; p_actor: string }; Returns: Json }
       pilot_wren_assistance: { Args: { p_room_id: string }; Returns: { moment_id: string; agent_label: string }[] }
       pilot_prepare_judge_room: { Args: { p_grant_id: string; p_room_id: string }; Returns: Json }
       pilot_readiness: { Args: { p_room_id: string }; Returns: Json }

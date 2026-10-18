@@ -109,7 +109,10 @@ test("one context slot sits between the title and the roster, for every room", (
   const slot = source.indexOf('<div className="pilot-context">');
   assert.ok(slot > source.indexOf('<div className="pilot-intro">'));
   assert.ok(slot < source.indexOf('<section className="pilot-room-sign"'));
-  assert.equal(source.split("<PilotRoomFunding").length - 1, 2, "the plate or strip is drawn in the slot only (plain, or inside Kessler's disclosure)");
+  const context = source.slice(slot, source.indexOf('<section className="pilot-room-sign"'));
+  assert.match(context, /<KesslerRoomGuide/);
+  assert.match(context, /<PilotRoomFunding/);
+  assert.equal(source.split("<PilotRoomFunding").length - 1, 1, "Other rooms retain their one funding view");
   assert.doesNotMatch(source, /pilot-network-details/);
 });
 

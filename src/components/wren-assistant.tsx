@@ -8,11 +8,20 @@ import type { PilotMoment } from "../lib/pilot.ts";
 import { WREN_ROOM, type WrenIntent, type WrenView } from "../lib/pilot-wren.ts";
 import { parseWrenView, readWrenIntent, readWrenOrigin, wrenFinished, wrenIntentKey } from "../lib/wren-request-recovery.ts";
 import { pollWhileVisible } from "../lib/visible-interval.ts";
+import type { KesslerWrenState } from "../lib/kessler-overview.ts";
 
 const defaultBrief = "Continue this fork with one new scene, keeping its characters and visual style.";
+const availabilityCopy: Record<KesslerWrenState, string> = {
+  loading: "Checking Wren’s availability. You can read the story and leave an idea while it loads.",
+  unavailable: "Wren’s availability is temporarily unavailable. You can still read the story and leave an idea.",
+  paused: "Wren is paused. When enabled, it prepares a private scene for your review. You choose what to publish.",
+  "needs-credits": "Wren is enabled, but this room needs credits before it can make a scene. You can read the story and leave an idea.",
+  enabled: "Choose a fork. Give Wren a direction. The preview stays private until you publish.",
+};
 
-export function WrenAssistant({ client, actorId, parent, moments, initialBrief = "", originDraftId, blocked, onJoin, onBusyChange, onAccepted, onReady, onInspect }: {
+export function WrenAssistant({ client, actorId, parent, moments, publicState = "loading", initialBrief = "", originDraftId, blocked, onJoin, onBusyChange, onAccepted, onReady, onInspect }: {
   client: SupabaseClient<Database>; actorId?: string; parent: PilotMoment; moments: PilotMoment[]; initialBrief?: string; originDraftId?: string; blocked: boolean;
+  publicState?: KesslerWrenState;
   onJoin: () => void; onBusyChange: (busy: boolean) => void;
   onAccepted: (parentId: string, originDraftId?: string) => void; onReady: (operationId: string) => Promise<void>; onInspect: (parentId: string) => void;
 }) {
@@ -105,8 +114,9 @@ export function WrenAssistant({ client, actorId, parent, moments, initialBrief =
   const sourceId = request?.parentId ?? intent?.parentId ?? parent.id;
   const source = moments.find(moment => moment.id === sourceId);
   const unavailable = !actorId || enabled === false && !request && !intent;
-  return <section className="pilot-wren" aria-labelledby={id}>
-    <div className="pilot-wren-heading"><Sparkles size={20} aria-hidden="true" /><div><h2 id={id}>{unavailable ? "Wren, your scene assistant" : "Make the next scene with Wren"}</h2><p>{unavailable ? "When the host enables Wren, it can prepare a private scene for your review. You choose what to publish." : "Choose a fork. Give Wren a direction. The preview stays private until you publish."}</p></div></div>
+  const availability = actorId ? enabled === false ? "paused" : enabled === true ? "enabled" : checking ? "loading" : "unavailable" : publicState;
+  return <section id="kessler-wren" tabIndex={-1} className="pilot-wren" aria-labelledby={id}>
+    <div className="pilot-wren-heading"><Sparkles size={20} aria-hidden="true" /><div><h2 id={id}>{unavailable ? "Wren, your scene assistant" : "Make the next scene with Wren"}</h2><p>{availabilityCopy[availability]}</p></div></div>
     {!unavailable && <p className="pilot-wren-source">Continuing <button type="button" className="text-button" onClick={() => onInspect(sourceId)}>{source?.title ?? "your saved fork"}</button></p>}
     {!actorId ? <button type="button" className="button secondary" disabled={blocked} onClick={onJoin}>Join the story</button> : <>
       {request ? <div className="pilot-wren-progress"><p role="status">{request.message}</p>{request.state === "ready" && <p>Review your scene above, then choose Publish or Discard.</p>}{wrenFinished(request) && <button type="button" className="button secondary" disabled={blocked || working} onClick={another}>Ask for another scene</button>}</div>
@@ -121,6 +131,6 @@ export function WrenAssistant({ client, actorId, parent, moments, initialBrief =
       {error && <p role="alert">{error}</p>}
       {(error || intent && !request) && <button type="button" className="text-button" disabled={working || checking} onClick={() => { setChecking(true); setRefresh(value => value + 1); }}>Check saved request</button>}
     </>}
-    {!unavailable && <p className="pilot-wren-note">Wren uses the room’s test credits and the host’s inference allowance. If credits run low, Wren can top up within its testnet allowance. No payment is taken from your wallet.</p>}
+    {!unavailable && <p className="pilot-wren-note">Wren uses shared room credits and the host’s inference allowance. Top-ups need an active spending allowance. No payment is taken from your wallet. <a href="#kessler-backing" onClick={() => { const backing = document.getElementById("kessler-backing"); if (backing instanceof HTMLDetailsElement) backing.open = true; }}>See the room’s funding</a>.</p>}
   </section>;
 }

@@ -10,7 +10,6 @@ import { usePilotAccount } from "./pilot-account";
 import { PilotIdentity } from "./pilot-identity";
 import { AppHeader } from "./app-header";
 import { FirstNightGuide } from "./first-night-guide";
-import { FirstNightInvitation } from "./first-night-invitation";
 import { FeaturedStories } from "./featured-stories";
 import { SectionPlate } from "./visual-plates";
 import { PilotImage } from "./pilot-panels";
@@ -150,7 +149,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
   const signOutBlock = pending ? (creating ? "Check your saved room request before signing out." : "Open Create a room and check your saved room request before signing out.")
     : busy ? "Wait for your storyteller name to finish saving before signing out."
     : account?.loading ? "Checking your storyteller account. You can sign out when it finishes." : "";
-  const cards = (items: Room[]) => <div className="pilot-room-cards">{items.map(room => {
+  const cards = (items: Room[]) => <div className="pilot-room-cards">{[...items].sort((a, b) => Number(b.id === "kessler-ward") - Number(a.id === "kessler-ward")).map(room => {
     const template = templates.find(item => item.id === room.template_id && item.version === room.template_version);
     const opening = template ? pilotPanels(template.panels)[0] : undefined;
     // A room the lobby already features keeps its artwork here, instead of one shared icon on every card.
@@ -186,7 +185,6 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     </> : <>
       <h1 className="sr-only">Make a story together.</h1>
       <FeaturedStories />
-      <FirstNightInvitation variant="rooms" />
       <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={16} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={16} aria-hidden="true" /></a></div>
     </>}
     {error && <div className="pilot-notice" role="alert"><p>{error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}

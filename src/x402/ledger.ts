@@ -35,7 +35,8 @@ export function supabaseFundingLedger(client: SupabaseClient<Database>): Funding
       };
     },
     async refill(requestId, roomId, actor) {
-      const result = await client.rpc("pilot_refill_room", {
+      // Kessler's paid refill preserves the existing maker and inference limits.
+      const result = await client.rpc(roomId === "kessler-ward" ? "pilot_refill_wren_room" : "pilot_refill_room", {
         p_request_id: requestId,
         p_room_id: roomId,
         p_actor: actor,

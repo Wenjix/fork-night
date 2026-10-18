@@ -70,7 +70,6 @@ import {
 import { StoryArt } from "./story-art";
 import { AppHeader } from "./app-header";
 import { FirstNightGuide } from "./first-night-guide";
-import { FirstNightInvitation } from "./first-night-invitation";
 import { BuiltWith, FeaturedStories } from "./featured-stories";
 import { Chip } from "./brand-badge";
 import { fandomStory, showcaseProjects, storyStyleLabel } from "@/lib/fandom-stories";
@@ -284,7 +283,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
             </button>
           </div>
         )}
-        {route.kind === "lobby" && <><FeaturedStories /><BuiltWith /><FirstNightInvitation variant="lobby" /></>}
+        {route.kind === "lobby" && <><FeaturedStories /><BuiltWith /></>}
         {!restored ? (
           <div className="social-loading" role="status">
             <Lamp size={32} />

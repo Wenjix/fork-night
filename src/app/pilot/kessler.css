@@ -53,3 +53,60 @@
   :root [data-room-theme="neon"] .pilot-intro h1 { position: static; width: auto; height: auto; margin: 0 0 8px; overflow: visible; clip-path: none; white-space: normal; }
   .pilot-reading-status { margin: 0 20px 20px; }
 }
+
+.kessler-guide { margin-bottom: 20px; border-block: 1px solid var(--line); }
+.kessler-guide-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; padding: 12px 0; }
+.kessler-guide-presence { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; font-size: var(--text-sm); }
+.kessler-guide-presence > span { color: var(--muted); }
+.kessler-guide nav { display: flex; flex-wrap: wrap; gap: 0 20px; }
+.kessler-guide nav button { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: var(--text-sm); cursor: pointer; }
+.kessler-guide nav button:hover:not(:disabled) { color: var(--signal); }
+.kessler-guide nav button:disabled { opacity: .5; cursor: default; }
+.kessler-backing { border-top: 1px solid var(--line); }
+.kessler-backing-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.kessler-backing-summary > span { font-size: var(--text-sm); font-weight: 400; color: var(--muted); }
+.kessler-backing-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding-block: 4px 12px; }
+.kessler-backing-columns > section + section { border-left: 1px solid var(--line); padding-left: 24px; }
+.kessler-backing-columns h3 { margin: 0 0 12px; font-size: var(--text-base); }
+.kessler-backing-columns p { color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-body); margin: 12px 0; }
+.kessler-backing-columns a { color: var(--signal); text-underline-offset: 3px; }
+.kessler-backing-columns a svg { display: inline; vertical-align: middle; }
+.kessler-backing-columns .kessler-backing-note { font-size: var(--text-xs); }
+.kessler-wallet-facts { font-size: var(--text-xs); line-height: 1.6; }
+.kessler-wallet-facts > div { margin-bottom: 8px; }
+.kessler-wallet-facts dt { color: var(--muted); }
+.kessler-wallet-facts dd { margin: 0; overflow-wrap: anywhere; }
+.kessler-payment-history { margin: 12px 0 0; padding-left: 18px; font-size: var(--text-xs); line-height: 1.6; }
+.kessler-contributions { padding: 20px 0 12px; scroll-margin-top: 24px; }
+.kessler-contributions-heading { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-start; justify-content: space-between; }
+.kessler-contributions-heading h2 { margin: 0; color: var(--ink); font-size: var(--text-card); line-height: var(--leading-tight); }
+.kessler-contributions-heading p { margin: 8px 0 16px; max-width: 62ch; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-body); }
+.kessler-path-choice { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: var(--text-sm); }
+.kessler-path-choice select { min-width: 0; max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--edge); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
+.kessler-commit-list { list-style: none; padding: 0; margin: 16px 0 0; }
+.kessler-commit-list > li { position: relative; display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 14px; padding: 12px 0; }
+.kessler-commit-list > li:not(:last-child)::before { content: ""; position: absolute; top: 30px; bottom: -12px; left: 9px; width: 2px; background: var(--line); }
+.kessler-commit-node { margin-top: 9px; color: var(--muted); position: relative; z-index: 1; background: var(--paper); }
+.kessler-commit-list > li[data-registered="true"] .kessler-commit-node { color: var(--success); }
+.kessler-commit-copy { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.kessler-commit-copy > button { min-height: 36px; padding: 4px 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: var(--text-base); font-weight: 600; text-align: left; cursor: pointer; }
+.kessler-commit-copy > button:hover { color: var(--signal); text-decoration: underline; text-underline-offset: 4px; }
+.kessler-commit-copy > span { font-size: var(--text-xs); line-height: 1.6; color: var(--muted); }
+.kessler-commit-proof { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 4px; color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
+.kessler-commit-proof > span, .kessler-commit-proof > a { display: inline-flex; align-items: center; gap: 5px; }
+.kessler-commit-proof a { color: var(--signal); min-height: 24px; text-underline-offset: 3px; }
+.kessler-commit-proof small { font-size: inherit; font-variant-numeric: tabular-nums; }
+.kessler-contributions-foot { margin-top: 12px; border-top: 1px solid var(--line); }
+.kessler-contributions-foot p { color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-body); margin: 12px 0 0; }
+#kessler-wren, #kessler-backing { scroll-margin-top: 24px; }
+@media (max-width: 900px) {
+  .kessler-backing-columns { grid-template-columns: 1fr; gap: 16px; }
+  .kessler-backing-columns > section + section { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
+}
+@media (max-width: 540px) {
+  .kessler-guide nav { gap: 0 16px; }
+  .kessler-commit-list > li { grid-template-columns: 20px minmax(0, 1fr); gap: 4px 10px; }
+  .kessler-commit-proof { grid-column: 2; align-items: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; gap: 4px 12px; }
+  .kessler-commit-copy > button { min-height: 44px; }
+  .kessler-path-choice select { flex: 1 1 100%; width: 100%; }
+}

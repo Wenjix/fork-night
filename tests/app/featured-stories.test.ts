@@ -10,24 +10,26 @@ const { featuredRooms, featuredStoryLinks, monadProof, tempoProof, guildProof } 
 const render = () => renderToStaticMarkup(createElement(FeaturedStories));
 const roomRows = () => render().split('<li class="fn-featured-room">').slice(1);
 const row = (title: string) => {
-  const result = roomRows().find(html => html.includes(`<h3>${title}</h3>`));
+  const result = title === "Kessler Ward" ? render().split('<article class="fn-featured-kessler">')[1]?.split("</article>")[0] : roomRows().find(html => html.includes(`<h3>${title}</h3>`));
   assert.ok(result, `Missing judge route for ${title}`);
   return result;
 };
 const primaryHref = (html: string) => {
-  const match = html.match(/class="fn-featured-cta" href="([^"]+)"/);
+  const match = html.match(/class="fn-(?:featured|kessler)-cta" href="([^"]+)"/);
   assert.ok(match);
   return match[1].replaceAll("&amp;", "&");
 };
 
-test("judges have four distinct room routes with the focus and action visible together", () => {
-  assert.match(render(), /Choose what to explore/);
-  assert.equal(roomRows().length, 4);
+test("Kessler leads the three recorded integration rooms with a direct entry", () => {
+  assert.match(render(), /Start in Kessler Ward/);
+  assert.equal(featuredRooms[0].id, "kessler-ward");
+  assert.ok(render().indexOf("Enter Kessler Ward") < render().indexOf("Follow the recorded rehearsals"));
+  assert.equal(roomRows().length, 3);
   for (const [title, focus, roomId, action] of [
     ["The midnight signal", "Monad releases · Privy wallets", "midnight-signal", "View Monad release"],
     ["The Uncharted Star", "Tempo · MPP agent payments", "night-shift", "See Wren’s recorded turn"],
     ["Paper Moon", "Solana · Squads guild funding", "paper-moon", "View guild funding"],
-    ["Kessler Ward", "Shared branching story", "kessler-ward", "Read Kessler Ward"],
+    ["Kessler Ward", "Branching stories · Monad contributions · Wren", "kessler-ward", "Enter Kessler Ward"],
   ]) {
     const html = row(title);
     assert.ok(html.includes(focus));
@@ -47,7 +49,7 @@ test("each room names its stack with brand badges, and a chain badge carries its
   assert.match(row("The Uncharted Star"), /<span class="fn-net">Moderato testnet<\/span>/);
   assert.deepEqual(badgeNames(row("Paper Moon")), ["Solana", "Squads", "Solana receipt"]);
   assert.match(row("Paper Moon"), /<span class="fn-net">Devnet<\/span>/);
-  assert.deepEqual(badgeNames(row("Kessler Ward")), ["Shared branching story"]);
+  assert.deepEqual(badgeNames(row("Kessler Ward")), ["Branch the story", "Monad contributions", "Wren · checking…"]);
 });
 
 test("historical guides retain the recorded amounts and link to their actual path, turn and receipts", () => {
@@ -72,14 +74,14 @@ test("historical guides retain the recorded amounts and link to their actual pat
   assert.doesNotMatch(wren, /Squads|guild funding/);
 });
 
-test("Kessler is an open reading-and-ideas destination with its own packaged artwork", () => {
+test("Kessler shows its real story and capabilities without claiming payments or active creators", () => {
   const kessler = row("Kessler Ward");
   assert.equal(primaryHref(kessler), "/pilot?room=kessler-ward");
   assert.equal(featuredStoryLinks.kessler, "/pilot?room=kessler-ward");
-  assert.match(kessler, /Open for reading and ideas/);
-  assert.match(kessler, /Explore two prepared branches and leave an idea/);
+  assert.match(kessler, /Two prepared branches/);
+  assert.match(kessler, /Monad contribution trail/);
   assert.match(kessler, /night-shift-neon\.webp/);
-  assert.doesNotMatch(kessler, /paid|Wren|Squads|test MON|What powers this room/);
+  assert.doesNotMatch(kessler, /Wren enabled|guild funded|people online|paid for/);
   for (const room of featuredRooms) {
     assert.ok(existsSync(new URL(`../../public${room.artwork.split("#")[0]}`, import.meta.url)), `Missing packaged artwork for ${room.title}`);
     assert.match(row(room.title), /class="story-art/);

@@ -42,6 +42,19 @@ export const guildProof = guild
 
 export const featuredRooms = [
   {
+    id: KESSLER_ROOM_ID,
+    title: "Kessler Ward",
+    focus: "Branching stories · Monad contributions · Wren",
+    stack: [],
+    status: "Read, branch and trace a story together",
+    description: "A blackout, an insulin case and eighty-one floors before dawn. Choose a path, add a scene, and follow the people behind it.",
+    artwork: "/art/night-shift-neon.webp#frame=0",
+    artworkDescription: "Mika stands above the towers of Kessler Ward during a blackout.",
+    href: featuredStoryLinks.kessler,
+    action: "Enter Kessler Ward",
+    record: undefined,
+  },
+  {
     id: "midnight-signal",
     title: "The midnight signal",
     focus: "Monad releases · Privy wallets",
@@ -83,19 +96,6 @@ export const featuredRooms = [
     href: featuredStoryLinks.paperMoonGuild,
     action: "View guild funding",
     record: guildProof ? { label: "Solana receipt", href: guildProof.solanaReceiptUrl, brand: "solana" as const } : undefined,
-  },
-  {
-    id: KESSLER_ROOM_ID,
-    title: "Kessler Ward",
-    focus: "Shared branching story",
-    stack: [],
-    status: "Open for reading and ideas",
-    description: "Explore two prepared branches and leave an idea for what comes next.",
-    artwork: "/art/night-shift-neon.webp#frame=0",
-    artworkDescription: "Mika stands above the towers of Kessler Ward during a blackout.",
-    href: featuredStoryLinks.kessler,
-    action: "Read Kessler Ward",
-    record: undefined,
   },
 ] as const;
 
