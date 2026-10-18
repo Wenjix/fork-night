@@ -4,9 +4,9 @@
 
 **Build a world with friends. Keep every branch. Credit every maker.**
 
-Shared stories · Human and AI makers · Contribution records on Monad
+A shared story workspace for friends, fans and artists.
 
-[Open Fork Night](https://fork-night.vercel.app) · [Join a shared story](https://fork-night.vercel.app/pilot) · [Watch Hunyuan](https://fork-night.vercel.app/hunyuan) · [Watch Kimi](https://fork-night.vercel.app/kimi)
+[Start in Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) · [Explore Fork Night](https://fork-night.vercel.app) · [Watch Hunyuan](https://fork-night.vercel.app/hunyuan) · [Watch Kimi](https://fork-night.vercel.app/kimi)
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-172235?logo=nextdotjs&logoColor=white)](package.json)
 &nbsp;[![Monad testnet](https://img.shields.io/badge/Monad-Testnet-836EF9)](docs/submission/ONCHAIN.md)
@@ -18,11 +18,11 @@ Shared stories · Human and AI makers · Contribution records on Monad
 
 [<img src="public/world-demo/invitation-hero.webp" alt="An illustrated maker repairs a radio beside a sleeping cat in a warm workshop above a rainy city street" width="860" />](docs/submission/DEMO.md)
 
-<sub>Original story illustration from the shared-world demo. Click for the walkthrough.</sub>
+<sub>Original artwork from the shared-world demo. Click for the walkthrough.</sub>
 
 <br/>
 
-[The experience](#the-experience) · [Early feedback](#early-demos-and-creator-feedback) · [Monad proof](#monad-release-proof) · [Agent payments](#agent-payments) · [Creative tools](#creative-tools) · [Quickstart](#quickstart)
+[The experience](#the-experience) · [Try the prototype](#what-works-today) · [How it works](#how-it-works) · [Monad proof](#monad-release-proof) · [AI collaborators](#ai-collaborators) · [Quickstart](#quickstart)
 
 </div>
 
@@ -30,32 +30,157 @@ Shared stories · Human and AI makers · Contribution records on Monad
 
 ## What it is
 
-Fork Night is a shared creative space for friends, fans and artists. Build stories, characters and worlds together, one illustrated moment at a time. Try another ending. Invite someone to continue it. Keep a visible record of the work each branch builds on.
+Fork Night is a place to make illustrated stories together. Read a beginning, add your own scene, and invite someone else to take it further. Every published continuation keeps its link to the earlier work and the maker who added it.
 
-A **maker** is credited for a contribution. A **moment** contains one to three illustrated panels. A **path** connects the opening to a selected ending. A **release** records one complete path and fixes its payment terms. Other branches can continue to grow.
+Friends do not have to agree on one ending. Follow a branch you like, or start another from an earlier moment. Write an idea, use AI to draw a continuation, then review it privately before you publish.
 
-The shared pilot supports ideas, private previews and published continuations. Google sign-in provides an embedded Privy wallet. Existing browser wallets and guest entry are also available. The local preview adds guilds, personal desks and story exports.
+A **moment** is a published contribution with one to three illustrated panels. A **path** follows connected moments from the opening to a selected ending. The story map shows where each contribution belongs.
 
 ## The opportunity
 
 An image can start a story. A community needs somewhere to keep building it. Ideas spread across chats and files. Alternative versions become hard to follow. Earlier contributors can lose recognition when someone shares the finished work.
 
-Two years in San Francisco art communities shaped Fork Night's direction. The founder saw capable artists struggle to gain visibility and build an audience. Fork Night gives friends and fans a way to participate, while artists can develop their characters and worlds with a community.
+Two years in San Francisco art communities shaped Fork Night's direction. The founder saw capable artists struggle to gain visibility and build an audience. Fork Night gives friends and fans a way to participate in the worlds those artists create.
 
-We are starting with friend groups and small fandom communities, including people new to generative AI. Shared generation budgets can lower the cost of experimenting together. A visible contribution history makes it easier to follow the work and agree on payments for a finished release.
-
-The longer-term vision includes artist-led communities and AI creators with supervised production agents. Artists can keep their preferred production tools and use Fork Night to share work, invite contributions and guide their worlds.
+We are starting with friend groups and small fandom communities, including people new to generative AI. They can share a generation budget, try different directions and keep a visible history of their work. The longer-term opportunity is a home for artist-led worlds, with shared production tools and agreed payments for finished releases.
 
 ## The experience
 
-1. **Find a story.** Enter a room and read its opening.
-2. **Choose a moment.** Continue a published scene or use an attributed idea from the board.
-3. **Add your part.** Write an idea and arrange one to three panels.
-4. **Review privately.** Generate a continuation, then publish it or discard it.
-5. **Invite the next maker.** Share a published moment so another person can continue it.
-6. **Finish a path.** Export a story in the local preview, or test a Monad release in Midnight Signal.
+**A blackout. An insulin case. Eighty-one floors before dawn.** In [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward), Mika needs a way through the city. Follow a light across the rooftops, take the dark stairwell, or suggest another direction.
 
-The [demo guide](docs/submission/DEMO.md) covers the original moon-bus story, prepared fandom examples and the shared pilot. The fan stories are unofficial. Their captions and fictional collaborators are prepared examples.
+1. **Read a beginning.** Open a room and explore its illustrated story.
+2. **Choose your moment.** Use the map to follow a branch or return to an earlier moment.
+3. **Add an idea.** Join the room, then leave a suggestion with your name on it.
+4. **Make a continuation.** In a room with credits, generate one to three panels and review the private preview.
+5. **Publish when ready.** Add the continuation to the story, or discard it.
+6. **Invite the next maker.** Share the published moment so someone else can continue from that point.
+
+The **Your first night** guide follows your progress from reading to your first contribution. You can join as a named guest, use Google, or sign in with a browser wallet. Reading and leaving an idea need no wallet payment.
+
+## What works today
+
+**Fork Night is a hackathon prototype with a hosted shared pilot.** The table reflects the October 17 launch and published source updates through October 18, 2026.
+
+| Start here | What you can explore | Scope |
+| --- | --- | --- |
+| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared moments, two branches and a shared idea board. | Open for reading and ideas. It launched with zero generation credits. Wren is inactive. |
+| [Paper Moon](https://fork-night.vercel.app/pilot?room=paper-moon) | Shared ideas, private previews and published continuations. | Generation and room creation use configured credits and limits. |
+| [Midnight Signal](https://fork-night.vercel.app/pilot?room=midnight-signal) | Registered contributions, release support and contributor claims. | Monad testnet. Wallet transactions need test MON for network fees. |
+| [The Uncharted Star](https://fork-night.vercel.app/pilot?room=night-shift) · [Wren's activity](https://fork-night.vercel.app/agents) | Wren's published continuations and its recorded Tempo payment. | Completed demo. The founder started each agent turn locally. |
+| [Night Watch](https://fork-night.vercel.app/night-watch-privy) | An agent prepares private candidates under limited payment permission. | Recorded walkthrough. Interactive controls require the local runner. |
+| [Hunyuan](https://fork-night.vercel.app/hunyuan) · [Kimi](https://fork-night.vercel.app/kimi) | Image, motion and planning examples with walkthrough videos. | Public articles in English and Chinese. Media playback uses saved results. |
+| [Local workspaces](docs/submission/DEMO.md) | Sample guilds, personal desks, story exports and storyboard videos. | Browser-saved examples with sample identities, balances and prepared generation. |
+
+Kessler's prepared moments are labeled **Prepared story**. The Uncharted Star retains the room ID `night-shift` and its earlier history. The room guide also links the relevant stories to their wallet, payment and treasury demonstrations.
+
+## How it works
+
+```mermaid
+flowchart LR
+    A["Choose a published moment"] --> B["Write a continuation"]
+    B --> C["Reserve room credits"]
+    C --> D["Generate and save panels"]
+    D --> E["Maker reviews privately"]
+    E --> F["Publish with parent<br/>and maker credit"]
+    E --> G["Discard the preview"]
+    F --> A
+```
+
+Supabase stores accounts, published moments, private drafts, images and expense records. A **parent** is the published moment that a new moment continues. A Trigger.dev worker requests OpenAI images using the parent's final image and the selected path as references.
+
+**Review before publication.** Only the requesting maker can view an unpublished preview. Publication adds the new moment, its parent link and its maker credit to the shared story. Other branches remain available.
+
+**Charge for a complete delivery.** One or two panels use one room credit. Three panels use two credits. Discarding a complete preview keeps that charge. An incomplete delivery uses no room credits.
+
+**Keep spending limits explicit.** Room credits measure generation capacity. The **provider expense allowance** limits what the operator can spend on AI requests. Testnet payments do not increase that allowance.
+
+**Recover saved work.** Each generation job has a saved identity. Recovery checks recorded provider requests and saved images before it continues. It does not repeat a recorded image request. If a provider expense is unknown, the system stops new image requests.
+
+A Cloudflare timer starts a Trigger recovery check each minute in Production. The worker can check saved jobs after the browser closes. Recovery of an interrupted generation remains a separate pilot acceptance check.
+
+[Architecture and access rules](docs/submission/ARCHITECTURE.md) · [Hosting and deployment records](docs/submission/HOSTING.md) · [Recovery timer](workers/recovery-timer/README.md)
+
+## Monad release proof
+
+**A finished story can carry a verifiable payment agreement.** A **release** fixes one complete path and its payment terms. Other branches can continue to grow.
+
+The contract calls a published moment a **scene**. It records a cryptographic hash of the scene's public record and a link to its parent scene.
+
+1. The curator approves a maker's wallet.
+2. The maker signs a transaction to register a scene.
+3. The curator selects a complete registered path and freezes the release.
+4. A supporter sends test MON to the release contract.
+5. Each recipient claims its share independently.
+
+The contract derives recipients from the complete registered path. Each distinct wallet receives an equal share. Several bylines that use one wallet count as one recipient. After release, the curator cannot change the recipients. Each claim goes to its fixed recipient.
+
+The archived Midnight Signal rehearsal records **six scenes, four recipient wallets and 1.0 test MON paid out**. Each wallet claimed **0.25 test MON**, including two Google-linked Privy wallets. The founder operated all test wallets and bylines.
+
+The [completed rehearsal record](docs/submission/PRIVY-REHEARSAL.json) shows zero remaining balance at block **70416466**. Later support and claims changed the live totals. MonadScan reports **Exact Match** source verification.
+
+Google sign-in can create an embedded Privy wallet inside the app. Makers can register work and claim payments without installing a wallet extension. Existing browser wallets also work.
+
+Wallet addresses identify payment destinations. They do not establish unique people or ownership of the artwork. Generation credits and release payments are separate.
+
+[Verified contract](https://testnet.monadscan.com/address/0x15247565331013132e5563Cd29E99E0baA38690f#code) · [Release setup](docs/submission/ONCHAIN.md) · [Account and wallet setup](docs/submission/ONBOARDING.md) · [Wallet approval flow](docs/submission/WALLET-REQUESTS.md)
+
+## AI collaborators
+
+### Kimi: plan the next scene
+
+Kimi K3, through TokenRouter, proposes continuations and checks plans against the selected story path and world notes. The desk co-pilot, Night Watch and Wren use this planning integration. A separate image model draws the panels.
+
+All **12 calls** in the recorded comparison returned valid JSON in the requested format. One desk response took **3.9 seconds**. One planning, moderation and self-check sequence took **15.7 seconds**. These are individual measurements.
+
+[Kimi walkthrough](https://fork-night.vercel.app/kimi) · [Planner source](src/night-watch/brain.ts)
+
+### Night Watch: return to private drafts
+
+Night Watch prepares story candidates while the maker is away. A temporary Privy signer authorizes payments within a policy. Privy checks the network, token, recipient, maximum amount and deadline. Fork Night separately tracks the total session allowance and purchase count.
+
+The local runner can continue after the browser closes. The maker reviews the results and chooses what to publish. Two recorded local runs each bought **five room test credits** through Base Sepolia x402 and delivered **three private candidates**.
+
+All **10 live Privy policy checks** passed, including refusal and revocation checks. Revocation blocks new signatures. A previously signed payment can still settle.
+
+[Privy walkthrough](https://fork-night.vercel.app/night-watch-privy) · [Night Watch setup and payment receipts](docs/submission/NIGHT-WATCH.md)
+
+### Wren: an agent with a visible byline
+
+In the recorded demo, Wren read the story, left ideas and published three continuations under **Wren (AI agent)**. The founder started each turn. People can continue those published moments in The Uncharted Star.
+
+Wren used a limited Tempo access key to buy more room capacity when it ran out of attempts. Its earlier published turns used GPT-4.1 mini. The recorded Kimi test planned a turn without posting.
+
+The newer Kessler workflow adds private Wren drafts for the requesting maker to review and publish. Its web controls and database support are deployed. The hosted Wren task and funding policy remain inactive.
+
+[Wren's contribution and payment proof](docs/submission/AGENT-ROOM.md) · [Agent source](agents/wren/README.md) · [Tempo walkthrough](https://fork-night.vercel.app/tempo)
+
+## Agent payments
+
+**A group or agent can add capacity to a shared room.** Local agent clients buy five room test credits through x402 or the Machine Payments Protocol (MPP).
+
+| Protocol | Network | Price for five room test credits |
+| --- | --- | --- |
+| x402 | Solana devnet | 1.00 test USDC |
+| x402 | Base Sepolia | 1.00 test USDC |
+| MPP | Tempo Moderato testnet | 1.00 test pathUSD |
+
+The server returns an HTTP 402 payment offer. The agent signs a payment for that offer. The server saves a payment intent before settlement and adds credits after confirmation. Submitting the same payment again does not add credits twice. Recovery checks the saved payment after an uncertain response.
+
+**A shared treasury can fund a room.** A Squads v4 treasury used two-of-three approval to authorize a limited payer wallet on Solana devnet. That wallet withdrew **1 test USDC** and bought **five room test credits** through x402. A later vote removed the remaining allowance. A separate Safe rehearsal on Base Sepolia also funded a payer wallet that bought room credits.
+
+The founder controlled the test keys. These demonstrations used testnet tokens. The operator still paid the AI providers. Room credits tracked capacity within the existing expense allowance.
+
+[x402 setup and receipts](docs/submission/X402.md) · [MPP setup and recovery](docs/submission/MPP.md) · [Squads and Safe treasury records](docs/submission/TREASURY-HOPS.md)
+
+## Creative tools
+
+**Keep a branch recognizable as it grows.** Hunyuan through GMI Cloud supplied four images for a prepared Blade Runner story path. Those images became the references for a **12-second Wan 3.0 film**. Hy-Image 3.5 preview also restyled three scenes in anime, using each original image as a reference. Captions and maker credits stayed unchanged.
+
+A separate [Kessler example](public/film-demo/night-shift-wan6.mp4) turns six illustrated scenes into an **18-second Wan film**. The local workspace can also create a storyboard video from a selected path's images, captions and credits.
+
+These examples play saved results. Viewing them makes no model request. The prepared fan stories are unofficial. Their sample collaborators are fictional.
+
+[Hunyuan walkthrough](https://fork-night.vercel.app/hunyuan) · [Artwork and model records](docs/submission/ARTWORK.md) · [Story and export demos](docs/submission/DEMO.md)
 
 ## Early demos and creator feedback
 
@@ -64,175 +189,23 @@ During **SF Tech Week**, the founder presented Fork Night at an **October 5, 202
 <table>
 <tr>
 <td width="50%">
-<img src="docs/submission/events/boat-demo-2026-10-05-01.webp" alt="The founder presents Fork Night's branching story map on a projector at the October 5 boat demo night" width="100%" />
+<img src="docs/submission/events/boat-demo-2026-10-05-01.webp" alt="The founder presents Fork Night's branching story map at the October 5 boat demo night" width="100%" />
 <br/>
 <sub>Presenting the branching story map.</sub>
 </td>
 <td width="50%">
-<img src="docs/submission/events/boat-demo-2026-10-05-02.webp" alt="A live audience watches the prepared Night City After Hours concept at the October 5 boat demo night" width="100%" />
+<img src="docs/submission/events/boat-demo-2026-10-05-02.webp" alt="An audience watches the prepared Night City After Hours walkthrough at the boat demo night" width="100%" />
 <br/>
 <sub>The prepared Night City After Hours walkthrough.</sub>
 </td>
 </tr>
 </table>
 
-<sub>Actual photographs from the October 5 boat demo night.</sub>
+<sub>Photographs from the October 5 boat demo night.</sub>
 
-On **October 8**, the founder demonstrated the concept at an AI content creators' event. Conversations included people building AI personalities and influencer tools. Their feedback helped shape experiments with creator review, visible work history and supervised agents.
+On **October 8**, the founder also demonstrated the concept at an AI content creators' event. Conversations with people building AI personalities and influencer tools helped shape the creator-review and supervised-agent experiments.
 
-These conversations provide a starting point for recruitment. We plan to follow up with participants and host small Fork Nights with a limited generation budget. We will observe whether people continue another maker's work, return to the same project and invite a friend.
-
-[Demo account and feedback](docs/submission/BOAT-DEMO.md)
-
-## What works today
-
-**Fork Night is a hackathon prototype with a hosted shared pilot.** On October 14 at 03:00 UTC, we confirmed that generation, text shaping, room creation and scheduled recovery were enabled. The founder confirmed a two-account walkthrough. Production logs separately recorded two completed generation runs.
-
-Room creation has a limited allowance. At that checkpoint, the first new room and invitation had not yet been observed.
-
-**Kessler Ward is live for reading and ideas.** The October 17 launch added 11 prepared scenes and two branches to the production database. Visitors start at the opening, follow either branch and leave an idea at any scene. The room starts with zero generation credits. Wren requests and funding remain disabled. Full Wren activation still needs its worker, a fresh testnet allowance and the corresponding settings. See [hosting status](docs/submission/HOSTING.md) for the deployed source checkpoint.
-
-| Surface | What it provides | Current access |
-| --- | --- | --- |
-| [Shared rooms](https://fork-night.vercel.app/pilot) | Shared ideas, private generation, published branches and room creation from prepared openings. | Hosted pilot with configured limits. Guest, Google and browser-wallet entry. |
-| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared scenes, two branches and shared ideas. | Hosted room. New images need room credits; Wren is not active yet. |
-| [Midnight Signal](https://fork-night.vercel.app/pilot?room=midnight-signal) | Scene registration, release payments and contributor claims on Monad testnet. | A configured wallet and test MON are required for chain transactions. |
-| Local story workspace at `/` | Sample rooms, guilds, desks, story exports and browser-made storyboard videos. | Sample identities and balances stay in the browser. Generation uses prepared results. |
-| [Wren](https://fork-night.vercel.app/agents) | Published agent activity and the recorded Tempo payment. | The page reads shared data. The founder starts agent turns locally. |
-| Agent payment APIs | Room test-credit purchases through x402 and MPP. | Local development server only, with agent credentials and room permission. |
-| [Night Watch](https://fork-night.vercel.app/night-watch-privy) | Private agent drafts and restricted Privy signing. | The hosted page explains the demo. Interactive controls require the local runner. |
-| [Hunyuan](https://fork-night.vercel.app/hunyuan) and [Kimi](https://fork-night.vercel.app/kimi) | Integration write-ups with recorded walkthrough videos. | Public pages in English and Chinese. |
-| `/world-demo` and `/creator-demo` | Prepared chapter collaboration and creator-review examples. | World records use Supabase. Creator-review records stay in the browser. |
-
-## Monad release proof
-
-**A finished story can carry a verifiable payment agreement.** The original Midnight Signal room demonstrates this on Monad testnet.
-
-The contract calls a published moment a **scene**. A **scene commitment** is a cryptographic hash of the scene's public record. The contract records that commitment and its parent scene.
-
-1. The curator approves a maker's wallet.
-2. The maker signs a transaction to register a scene.
-3. The curator selects a complete path and freezes the release.
-4. A supporter sends test MON to the release contract.
-5. Each recipient claims its share independently.
-
-The contract derives recipients from the complete registered path. Each distinct wallet receives an equal share. Several bylines that use one wallet count as one recipient. After release, the curator cannot change the recipients. The contract sends each claim to its fixed recipient.
-
-| Founder-operated rehearsal | Original release | Release with Privy wallets |
-| --- | --- | --- |
-| Registered scenes | 4 | 6 |
-| Recipient wallets | 2 | 4, including 2 Privy wallets |
-| Support received and paid | 1.0 test MON | 1.0 test MON |
-| Each recipient's claim | 0.5 test MON | 0.25 test MON |
-| Unpaid claims | 0 at block 70298300 | 0 at block 70416466 |
-
-The founder operated the test wallets and bylines. The [completed Privy record](docs/submission/PRIVY-REHEARSAL.json) confirms all four claims and a zero contract balance. MonadScan reports **Exact Match** source verification.
-
-The policy records payment destinations. It does not prove that each wallet represents a different person or owns the artwork. Generation credits and release payments are separate.
-
-[Verified contract](https://testnet.monadscan.com/address/0x15247565331013132e5563Cd29E99E0baA38690f#code) · [Release setup](docs/submission/ONCHAIN.md) · [Deployment record](docs/submission/MONAD-TESTNET.json) · [Wallet approval flow](docs/submission/WALLET-REQUESTS.md)
-
-## Privy wallets and Night Watch
-
-### Start with Google
-
-Google sign-in links a Supabase account to an embedded Privy wallet. A maker can use Monad without installing a wallet extension. The founder recovered the same account and wallet in another browser profile. Two Google-linked wallets completed scene registration and payout claims in the Monad rehearsal.
-
-[Account and wallet setup](docs/submission/ONBOARDING.md)
-
-### Give an agent limited permission
-
-Night Watch prepares private story candidates while the maker is away. The maker adds a temporary signer to their Privy wallet. This signer can approve payments within a defined policy.
-
-Privy checks the network, token, recipient, maximum amount and deadline for each payment authorization. Fork Night separately tracks the total session allowance and the number of purchases. The local runner can continue after the browser closes. The maker reviews the results and chooses what to publish.
-
-All **10 live Privy policy checks** passed, including refusal and revocation checks. Two local runs completed Base Sepolia x402 payments. Each payment added **5 room test credits**, and each run delivered **3 private candidates**.
-
-Revocation blocks new signatures. A payment signed before revocation can still settle. The separate Monad release rehearsal above remains the completed payout proof.
-
-[Privy walkthrough](https://fork-night.vercel.app/night-watch-privy) · [Night Watch setup](docs/submission/NIGHT-WATCH.md) · [First payment](https://sepolia.basescan.org/tx/0x38f804ef58d0370e1b1485b6cdf0ece48d1c3c520968642ba24cbdd8719fd556) · [Second payment](https://sepolia.basescan.org/tx/0xec4beb8147474e5f95d6a180d76875a1fce0f09753ddd782eb1e56ddb451df3a)
-
-## Agent payments
-
-**Groups and agents can add capacity to a shared room.** Local agent clients buy five room test credits through x402 or the Machine Payments Protocol (MPP).
-
-| Protocol | Network | Price for 5 room test credits |
-| --- | --- | --- |
-| x402 | Solana devnet | 1.00 test USDC |
-| x402 | Base Sepolia | 1.00 test USDC |
-| MPP | Tempo Moderato testnet | 1.00 test pathUSD |
-
-The server returns an HTTP 402 payment offer. The agent signs a payment for that offer. The server saves a payment intent before settlement and adds credits after confirmation. Submitting the same payment again does not add credits twice. Recovery checks the saved payment after an uncertain response.
-
-### Squads v4: a guild funds the room
-
-A Squads v4 treasury on Solana devnet demonstrated a two-of-three approval rule. Two steward keys approved a capped allowance for an authorized payer wallet. That wallet withdrew **1 test USDC** and bought **5 room test credits** through x402.
-
-Four invalid actions were rejected in simulation. A later two-of-three vote removed the remaining allowance. A separate Safe rehearsal on Base Sepolia also funded a payer wallet that bought room credits.
-
-The founder controlled all test keys. Each treasury funded a payer wallet; the payer made the x402 payment. The [treasury guide](docs/submission/TREASURY-HOPS.md) records approvals, transfers, payments and allowance removal.
-
-### Tempo MPP: Wren buys more capacity
-
-Wren is an AI maker in The Night Shift. It reads the story, leaves an idea, generates a continuation and checks the private preview. It publishes a preview that passes its checks. The founder starts each turn.
-
-When Wren used its available attempts, it bought an MPP top-up on Tempo Moderato. A steward-authorized access key signed the payment. Tempo enforced the key's daily spending limit, recipient, permitted call and expiry.
-
-These are completed testnet payment demonstrations. The operator still pays the AI providers. Room credits track generation capacity; testnet payments do not raise the provider expense allowance.
-
-[x402 setup and receipts](docs/submission/X402.md) · [MPP setup and recovery](docs/submission/MPP.md) · [Wren's contribution and payment proof](docs/submission/AGENT-ROOM.md)
-
-## Creative tools
-
-### Hunyuan: keep a branch visually consistent
-
-We used Tencent Hunyuan through GMI Cloud to generate **24 story images** in the initial comparison. Wan 3.0 then produced **three motion clips**.
-
-The prepared Blade Runner example uses four Hunyuan images as references for a **12-second Wan film**. A second example restyles three scenes in anime with Hy-Image 3.5 preview. Each scene uses the original artwork as a reference. Captions and maker credits stay unchanged.
-
-The app plays saved results. Viewing the examples makes no model request.
-
-[Hunyuan write-up and video](https://fork-night.vercel.app/hunyuan) · [Artwork and model records](docs/submission/ARTWORK.md)
-
-### Kimi: plan a continuation and check the story
-
-Kimi K3, through TokenRouter, powers the desk co-pilot, Night Watch planning and Wren's turn planner. It reads the selected story path and world notes. It proposes continuations and checks its plans for continuity.
-
-All **12 calls** in the recorded comparison returned valid JSON in the requested format. One desk response took **3.9 seconds**. One planning, moderation and self-check sequence took **15.7 seconds**. These are individual measurements.
-
-Later local Night Watch runs combined Kimi planning and review with delivered image candidates. A separate image model draws the panels. The maker controls publication. Wren's earlier published turns used GPT-4.1 mini; its recorded Kimi test planned a turn without posting.
-
-[Kimi write-up and video](https://fork-night.vercel.app/kimi) · [Planner source](src/night-watch/brain.ts) · [Wren source](agents/wren/README.md)
-
-## How it works
-
-```mermaid
-flowchart LR
-    A["Choose a published moment"] --> B["Write a private continuation"]
-    B --> C["Supabase checks limits<br/>and reserves credits"]
-    C --> D["Trigger.dev worker<br/>requests OpenAI images"]
-    D --> E["Save and verify<br/>the complete preview"]
-    E --> F["Maker reviews"]
-    F --> G["Publish with parent<br/>and maker credit"]
-    F --> H["Discard the draft"]
-    G --> A
-    J["Local agent client"] --> K["x402 or MPP payment"]
-    K --> L["Confirm settlement<br/>Add 5 room test credits"]
-    L -. "Room capacity" .-> C
-    G -. "Selected Midnight Signal path" .-> I["Register scenes on Monad<br/>Freeze release · support · claim"]
-```
-
-Supabase stores accounts, published moments, private drafts, images and expense records. A **parent** is the published moment that a new moment continues. The Trigger.dev worker uses the parent's final image and the selected path as references.
-
-A complete delivery uses one room credit for one or two panels. Three panels use two credits. Discarding a complete preview keeps that charge. An incomplete delivery uses no room credits. Local examples use sample credits and prepared results.
-
-The **provider expense allowance** is the operator's approved limit for AI requests. It is separate from room credits and testnet payments. Voice and text helpers have their own request limits.
-
-Each generation job has a saved identity. Recovery checks saved provider receipts and images before it continues work. It does not repeat a recorded image request. An unknown provider expense stops new image requests.
-
-In Production, a Cloudflare timer starts a Trigger recovery check each minute. The worker checks saved jobs in Supabase without relying on an open browser. The timer controls when checks start; Trigger performs the recovery work.
-
-[Architecture and access rules](docs/submission/ARCHITECTURE.md) · [Production setup](docs/submission/HOSTING.md) · [Recovery timer](workers/recovery-timer/README.md)
+[Demo account and feedback](docs/submission/BOAT-DEMO.md) · [Development history and concept studies](docs/submission/PROCESS.md)
 
 ## Quickstart
 
@@ -240,24 +213,17 @@ In Production, a Cloudflare timer starts a Trigger recovery check each minute. T
 
 Use **Node.js 22.18 or newer** and **pnpm 10.18.3**.
 
-1. Install the pinned dependencies:
+```sh
+pnpm install --frozen-lockfile
+pnpm run dev
+```
 
-   ```sh
-   pnpm install --frozen-lockfile
-   ```
+Open **http://127.0.0.1:3000**. Choose **The moon missed the bus** for an original story.
 
-2. Start the app:
+The local story preview needs no credentials and makes no model requests. It uses prepared results and sample balances. Follow the [demo guide](docs/submission/DEMO.md) to explore branching, private review and story export.
 
-   ```sh
-   pnpm run dev
-   ```
-
-3. Open **http://127.0.0.1:3000**.
-4. Choose **The moon missed the bus** for an original story.
-
-The local preview needs no credentials. It makes no model requests. The [demo guide](docs/submission/DEMO.md) gives a complete walkthrough.
-
-### Shared development pilot
+<details>
+<summary><b>Set up a shared development pilot</b></summary>
 
 Use a separate database and budget from Production.
 
@@ -288,90 +254,39 @@ Use a separate database and budget from Production.
 
 Keep the app and worker processes active. Keep provider and server keys out of `NEXT_PUBLIC_*` variables.
 
-The latest migrations leave the database execution environment unset. The database starts with generation paused and a zero provider expense allowance. Keys alone do not enable image generation. The public Trigger project reference is in [trigger.config.ts](trigger.config.ts).
+A fresh database starts with generation paused, no execution environment and a zero provider expense allowance. Keys alone do not enable generation. Set an approved operator budget before requesting images.
 
-The worker needs access to the configured Trigger project. If you use your own project, replace the project reference in [trigger.config.ts](trigger.config.ts).
+The [budget-transfer script](scripts/activate-pilot-budget.ts) imports an existing, approved local experiment ledger. It does not create a new allowance or set the execution environment.
 
-Before you request images, configure the approved operator budget. The [budget-transfer script](scripts/activate-pilot-budget.ts) imports an existing, approved local experiment ledger. It does not set the execution environment or create a new allowance. A fresh database needs its own budget settings.
+The worker needs access to the project in [trigger.config.ts](trigger.config.ts). If you use your own Trigger project, replace that project reference.
 
-A guest account belongs to its browser session. The same display name in another browser does not restore that account. [Onboarding](docs/submission/ONBOARDING.md) explains Google recovery and EVM or Solana wallet sign-in.
+A guest account belongs to its browser session. Reusing its display name in another browser does not restore the account. See [onboarding](docs/submission/ONBOARDING.md) for Google recovery and wallet sign-in.
 
-Testnet release actions also need public contract settings and a wallet funded with test MON. Use the [release setup guide](docs/submission/ONCHAIN.md) to configure those settings.
+For testnet releases, follow the [Monad setup guide](docs/submission/ONCHAIN.md). For public hosting, follow the [Vercel and Trigger guide](docs/submission/HOSTING.md) and the [Cloudflare timer setup](workers/recovery-timer/README.md).
 
-For public hosting, use the [Vercel and Trigger Production guide](docs/submission/HOSTING.md). Unattended Production recovery also needs the separately deployed [Cloudflare timer](workers/recovery-timer/README.md). The older [Cloudflare setup](docs/submission/CLOUDFLARE.md) serves only the demo and signup pages.
+</details>
 
 ## Built with
 
 | Layer | Technology | Role |
 | --- | --- | --- |
-| App | Next.js 16, React 19, TypeScript, Tailwind CSS | Shared stories and creative workspaces. |
-| Shared data | Supabase Auth, PostgreSQL and Storage | Accounts, story paths, private drafts, media and expense records. |
-| Background work | Trigger.dev | Image generation and saved-job recovery. |
-| Recovery clock | Cloudflare Workers | One Production recovery notification per minute. |
-| Live image generation | OpenAI | Continuation panels based on earlier images. |
-| Prepared art and motion | Hunyuan, Hy-Image 3.5 preview, Wan 3.0 through GMI Cloud | Story images, branch restyles and motion examples. |
-| Agent planning | Kimi K3 through TokenRouter | Story suggestions, plans and plan review. |
-| Optional voice | Cartesia Ink-2 | Speech converted to editable text. |
-| Wallets and signing | Privy, Supabase wallet/Google sign-in | Embedded wallets, browser-wallet accounts and restricted agent signatures. |
-| Agent payments | x402 and MPP | Room test-credit purchases on Solana devnet, Base Sepolia and Tempo Moderato. |
-| Treasury funding | Squads v4 and Safe | Approved transfers to payer wallets. |
-| Release payments | Solidity 0.8.24, ethers, Monad testnet | Scene records, fixed release terms and independent claims. |
-| Storyboard export | Browser Canvas and MediaRecorder | Videos made from a selected path's images, captions and credits. |
+| App | Next.js 16, React 19, TypeScript, Tailwind CSS | Story rooms, maps and creative workspaces. |
+| Accounts and storage | Supabase Auth, PostgreSQL, Storage | Shared stories, private drafts, images and expense records. |
+| Generation and recovery | Trigger.dev, OpenAI, Cloudflare Workers | Image requests, saved results and scheduled recovery checks. |
+| Creative examples | Hunyuan, Hy-Image 3.5 preview, Wan 3.0 through GMI Cloud | Prepared story art, branch restyles and films. |
+| Agent planning | Kimi K3 through TokenRouter | Continuation plans, suggestions and review. |
+| Wallets and signatures | Privy, browser wallets | Embedded wallets and limited agent signing. |
+| Room payments | x402, MPP | Test-credit purchases on Solana devnet, Base Sepolia and Tempo Moderato. |
+| Treasury funding | Squads v4, Safe | Approved transfers to payer wallets. |
+| Release payments | Solidity 0.8.24, ethers, Monad testnet | Registered contributions, fixed recipients and independent claims. |
+| Storyboard export | Browser Canvas, MediaRecorder | Videos from a selected path's images, captions and credits. |
 
-The app uses self-hosted Bricolage Grotesque and Inter, plus compressed illustrations. See [artwork and font attribution](docs/submission/ARTWORK.md).
+The app uses self-hosted Bricolage Grotesque and Inter, plus compressed illustrations. Optional Cartesia Ink-2 voice input is implemented but disabled in the hosted pilot. See [artwork and font attribution](docs/submission/ARTWORK.md).
 
 ## Technical reference
 
 <details>
-<summary><b>Generation controls, helper allowances and recovery</b></summary>
-
-Run `pnpm run pilot:status` to inspect saved requests for the guest named `tester`.
-
-The command submits no generation request. It prints no prompts. Its optional arguments select a room and guest display name:
-
-```sh
-pnpm run pilot:status midnight-signal tester
-```
-
-**Check saved result** reconnects to a saved generation request. **Invite the next storyteller** reveals the published moment link. A localhost link works on the same computer. Other people need a reachable deployment.
-
-A fresh database starts with voice and text shaping disabled. Their request allowances are separate from image-generation accounting.
-
-Inspect the helper allowances:
-
-```sh
-node --env-file=.env.local scripts/configure-pilot-assist.ts --status
-```
-
-After you decide the permitted usage, set the total request limits:
-
-```sh
-node --env-file=.env.local scripts/configure-pilot-assist.ts --voice-total 5 --shape-total 10
-```
-
-The example allows up to five voice credentials and ten shaping requests globally. Failed requests also use the allowance. The default guest limits are five voice credentials and ten shaping requests. Voice needs the server-only `CARTESIA_API_KEY`.
-
-Pause new helper requests:
-
-```sh
-node --env-file=.env.local scripts/configure-pilot-assist.ts --pause
-```
-
-A pause does not revoke credentials already issued. The browser stops audio capture at 30 seconds. Voice credentials expire after 60 seconds. These controls do not enforce provider audio duration or dollar spend. Live voice quality and physical-phone behavior still need rehearsal.
-
-For local credit refills:
-
-1. Set `PILOT_LOCAL_CONTROLS=1` in `.env.local`.
-2. Restart the server.
-3. Join as a named guest.
-4. Select **Add 5 test credits** beside the balance.
-
-The control adds test capacity. It preserves recorded usage and the provider expense allowance. It does not enable paused generation. Hosted environments keep this control disabled.
-
-</details>
-
-<details>
-<summary><b>Checks and contract tests</b></summary>
+<summary><b>Development checks</b></summary>
 
 Run the application checks:
 
@@ -382,49 +297,33 @@ pnpm run build
 pnpm run docs:check
 ```
 
-For contract tests, install the pinned **Solidity 0.8.24** compiler.
-If the compiler is outside `PATH`, set `SOLC_BIN` to its executable.
-
-Compile the contract:
+For contract tests, install the pinned **Solidity 0.8.24** compiler. If the compiler is outside `PATH`, set `SOLC_BIN` to its executable.
 
 ```sh
 pnpm run contracts:compile
-```
-
-Run the contract tests:
-
-```sh
 pnpm run contracts:test
 ```
 
-The database policy proof needs PostgreSQL and `pg_config`. Run `pnpm run test:pilot-db` to check the policies.
+The database policy proof needs PostgreSQL and `pg_config`:
 
-The script creates a temporary cluster. It removes that cluster after the checks.
+```sh
+pnpm run test:pilot-db
+```
 
-The optional hosted proof needs a dedicated Supabase test project. Its [script](scripts/test-pilot-live.ts) lists four required environment variables. The command does not load `.env.local`.
-
-Set these shell variables: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` and `FORK_NIGHT_TEST_PROJECT_REF`. Run `pnpm run test:pilot-live` in that environment.
-
-The script creates and removes its own labeled records. It makes no AI call. The [architecture guide](docs/submission/ARCHITECTURE.md) describes the proof's scope.
+The script creates a temporary cluster and removes it after the checks. The [architecture guide](docs/submission/ARCHITECTURE.md) describes the proof and the optional hosted checks.
 
 </details>
 
 <details>
-<summary><b>Offline experiments and submission export</b></summary>
+<summary><b>Inspect saved work and export source</b></summary>
 
-List the deterministic image experiments:
-
-```sh
-pnpm run experiment list
-```
-
-Prepare an OpenAI request from an original PNG, JPEG or WebP reference:
+Inspect saved requests for a named guest:
 
 ```sh
-pnpm run experiment:openai:prepare continuation /path/to/original.png first-continuation
+pnpm run pilot:status midnight-signal tester
 ```
 
-The command saves a private request bundle. It needs no API key and makes no provider call. The separate paid runner keeps permanent attempt and expense records. The [architecture guide](docs/submission/ARCHITECTURE.md) describes its limits and recovery rules.
+The command submits no generation request and prints no prompts. In the app, **Check saved result** reconnects to an existing request.
 
 Create a fresh submission source folder:
 
@@ -432,51 +331,35 @@ Create a fresh submission source folder:
 pnpm run submission:export
 ```
 
-The export uses the [explicit file selection](config/submission-files.json). It writes to a fresh `.local/submission/fork-night` folder. The folder contains app source, tests, runtime assets, selected documentation and license notices. The export excludes local working notes, secrets, source artwork and Git history. It does not publish or push a repository.
-
-Keep working notes, research, design archives and raw receipts in ignored `.internal/` or `.local/` folders. New files under `docs/` are ignored by default. To publish a curated document, add it to both the export selection and the documentation section of [`.gitignore`](.gitignore). Keep Wren's local `config.json` private; commit only its example.
+The export uses the [explicit file selection](config/submission-files.json) and writes to a fresh `.local/submission/fork-night` folder. It includes source, tests, runtime assets, selected documentation and license notices. It excludes private working notes, secrets, source artwork and Git history. The command does not publish or push a repository.
 
 </details>
 
-## Development process
-
-Brainstorming began on **September 27, 2026**. Fork Night grew from product and visual studies into a shared generation pilot, agent payment flows and a Monad release contract.
-
-The [development account](docs/submission/PROCESS.md) includes a [fourteen-image concept gallery](docs/submission/process/round-4/README.md). These images show proposals explored before implementation.
-
-## Technical guides
-
 | Guide | What it covers |
 | --- | --- |
-| [Project](docs/submission/PROJECT.md) | Product behavior and implementation scope. |
-| [Demo](docs/submission/DEMO.md) | Local examples and shared walkthroughs. |
-| [Architecture](docs/submission/ARCHITECTURE.md) | Story paths, draft access, spending and recovery. |
-| [Monad proof](docs/submission/ONCHAIN.md) | The release contract, payments and claims. |
-| [Onboarding](docs/submission/ONBOARDING.md) | Account recovery and wallet setup. |
-| [Night Watch](docs/submission/NIGHT-WATCH.md) | Privy signer limits and local agent execution. |
-| [Wallet requests](docs/submission/WALLET-REQUESTS.md) | Signed maker requests and curator approval. |
-| [x402 payments](docs/submission/X402.md) | Room purchases on Solana devnet and Base Sepolia. |
-| [MPP payments](docs/submission/MPP.md) | Room purchases and payment recovery on Tempo Moderato. |
-| [Treasury funding](docs/submission/TREASURY-HOPS.md) | Squads v4 and Safe approvals, transfers and receipts. |
-| [Wren](docs/submission/AGENT-ROOM.md) | Agent contributions and limited Tempo spending. |
-| [Hunyuan](https://fork-night.vercel.app/hunyuan) | Prepared images, restyles and motion. |
-| [Kimi](https://fork-night.vercel.app/kimi) | Story planning, review and recorded measurements. |
-| [Hosting](docs/submission/HOSTING.md) | Web, generation worker and recovery setup. |
-| [Artwork](docs/submission/ARTWORK.md) | Runtime media and attribution. |
+| [Project](docs/submission/PROJECT.md) · [Demo](docs/submission/DEMO.md) | Product scope, prepared stories and walkthroughs. |
+| [Architecture](docs/submission/ARCHITECTURE.md) · [Hosting](docs/submission/HOSTING.md) | Access rules, generation, recovery and deployment records. |
+| [Monad releases](docs/submission/ONCHAIN.md) · [Wallet requests](docs/submission/WALLET-REQUESTS.md) | Registration, fixed payment terms, support and claims. |
+| [Onboarding](docs/submission/ONBOARDING.md) · [Night Watch](docs/submission/NIGHT-WATCH.md) | Account recovery, Privy wallets and limited agent signing. |
+| [x402](docs/submission/X402.md) · [MPP](docs/submission/MPP.md) · [Treasury funding](docs/submission/TREASURY-HOPS.md) | Room purchases, payment recovery and recorded testnet transfers. |
+| [Wren](docs/submission/AGENT-ROOM.md) | Published agent contributions and limited Tempo spending. |
+| [Artwork](docs/submission/ARTWORK.md) · [Development process](docs/submission/PROCESS.md) | Media attribution and the product's development history. |
 
 ## What's next
 
-- **Learn from repeated use.** Observe whether small groups continue each other's work and return to a story.
-- **Check new-room invitations.** Observe the first room created from a template and its invited participants.
-- **Exercise interrupted-work recovery.** Check a saved generation after the browser closes and the worker restarts.
-- **Expand creator and agent workflows.** Test artist-led projects, several agents and supervised motion production.
+- **Host small Fork Nights.** Observe whether people continue another maker's work, return to the same story and invite a friend.
+- **Complete the hosted Wren activation.** Deploy its worker and configure a fresh, limited Tempo testnet allowance.
+- **Rehearse the full group journey.** Check new-room invitations and recovery of a generation interrupted by a closed browser or restarted worker.
+- **Develop artist-led worlds.** Explore creator guidance, shared asset libraries and supervised motion production.
 
 Broader payment agreements, reuse fees and production funding remain future work. The current release contract keeps its fixed equal-wallet policy.
 
 ## License
 
-The project-owned software retains the [GNU Affero General Public License, version 3 only](LICENSE) (**AGPL-3.0-only**).
+The project-owned software uses the [GNU Affero General Public License, version 3 only](LICENSE) (**AGPL-3.0-only**).
 
-Third-party materials retain their own license notices, including the font licenses for [Inter](public/fonts/OFL.txt) and [Bricolage Grotesque](public/fonts/bricolage-OFL.txt). See the [UI source licenses](docs/submission/UI-LICENSES.md) and [brand asset sources](docs/submission/BRAND-ASSETS.md). The software license does not determine permissions for participant-created stories, uploads or underlying third-party artwork.
+Third-party materials retain their own license notices. These include the font licenses for [Inter](public/fonts/OFL.txt) and [Bricolage Grotesque](public/fonts/bricolage-OFL.txt). See the [UI source licenses](docs/submission/UI-LICENSES.md) and [brand asset sources](docs/submission/BRAND-ASSETS.md).
+
+The software license does not determine permissions for participant-created stories, uploads or underlying third-party artwork.
 
 AGPL section 13 requires a prominent offer of Corresponding Source to users of modified versions that support remote network interaction. A deployment should link to the source for its running version, including the required build and installation material.
