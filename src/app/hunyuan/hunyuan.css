@@ -59,7 +59,7 @@ html:has(.hy-page) { background: var(--night); color-scheme: dark; scrollbar-col
 .hy-hero h1 span { display: block; }
 /* The sponsor line keeps its butter-yellow lead-in; the chips inside it read in the page's ink. */
 .hy-byline { margin-top: 20px; color: var(--hy-yellow); font-size: var(--text-md); font-weight: 600; line-height: 2; }
-.hy-byline .fn-badge { margin-inline: 2px; color: var(--hy-ink); }
+.hy-byline .fn-badge { margin-inline: 2px 0; color: var(--hy-ink); }
 .hy-nowrap { white-space: nowrap; }
 .hy-lede { max-width: 44ch; margin-top: 16px; color: var(--hy-muted); font-size: 19px; line-height: 1.6; }
 .hy-video { min-width: 0; }
