@@ -4,8 +4,6 @@
 :root [data-room-theme="neon"]:has(.pilot-shell) { min-height: 100svh; }
 :root [data-room-theme="neon"] .pilot-intro p { max-width: 65ch; margin-inline: auto; text-wrap: pretty; }
 :root [data-room-theme="neon"] .pilot-prepared-note { font-size: 14px; margin-top: 12px; }
-.pilot-network-details { margin: 12px 32px; color: var(--muted); font-size: 14px; }
-.pilot-network-details > summary { width: fit-content; padding: 12px 0; cursor: pointer; }
 .pilot-reading-status { margin: -12px 32px 24px; color: var(--muted); font-size: 14px; line-height: 1.6; }
 /* The current row keeps its own tint, so the letter disc and the "You're here" pill (both --accent-soft) stay visible on it. */
 :root [data-room-theme="neon"] .pilot-recap-row[aria-current] { background: color-mix(in srgb, var(--accent-soft) 45%, var(--paper)); }
@@ -53,6 +51,5 @@
 @media (max-width: 760px) {
   :root [data-room-theme="neon"] .pilot-intro { padding-top: 20px; }
   :root [data-room-theme="neon"] .pilot-intro h1 { position: static; width: auto; height: auto; margin: 0 0 8px; overflow: visible; clip-path: none; white-space: normal; }
-  .pilot-network-details { margin-inline: 20px; }
   .pilot-reading-status { margin: 0 20px 20px; }
 }

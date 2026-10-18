@@ -45,21 +45,6 @@
   height: 42px;
   object-fit: contain;
 }
-.fn-network-allowance-heading {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-.fn-network-allowance-heading .fn-network-mark-mount {
-  width: 58px;
-  height: 58px;
-  padding: 8px;
-}
-.fn-network-allowance-heading > span:last-child {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
 .fn-network-copy {
   min-width: 0;
 }
@@ -72,6 +57,11 @@
 }
 .fn-network-brand .fn-network-currency {
   color: var(--muted);
+}
+/* The USDC mark is shown at 32px or more (docs/submission/BRAND-ASSETS.md), so the chip that carries it is taller than the plain token chips. */
+.fn-network-currency:not([data-plain]) {
+  --badge-tile: 32px;
+  --badge-h: 36px;
 }
 .fn-network-currency img {
   display: block;

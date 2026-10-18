@@ -27,8 +27,10 @@
   max-width: 100%;
   min-height: var(--badge-h);
   padding: 3px 10px 3px 3px;
+  border: 1px solid rgb(128 128 152 / 0.4);
   border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
   border-radius: 9px;
+  background: rgb(128 128 152 / 0.08);
   background: color-mix(in srgb, currentColor 5%, transparent);
   color: inherit;
   font: 600 var(--badge-font) / 1.2 var(--font-interface), sans-serif;
@@ -105,6 +107,7 @@
   gap: 5px;
   margin-left: 2px;
   padding-left: 8px;
+  border-left: 1px solid rgb(128 128 152 / 0.45);
   border-left: 1px solid color-mix(in srgb, currentColor 24%, transparent);
   color: color-mix(in srgb, currentColor 80%, transparent);
   font-size: 12px;
@@ -128,7 +131,9 @@ a.fn-badge {
   transition: background-color 140ms ease-out, border-color 140ms ease-out;
 }
 a.fn-badge:hover {
+  border-color: rgb(128 128 152 / 0.7);
   border-color: color-mix(in srgb, currentColor 42%, transparent);
+  background: rgb(128 128 152 / 0.16);
   background: color-mix(in srgb, currentColor 12%, transparent);
 }
 a.fn-badge:focus-visible {

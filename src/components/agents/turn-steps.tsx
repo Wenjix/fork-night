@@ -51,7 +51,7 @@ export function TurnSteps() {
           one ordinary guest account, and they land in the same story map.
         </p>} />
       <div className="ag-steps">
-        <StepStrip label="How Wren takes a turn" variant="list" tone="paper" columns={2} steps={STEPS} />
+        <StepStrip label="How Wren takes a turn" variant="list" tone="paper" columns={2} titleAs="h3" steps={STEPS} />
       </div>
       <div className="ag-callout ag-step-optional" data-tone="note">
         <Coins size={20} aria-hidden="true" />

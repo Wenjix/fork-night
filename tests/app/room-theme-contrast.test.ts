@@ -167,7 +167,7 @@ test("neon: the one block defines every contract token and keeps the base names 
   assert.equal(neon.get("color-scheme"), "dark");
   // The block reaches the shared room's main, the local preview's main, and a wrapper that holds either.
   const block = rules(read(NEON)).find(neonBlock)!;
-  assert.deepEqual(selectors(block).map((part) => part.replace(/^:root\s+/, "")), ['.pilot-shell[data-room-theme="neon"]', '#story-workspace[data-room-theme="neon"]', '[data-room-theme="neon"]']);
+  assert.deepEqual(selectors(block).map((part) => part.replace(/^:root\s+/, "")), ['.pilot-shell[data-room-theme="neon"]', '[data-room-theme="neon"]']);
 });
 
 test("neon is defined once: no other stylesheet sets the room's tokens on its container", () => {

@@ -66,7 +66,7 @@ html:has(.hy-page) { background: var(--night); color-scheme: dark; scrollbar-col
 .hy-video video, .hy-video iframe, .hy-video-placeholder { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-2xl); background: #000; border: 1px solid var(--hy-line); }
 .hy-video-placeholder { position: relative; overflow: hidden; display: grid; place-items: center; }
 .hy-video-placeholder img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.45; }
-.hy-video-placeholder span { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--hy-night) 85%, transparent); font-weight: 600; }
+.hy-video-placeholder span { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: var(--radius-pill); background: rgb(16 22 46 / 0.85); font-weight: 600; }
 .hy-video figcaption { margin-top: 12px; color: var(--hy-muted); font-size: var(--text-md); }
 
 /* Sections: whitespace, not rules, as on /kimi. */

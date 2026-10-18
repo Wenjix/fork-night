@@ -71,13 +71,13 @@ test("the hosted pages show the tools once (in the hero), the Privy lockup, and 
   }
 });
 
-test("the Privy page numbers its sequence once: the list numbers, the captions and acts do not", () => {
+test("the Privy page keeps its list numbers, its caption numerals and its Act labels, and names Privy with the badge", () => {
   const guide = [PrivyDemoIntro, PrivyPermissionCaption, PrivyAwayCaption, PrivyControlCaption, PrivyHelperCaption].map((part) => html(React.createElement(part))).join("");
-  assert.doesNotMatch(guide, /nw-privy-step/, "no second set of numerals on the captions");
+  assert.equal([...guide.matchAll(/<span class="nw-privy-step" aria-hidden="true">(\d)<\/span>/g)].map((match) => match[1]).join(""), "123", "the three captions keep their numerals");
   assert.equal([...guide.matchAll(/<li><a href="#privy-/g)].length, 4);
   const css = strip(read("src/app/night-watch-privy/privy-demo.css"));
   assert.match(css, /\.nw-privy-flow a::before \{[^}]*content: counter\(privy-step\) "\."/, "the list is the numbering");
-  assert.match(css, /\.nw-privy-demo \.nw-act-head \.fn-plate-action \{ display: none; \}/, "the acts keep their plates and drop their 'Act N' labels here");
+  assert.doesNotMatch(css, /\.nw-act-head \.fn-plate-action/, "the acts keep their 'Act N' labels on this page");
   // Each caption names Privy with its badge inside the heading, so the badge can never wrap away alone at 390px.
   for (const caption of [PrivyPermissionCaption, PrivyAwayCaption, PrivyControlCaption, PrivyHelperCaption]) {
     assert.match(html(React.createElement(caption)), /<h2 id="[^"]+">[^<]*<span class="fn-badge"[^>]*>[\s\S]*<span class="fn-badge-name">Privy<\/span>[\s\S]*<\/h2>/);

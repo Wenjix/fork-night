@@ -19,7 +19,7 @@ export function PrivyDemoIntro() {
 
 export function PrivyPermissionCaption() {
   return <aside id="privy-permission" className="nw-privy-caption" aria-labelledby="privy-permission-title">
-    <div className="nw-privy-caption-heading"><h2 id="privy-permission-title">Your wallet. A limited signer. <BrandBadge brand="privy" /></h2></div>
+    <div className="nw-privy-caption-heading"><span className="nw-privy-step" aria-hidden="true">1</span><h2 id="privy-permission-title">Your wallet. A limited signer. <BrandBadge brand="privy" /></h2></div>
     <p>Google sign-in prepares your embedded wallet. You authorize an additional signer for this Night Watch.</p>
     <dl className="nw-privy-responsibilities">
       <div><dt>Privy checks each signature</dt><dd>Approved chain, token, recipient, maximum amount and signing deadline.</dd></div>
@@ -31,7 +31,7 @@ export function PrivyPermissionCaption() {
 
 export function PrivyAwayCaption() {
   return <aside id="privy-away" className="nw-privy-caption" aria-labelledby="privy-away-title">
-    <div className="nw-privy-caption-heading"><h2 id="privy-away-title">Signing continues while you are away. <BrandBadge brand="privy" /></h2></div>
+    <div className="nw-privy-caption-heading"><span className="nw-privy-step" aria-hidden="true">2</span><h2 id="privy-away-title">Signing continues while you are away. <BrandBadge brand="privy" /></h2></div>
     <p>After you close the browser, the local runner can request a permitted signature through Privy. It buys a top-up only when the room needs test credits.</p>
     <div className="nw-privy-payment-flow" aria-label="How a permitted top-up works">
       <span><BrandBadge brand="privy" /> signs the authorization</span><ArrowRight size={16} aria-hidden="true" />
@@ -44,7 +44,7 @@ export function PrivyAwayCaption() {
 
 export function PrivyControlCaption() {
   return <aside id="privy-control" className="nw-privy-caption" aria-labelledby="privy-control-title">
-    <div className="nw-privy-caption-heading"><h2 id="privy-control-title">Review the drafts. Revoke further signing. <BrandBadge brand="privy" /></h2></div>
+    <div className="nw-privy-caption-heading"><span className="nw-privy-step" aria-hidden="true">3</span><h2 id="privy-control-title">Review the drafts. Revoke further signing. <BrandBadge brand="privy" /></h2></div>
     <p>Candidates stay private until you choose one to publish. Use Revoke Night Watch on your desk to remove its signer and change its session policy to deny new requests.</p>
     <p className="nw-privy-caption-note">Revocation stops new signatures. A payment signed before revocation can still settle.</p>
     <a className="nw-privy-return" href="#desk">Return to the revocation control <ArrowRight size={16} aria-hidden="true" /></a>

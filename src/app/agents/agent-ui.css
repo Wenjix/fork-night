@@ -43,12 +43,15 @@
   gap: 2px;
   min-width: 0;
 }
-.ag-step-text strong {
+.ag-step-text :is(strong, h3) {
+  margin: 0;
+  font-family: inherit;
+  letter-spacing: inherit;
   font-size: var(--text-base);
   font-weight: 650;
   line-height: var(--leading-snug);
 }
-.ag-step-text strong:only-child {
+.ag-step-text :is(strong, h3):only-child {
   font-weight: 500;
 }
 .ag-step-body {
@@ -123,7 +126,7 @@ a.ag-step:focus-visible {
   padding: var(--space-4) 0;
   border-top: 1px solid var(--strip-hair);
 }
-.ag-strip[data-variant="list"] .ag-step-text strong {
+.ag-strip[data-variant="list"] .ag-step-text :is(strong, h3) {
   font-size: var(--text-md);
 }
 .ag-strip[data-variant="list"] .ag-step-body {
@@ -144,7 +147,7 @@ a.ag-step:focus-visible {
   }
 }
 
-/* AddressLink: a short mono value that opens the explorer. */
+/* AddressLink: a mono value that opens the explorer, in full where there is room and shortened on phones. */
 .ag-address {
   display: inline-flex;
   flex-wrap: wrap;
@@ -168,6 +171,15 @@ a.ag-step:focus-visible {
   overflow-wrap: normal;
   white-space: nowrap;
 }
+.ag-address .ag-address-link .ag-hex-full {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  white-space: normal;
+}
+.ag-address .ag-address-link .ag-hex-short {
+  display: none;
+}
 .ag-address .ag-address-link:hover {
   text-decoration-thickness: 2px;
 }
@@ -180,5 +192,19 @@ a.ag-step:focus-visible {
 @media (max-width: 760px), (pointer: coarse) {
   .ag-address:not([data-inline]) .ag-address-link {
     min-height: var(--control-h);
+  }
+}
+@media (max-width: 760px) {
+  /* The full value stays in the page for screen readers; sighted readers get the short form. */
+  .ag-address .ag-address-link .ag-hex-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .ag-address .ag-address-link .ag-hex-short {
+    display: inline;
   }
 }

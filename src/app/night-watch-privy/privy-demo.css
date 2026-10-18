@@ -13,8 +13,6 @@
 .nw-privy-flow svg { color: var(--nw-agent); }
 .nw-privy-flow a:hover { color: var(--nw-agent); }
 .nw-privy-scope { margin-top: var(--space-3); max-width: 70ch; color: var(--nw-mist); font-size: var(--text-base); }
-/* The acts keep their plates on this page, but the "Act 2" labels step aside: the sequence above is the only numbering. */
-.nw-privy-demo .nw-act-head .fn-plate-action { display: none; }
 .nw-privy-context { padding: 18px 0; border-block: 1px solid var(--nw-line); color: var(--nw-mist); }
 .nw-privy-context > .fn-disclosure-summary { font-size: var(--text-lg); color: var(--nw-star); }
 .nw-privy-context > .fn-disclosure-summary:hover { color: var(--nw-agent); }

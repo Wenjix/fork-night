@@ -11,7 +11,6 @@
 
    The wrapper form carries a :root prefix so it outranks the contract defaults in globals.css whatever the stylesheet order. */
 .pilot-shell[data-room-theme="neon"],
-#story-workspace[data-room-theme="neon"],
 :root [data-room-theme="neon"] {
   /* canvas */
   --paper: #0d0a12;
@@ -83,7 +82,7 @@
 
 /* Fills. The base rules paint var(--violet) under white text, and in this room that name is the light, text-safe red, so these
    elements get the fill pair through the names their rules already read. Hover, disabled and focus stay with the base rules. */
-:root [data-room-theme="neon"] :is(.button.primary, .fn-film-button[data-slot="button"]:not(.fn-film-button-light, .fn-film-button-outline), .restyle-styles button, .fandom-art-options button[aria-pressed="true"], .pilot-voice.is-active .pilot-mic) {
+:root [data-room-theme="neon"] :is(.button.primary, .fn-film-button[data-slot="button"]:not(.fn-film-button-light, .fn-film-button-outline), .fandom-art-options button[aria-pressed="true"], .pilot-voice.is-active .pilot-mic) {
   --violet: var(--accent-fill);
   --violet-dark: var(--accent-fill-hover);
 }

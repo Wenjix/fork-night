@@ -164,7 +164,6 @@ export function AgentsShowcase() {
             <BrandBadge brand="tempo" />
             <BrandBadge brand="mpp" />
             <BrandBadge brand="kimi" />
-            <BrandBadge brand="privy" />
           </BrandStrip>
         </div>
         <p>

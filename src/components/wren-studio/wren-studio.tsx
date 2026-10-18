@@ -128,7 +128,7 @@ export function WrenBadge({ className = "" }: { className?: string }) {
 export function WrenStudio() {
   return <div className="ws-page">
     <a className="ws-skip" href="#ws-main">Skip to the studio</a>
-    <AppHeader current="agents" />
+    <AppHeader current="agents" tone="paper" />
     <nav className="ws-crumb" aria-label="Breadcrumb">
       <a href="/agents"><ArrowLeft size={16} aria-hidden="true" />Meet the agents</a>
       <ChevronRight size={16} aria-hidden="true" />
