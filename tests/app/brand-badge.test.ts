@@ -7,6 +7,7 @@ import { tsImport } from "tsx/esm/api";
 
 const { BRANDS } = await tsImport("../../src/lib/brands.ts", import.meta.url);
 const { BrandBadge, BrandStrip, Chip } = await tsImport("../../src/components/brand-badge.tsx", import.meta.url);
+const { hasLoaded } = await tsImport("../../src/components/lockup-image.tsx", import.meta.url);
 /** React 19 emits image preload hints ahead of static markup; they are not part of the badge. */
 const html = (element: unknown) => renderToStaticMarkup(element as never).replace(/<link rel="preload"[^>]*\/>/g, "");
 
@@ -111,4 +112,23 @@ test("only the brands with no usable official file keep a monogram or a glyph", 
   const plain = Object.entries(BRANDS as Record<string, { mark?: string; monogram?: string }>).filter(([, brand]) => !brand.mark).map(([id]) => id).sort();
   // Squads: public/brands/squads.svg is the safety-zone diagram from the Squads brand page, not the logo. ERC-8004: no official mark exists.
   assert.deepEqual(plain, ["erc8004", "gmi", "squads", "tokenrouter", "wan"]);
+});
+
+test("a logotype never leaves its plate empty: the plate spells the name until the image has loaded, and the image stays mounted", () => {
+  // Nothing is spelled in the server markup, so a logo that is cached never flashes letters before hydration.
+  for (const brand of ["kimi", "mpp", "x402"]) assert.doesNotMatch(html(createElement(BrandBadge, { brand })), /fn-lockup-word/, `${brand}: no letters before the page has hydrated`);
+  // What counts as loaded: finished, and with something to show.
+  assert.equal(hasLoaded({ complete: true, naturalWidth: 118 }), true);
+  assert.equal(hasLoaded({ complete: false, naturalWidth: 0 }), false, "still loading");
+  assert.equal(hasLoaded({ complete: true, naturalWidth: 0 }), false, "finished but broken");
+  // The component keeps the <img> in the page whatever the state, so a slow file still replaces the letters when it arrives.
+  const source = readFileSync(new URL("../../src/components/lockup-image.tsx", import.meta.url), "utf8");
+  assert.match(source, /^"use client";/);
+  assert.match(source, /<img ref=\{image\}[^>]*onLoad=\{\(\) => setSpelled\(false\)\}[^>]*onError=\{\(\) => setSpelled\(true\)\}/);
+  assert.match(source, /\{spelled && <span className="fn-lockup-word">\{word\}<\/span>\}/);
+  assert.doesNotMatch(source, /\{[^{}]*\? <img|\{!?\w+ && <img/, "the image is never rendered conditionally");
+  // The letters sit inside the plate without changing its size.
+  const css = readFileSync(new URL("../../src/app/brand-badge.css", import.meta.url), "utf8");
+  assert.match(css, /\.fn-badge-tile\[data-lockup\] \{\s*position: relative;/);
+  assert.match(css, /\.fn-lockup-word \{\s*position: absolute;\s*inset: 0;/);
 });

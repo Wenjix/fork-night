@@ -1,6 +1,7 @@
 import { Children, type CSSProperties, type ReactNode } from "react";
 import { ExternalLink, Fingerprint, type LucideIcon } from "lucide-react";
 import { BRANDS, type Brand, type BrandId } from "@/lib/brands";
+import { LockupImage } from "./lockup-image";
 
 /** Brands without an official mark in the repo that read better as a drawn glyph than as letters. */
 const GLYPHS: Partial<Record<BrandId, LucideIcon>> = { erc8004: Fingerprint };
@@ -15,7 +16,7 @@ export function BrandTile({ brand, size = "sm" }: { brand: BrandId; size?: Brand
   const style = { ...(entry.accent ? { "--badge-accent": entry.accent } : {}), ...(lockup ? { "--lockup-ratio": lockup.width / lockup.height } : {}) } as CSSProperties;
   return (
     <span className="fn-badge-tile" data-fit={entry.fit} data-lockup={lockup?.plate} data-mono={entry.mark ? undefined : "true"} data-size={size} data-round={entry.kind === "token" ? "true" : undefined} style={style} aria-hidden="true">
-      {entry.mark ? <img src={entry.mark} alt="" width={lockup?.width ?? 24} height={lockup?.height ?? 24} loading={entry.lazy ? "lazy" : undefined} /> : Glyph ? <Glyph strokeWidth={2.1} /> : <b>{entry.monogram ?? entry.name.slice(0, 2)}</b>}
+      {entry.mark ? (lockup ? <LockupImage src={entry.mark} word={lockup.word} width={lockup.width} height={lockup.height} lazy={entry.lazy} /> : <img src={entry.mark} alt="" width={24} height={24} />) : Glyph ? <Glyph strokeWidth={2.1} /> : <b>{entry.monogram ?? entry.name.slice(0, 2)}</b>}
     </span>
   );
 }

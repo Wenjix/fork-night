@@ -96,6 +96,20 @@
 .fn-badge-tile[data-lockup="dark"] {
   background: #0b1024;
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
+  color: #f8f6ff;
+}
+/* While the logotype has not arrived, or if it never does, the plate spells the name in plain type (see lockup-image.tsx). */
+.fn-badge-tile[data-lockup] {
+  position: relative;
+}
+.fn-lockup-word {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 calc(var(--badge-tile, 20px) * 0.52) / 1 var(--font-interface), sans-serif;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 .fn-badge[data-bare="true"] {
   padding-right: 3px;
