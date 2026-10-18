@@ -76,6 +76,38 @@
   height: 72%;
   object-fit: contain;
 }
+/* A mark that is already a filled square is the whole tile. */
+.fn-badge-tile[data-fit="bleed"] img {
+  width: 100%;
+  height: 100%;
+}
+/* A wide logotype, shown as supplied, on a plate as wide as it needs. It stands in for the name (the name stays in the page for
+   screen readers), and its height is capped so a very wide mark never makes the chip long. */
+.fn-badge-tile[data-lockup] {
+  width: auto;
+  padding-inline: calc(var(--badge-tile, 20px) * 0.2);
+}
+.fn-badge-tile[data-lockup] img {
+  width: auto;
+  max-width: none;
+  height: min(calc(var(--badge-tile, 20px) - 4px), calc(var(--badge-tile, 20px) * 2.6 / var(--lockup-ratio, 2)));
+}
+/* The wordmark whose letters are white was drawn for a dark ground. */
+.fn-badge-tile[data-lockup="dark"] {
+  background: #0b1024;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
+}
+.fn-badge[data-bare="true"] {
+  padding-right: 3px;
+}
+.fn-badge[data-lockup="true"] > .fn-badge-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 .fn-badge-tile[data-mono="true"] {
   background: color-mix(in srgb, var(--badge-accent, #202039) 16%, #fff);
   color: color-mix(in srgb, var(--badge-accent, #202039) 55%, #202039);
@@ -88,12 +120,13 @@
   width: 60%;
   height: 60%;
 }
-.fn-badge-name {
+.fn-badge-name,
+.fn-badge-version {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.fn-badge[data-size="lg"] .fn-badge-name {
+.fn-badge[data-size="lg"] :is(.fn-badge-name, .fn-badge-version) {
   font: 650 18px / 1.2 var(--font-display), sans-serif;
   letter-spacing: -0.01em;
 }

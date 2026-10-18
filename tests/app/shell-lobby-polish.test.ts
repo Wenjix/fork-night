@@ -122,7 +122,7 @@ test("the built-with row names six tools, each linking to the page that shows it
   assert.deepEqual(builtWith.map((item: { brand: string }) => item.brand), ["monad", "tempo", "solana", "privy", "kimi", "hunyuan"]);
   const row = html(createElement(BuiltWith));
   assert.match(row, /<ul class="fn-badges" aria-label="Built with">/);
-  assert.deepEqual([...row.matchAll(/<span class="fn-badge-name">([^<]*)<\/span>/g)].map(match => match[1]), ["Monad", "Tempo", "Solana", "Privy", "Kimi K3", "Hunyuan"]);
+  assert.deepEqual([...row.matchAll(/<span class="fn-badge-name">([^<]*)<\/span>(?:<span class="fn-badge-version">([^<]*)<\/span>)?/g)].map(match => match[1] + (match[2] ?? "")), ["Monad", "Tempo", "Solana", "Privy", "Kimi K3", "Hunyuan"]);
   assert.deepEqual([...row.matchAll(/<a class="fn-badge"[^>]*href="([^"]+)"/g)].map(match => match[1].replaceAll("&amp;", "&")),
     ["/night-watch-privy", "/tempo", featuredStoryLinks.paperMoonGuild, "/night-watch-privy", "/kimi", "/hunyuan"]);
   assert.deepEqual([...row.matchAll(/<span class="fn-net">([^<]*)<\/span>/g)].map(match => match[1]), ["Testnet", "Moderato testnet", "Devnet"]);

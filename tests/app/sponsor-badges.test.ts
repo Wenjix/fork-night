@@ -24,7 +24,7 @@ test("Kimi's byline and flow steps draw the tool names as badges and keep every 
     const copy = ARTICLE[locale];
     const credit = /<span class="km-byline-credit">([\s\S]*?)<\/span><span>Fork Night/.exec(article)?.[1] ?? "";
     assert.equal(words(credit), words(copy.hero.eyebrow), `${locale} byline words`);
-    assert.match(credit, /<span class="fn-badge-name">Kimi K3<\/span>/);
+    assert.match(credit, /<span class="fn-badge-name">Kimi <\/span><span class="fn-badge-version">K3<\/span>/, "Kimi's logotype, with its version beside it");
     assert.match(credit, /<span class="fn-badge-name">TokenRouter<\/span>/);
     const actors = [...article.matchAll(/<p class="km-step-actor">([\s\S]*?)<\/p>/g)].map((match) => match[1]);
     assert.deepEqual(actors.map(words), copy.flow.steps.map((step) => words(step.actor)), `${locale} flow-step actors`);
@@ -32,10 +32,10 @@ test("Kimi's byline and flow steps draw the tool names as badges and keep every 
   }
 });
 
-test("Kimi's nav marks its own page with the Kimi tile, not the Night Watch moon", () => {
+test("Kimi's nav marks its own page by name, without a tile or the Night Watch moon", () => {
   const nav = /<nav class="km-nav"[\s\S]*?<\/nav>/.exec(kimi)?.[0] ?? "";
-  assert.match(nav, /<a href="\/kimi" aria-current="page"><span class="fn-badge-tile"[^>]*><b>K<\/b><\/span>/);
-  assert.doesNotMatch(nav, /<svg/);
+  assert.match(nav, /<a href="\/kimi" aria-current="page"><span class="km-locale"/);
+  assert.doesNotMatch(nav, /<svg|fn-badge/);
 });
 
 test("both articles end with a strip that links to the payment and wallet pages and to no other model", () => {

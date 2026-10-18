@@ -37,7 +37,7 @@ test("the tile is decorative: the brand name beside it is the accessible name", 
   const privy = html(createElement(BrandBadge, { brand: "privy" }));
   assert.match(privy, /<span class="fn-badge-tile"[^>]*aria-hidden="true"/);
   assert.match(privy, /<img src="\/brands\/privy-symbol-black\.svg" alt=""/);
-  assert.match(html(createElement(BrandBadge, { brand: "kimi" })), /data-mono="true"[^>]*aria-hidden="true"[^>]*><b>K<\/b>/);
+  assert.match(html(createElement(BrandBadge, { brand: "tokenrouter" })), /data-mono="true"[^>]*aria-hidden="true"[^>]*><b>TR<\/b>/, "a brand with no file draws a monogram");
   assert.match(html(createElement(BrandBadge, { brand: "mon" })), /data-round="true"/);
 });
 
@@ -72,9 +72,43 @@ test("tokens reuse their chain's mark, and protocols without a mark draw a glyph
   assert.match(mon, /<img src="\/brands\/networks\/monad\.svg"/);
   assert.doesNotMatch(mon, /fn-net/);
   assert.match(html(createElement(BrandBadge, { brand: "pathusd" })), /<img src="\/brands\/networks\/tempo\.svg"/);
-  for (const brand of ["x402", "mpp", "erc8004"]) {
-    const badge = html(createElement(BrandBadge, { brand }));
-    assert.match(badge, /data-mono="true"[^>]*aria-hidden="true"[^>]*><svg/, `${brand} should draw a glyph tile`);
-    assert.doesNotMatch(badge, /<b>/);
+  const erc = html(createElement(BrandBadge, { brand: "erc8004" }));
+  assert.match(erc, /data-mono="true"[^>]*aria-hidden="true"[^>]*><svg/, "ERC-8004 has no official mark, so it draws a glyph");
+  assert.doesNotMatch(erc, /<b>/);
+});
+
+test("official marks from public/brands are wired: square marks fill the tile, wide logotypes sit on their own plate and stand in for the name", () => {
+  // Square marks.
+  assert.match(html(createElement(BrandBadge, { brand: "metamask" })), /<span class="fn-badge-tile"[^>]*><img src="\/brands\/metamask-fox\.svg" alt=""/);
+  for (const [brand, file] of [["phantom", "phantom.svg"], ["hunyuan", "hunyuan.png"]]) {
+    const tile = html(createElement(BrandBadge, { brand }));
+    assert.match(tile, /data-fit="bleed"/, `${brand}: a filled square is the whole tile`);
+    assert.match(tile, new RegExp(`<img src="/brands/${file.replace(".", "\\.")}" alt=""`));
+    assert.doesNotMatch(tile, /data-mono|<b>/);
   }
+  // Wide logotypes: the plate takes the ground the file was drawn for, the image keeps its own proportions, and the name stays for screen readers.
+  const kimi = html(createElement(BrandBadge, { brand: "kimi" }));
+  assert.match(kimi, /data-lockup="light"[^>]*style="[^"]*--lockup-ratio:2\.95/);
+  assert.match(kimi, /<img src="\/brands\/kimi\.svg" alt="" width="118" height="40" loading="lazy"\/>/, "the large Kimi file loads lazily");
+  assert.match(kimi, /<span class="fn-badge-name">Kimi <\/span><span class="fn-badge-version">K3<\/span>/, "its version stays text");
+  assert.match(kimi, /<span class="fn-badge" data-size="sm" data-kind="model" data-lockup="true">/);
+  assert.doesNotMatch(kimi, /data-bare/, "a chip with a version after the logotype is not bare");
+  const x402 = html(createElement(BrandBadge, { brand: "x402" }));
+  assert.match(x402, /data-lockup="dark"/, "x402's wordmark has white letters, so it sits on a dark plate");
+  assert.match(x402, /data-bare="true"/, "a logotype alone leaves no empty padding after it");
+  assert.match(x402, /<span class="fn-badge-name">x402<\/span>/);
+  assert.match(html(createElement(BrandBadge, { brand: "mpp", role: "agent payments" })), /data-lockup="light"[\s\S]*<span class="fn-badge-name">MPP<\/span><span class="fn-badge-role">agent payments<\/span>/);
+  assert.doesNotMatch(html(createElement(BrandBadge, { brand: "mpp", role: "agent payments" })), /data-bare/);
+  // The label can name more than the logotype spells.
+  assert.match(html(createElement(BrandBadge, { brand: "mpp", label: "Machine Payments Protocol" })), /<span class="fn-badge-version">Machine Payments Protocol<\/span>/);
+  // The CSS gives the plate its shape and hides the spelled-out name.
+  const css = readFileSync(new URL("../../src/app/brand-badge.css", import.meta.url), "utf8");
+  assert.match(css, /\.fn-badge-tile\[data-lockup="dark"\] \{[^}]*background: #0b1024/);
+  assert.match(css, /\.fn-badge\[data-lockup="true"\] > \.fn-badge-name \{[^}]*clip: rect/);
+});
+
+test("only the brands with no usable official file keep a monogram or a glyph", () => {
+  const plain = Object.entries(BRANDS as Record<string, { mark?: string; monogram?: string }>).filter(([, brand]) => !brand.mark).map(([id]) => id).sort();
+  // Squads: public/brands/squads.svg is the safety-zone diagram from the Squads brand page, not the logo. ERC-8004: no official mark exists.
+  assert.deepEqual(plain, ["erc8004", "gmi", "squads", "tokenrouter", "wan"]);
 });

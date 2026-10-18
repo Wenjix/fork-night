@@ -22,7 +22,8 @@ const html = (element: unknown) => renderToStaticMarkup(element as never).replac
 const text = (markup: string) => markup.replace(/<[^>]+>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 /** The words a screen reader hears: the badge tiles (a mark, or letters for a brand without one) are hidden from it. */
 const heard = (markup: string) => text(markup.replace(/<span class="fn-badge-tile"[\s\S]*?<\/span>(?=<span class="fn-badge-name")/g, "")).replace(/\s+([.,;:])/g, "$1");
-const names = (markup: string) => [...markup.matchAll(/<span class="fn-badge-name">([^<]*)<\/span>/g)].map((match) => match[1]);
+/** A badge's name, with a model version ("K3") that follows a logotype appended to it. */
+const names = (markup: string) => [...markup.matchAll(/<span class="fn-badge-name">([^<]*)<\/span>(?:<span class="fn-badge-version">([^<]*)<\/span>)?/g)].map((match) => match[1] + (match[2] ?? ""));
 
 const WALLET = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
 const TX = `0x${"ab".repeat(32)}`;
@@ -44,8 +45,9 @@ test("the tools row names each tool and network once, and a chain never comes wi
 test("a payment chain, a model and the router read as their words inside a sentence", () => {
   assert.match(html(React.createElement(PaymentChain)), /<span class="fn-badge-name">Base Sepolia<\/span>/);
   assert.match(html(React.createElement(PaymentChain, { label: "chain 84532" })), /<span class="fn-badge-name">chain 84532<\/span>/);
-  assert.match(html(React.createElement(ModelBadge, { label: "Kimi K3" })), /data-mono="true"[^>]*aria-hidden="true"[^>]*><b>K<\/b>/);
-  assert.match(html(React.createElement(ModelBadge, { label: "Tencent HY4 preview" })), /<b>HY<\/b>[\s\S]*Tencent HY4 preview/);
+  // Kimi's official logotype stands in for its name; the version after it stays text, and the whole name stays for screen readers.
+  assert.match(html(React.createElement(ModelBadge, { label: "Kimi K3" })), /<span class="fn-badge-tile" data-lockup="light"[^>]*aria-hidden="true"[^>]*><img src="\/brands\/kimi\.svg"[^>]*\/><\/span><span class="fn-badge-name">Kimi <\/span><span class="fn-badge-version">K3<\/span>/);
+  assert.match(html(React.createElement(ModelBadge, { label: "Tencent HY4 preview" })), /<img src="\/brands\/hunyuan\.png"[\s\S]*Tencent HY4 preview/);
   assert.match(html(React.createElement(ModelBadge, { label: "A model nobody has a mark for" })), /fn-badge" data-size="sm" data-kind="feature"/);
   assert.match(html(React.createElement(RouterBadge)), /<span class="fn-badge-name">via TokenRouter<\/span>/);
 });

@@ -38,7 +38,7 @@ test("judges have four distinct room routes with the focus and action visible to
 });
 
 test("each room names its stack with brand badges, and a chain badge carries its test network", () => {
-  const badgeNames = (html: string) => [...html.matchAll(/<span class="fn-badge-name">([^<]*)<\/span>/g)].map(match => match[1]);
+  const badgeNames = (html: string) => [...html.matchAll(/<span class="fn-badge-name">([^<]*)<\/span>(?:<span class="fn-badge-version">([^<]*)<\/span>)?/g)].map(match => match[1] + (match[2] ?? ""));
   const midnight = row("The midnight signal");
   assert.deepEqual(badgeNames(midnight), ["Monad", "Privy", "Contract record"]);
   assert.match(midnight, /<span class="fn-net">Testnet<\/span>/);

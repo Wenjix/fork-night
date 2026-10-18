@@ -1,7 +1,7 @@
 import { ArrowRight, Bird, Check, ChevronDown, Code2, Image, ListChecks, LockKeyhole, MoonStar, Play, ShieldCheck, Sparkles, Sunrise } from "lucide-react";
 import type { ReactNode } from "react";
 import { BRANDS, type BrandId } from "../../lib/brands.ts";
-import { BrandBadge, BrandTile } from "../brand-badge.tsx";
+import { BrandBadge } from "../brand-badge.tsx";
 import { ForkNightMark } from "../fork-night-mark.tsx";
 import { ArticleLinks } from "./article-links.tsx";
 import {
@@ -389,7 +389,7 @@ export function KimiArticle() {
         <a href={KIMI_HREFS.rooms}><Both pick={(copy) => copy.nav.rooms} /></a>
         <a href={KIMI_HREFS.agents}><Both pick={(copy) => copy.nav.agents} /></a>
         <a href={KIMI_HREFS.nightWatch}><Both pick={(copy) => copy.nav.nightWatch} /></a>
-        <a href={KIMI_HREFS.kimi} aria-current="page"><BrandTile brand="kimi" /><Both pick={(copy) => copy.nav.kimi} /></a>
+        <a href={KIMI_HREFS.kimi} aria-current="page"><Both pick={(copy) => copy.nav.kimi} /></a>
       </nav>
       <LanguageToggle label={TOGGLE_LABEL} announce={ANNOUNCE} compact />
       <script dangerouslySetInnerHTML={{ __html: PRESSED_BOOT }} />
