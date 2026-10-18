@@ -211,7 +211,7 @@ export function PilotRoomFunding({ roomId, loadedRoom, creditsAvailable }: { roo
   const record = getRecordedGuildFunding(roomId);
   return record
     ? <GuildFundingSummary key={roomId} record={record} creditsAvailable={creditsAvailable} />
-    : <RoomNetworkPlate roomId={roomId} />;
+    : <RoomNetworkPlate roomId={roomId} compact />;
 }
 
 export function GuildFundingHallEntry() {
