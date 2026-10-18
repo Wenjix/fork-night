@@ -92,8 +92,112 @@ const PAPER_MOON_FUNDING: RecordedGuildFunding = {
   },
 };
 
+const KESSLER_FUNDING: RecordedGuildFunding = {
+  "id": "kessler-squads-rehearsal-2026-10-18",
+  "roomId": "kessler-ward",
+  "roomTitle": "Kessler Ward",
+  "status": "recorded",
+  "protocol": "Squads v4",
+  "cluster": "devnet",
+  "governance": {
+    "stewardWallets": 3,
+    "threshold": 2,
+    "founderOperated": true
+  },
+  "token": {
+    "label": "test USDC",
+    "decimals": 6
+  },
+  "accounts": {
+    "multisig": "9Hwpbq8gkoCGSb5wBog9QwczeiCc1d1cXp78m8UfcReA",
+    "vault": "6LGvFZbMoWyWsNjayMi4FeAQMLNAXEVFJbGzeSPE52RW",
+    "allowance": "EuNCr1gPhzLSxAYu9CfdcCe6NzumkwGcTmLkGE2uJ3kY",
+    "payer": "EFpvKAoQ6tAFDyNFtdfrF3i3nHRwZdrYtKFR1q3j7MXL"
+  },
+  "amounts": {
+    "deposit": "5000000",
+    "allowance": "1000000",
+    "draw": "1000000",
+    "payment": "1000000"
+  },
+  "balances": {
+    "vaultBeforeDraw": "4000000",
+    "vaultAfterDraw": "3000000",
+    "allowanceAfterDraw": "0"
+  },
+  "receipts": {
+    "creation": {
+      "label": "Multisig created",
+      "signature": "4Wz3Q4vRVFvhMPVV1oPkY1La2xaSYxvyGytdRLh163SRZQvrDeg41VLgzoKm6aabpUerQNpEMKDFWjFYGcGqaRyt"
+    },
+    "deposit": {
+      "label": "Original treasury deposit",
+      "signature": "8am75HgwckBxoBpxzRwehdnddmPuvmWoPdPBaDXj6aCEfD13ytL9LB8xCbsNLQcdgbgVEigPPzeX3MU8YmbpsWs"
+    },
+    "proposal": {
+      "label": "Kessler allowance proposal",
+      "signature": "2y33PjxqNcMagEGRLUag9sdfmP6637S399aRGt87b6k6XN6NtQ5EpL28fUKmt7F6ZZD6t1KwdVsLAquptwmvNzNn"
+    },
+    "approvals": [
+      {
+        "label": "Approval 1",
+        "signature": "wEDRc3UYnbWfbhWtadrB2uCnkYrGfA6QvtAR4mKru2ZQnp7BG81k8qrhFQKKrvLc6kciVDjR9BfGPGA69EE3iVk"
+      },
+      {
+        "label": "Approval 2",
+        "signature": "3bqLcwkioFVSD78PbyK54HkrmsgALdwccTJnpW3GZLX6gGcGpLjJBjzSCpLsMBEh4MpybWnA2dpyrSrX2WN6h3ZB"
+      }
+    ],
+    "allowance": {
+      "label": "Kessler allowance executed",
+      "signature": "2fidPAbrETSqZnD7EKtk5hMGHWCCWTYncpWq5PqbVA76BFAZzXHTK2gvgcmFcLgcaB6s7rrgm6NegJVXKLSEXmE4"
+    },
+    "draw": {
+      "label": "Kessler withdrawal receipt",
+      "signature": "4tEGeE559u76cVkMjXc1ZBbVSdwuZhKrDzChYE1TNdzunAtnjpThRxPJ4pyctF26RrrPdVntJTyhgHEhWcQGAEUd"
+    },
+    "payment": {
+      "label": "Kessler x402 payment receipt",
+      "signature": "AX5i3xszHmWhYaY2Auri7YtkGAWMPUuhWM1Bmx3dURm51d2dkUMjxXPq5GsJaciPJPmWmMKTdrQsN7yWWwdaQ9U"
+    }
+  },
+  "appCredit": {
+    "state": "credited",
+    "added": 5,
+    "replayed": false,
+    "recordedAt": "2026-10-18T11:44:35.005986+00:00",
+    "checkedAt": "2026-10-18T11:45:00.929Z",
+    "historicalBefore": 4,
+    "historicalAfter": 9
+  },
+  "cleanup": {
+    "status": "removed",
+    "recordedDate": "2026-10-18",
+    "unusedPermission": "0",
+    "vaultAtCleanup": "3000000",
+    "receipts": [
+      {
+        "label": "Removal proposal",
+        "signature": "59Y1DvsRGa1inAXJuZekLpsA7cBxJH1NwgAncUQHcci91VHZHKL3eTrfyHsitKjNBSAFPa2EnRQQmUzoAzcRRtqN"
+      },
+      {
+        "label": "Removal approval 1",
+        "signature": "5sr9Mp8C1jPB9BBDoAj9Z7nJ1gZveXHkgqrgJAUbTSq4iMZumvxopAB1StCEmkY3wBgTgbn85Qka1TcZxncBCpeL"
+      },
+      {
+        "label": "Removal approval 2",
+        "signature": "3fTuHf3S1pPXb7eDuC5rNZgeBSkQyVPXCAqfbkfEQJfVk4FTpYBvrfyMpdvRbYRzJvmSrRySZpwRXCopEy5XeBur"
+      },
+      {
+        "label": "Allowance removed",
+        "signature": "4Jwu8vNQK6kXmuZdBNBMio4VzxLxtZ6bAv6s8pZR3eYVjtWEYSxfY9YVkrgUsqTQaMBRdtRtzu1bbY55B3qP68BT"
+      }
+    ]
+  }
+};
+
 export function getRecordedGuildFunding(roomId: string): RecordedGuildFunding | undefined {
-  return roomId === PAPER_MOON_FUNDING.roomId ? PAPER_MOON_FUNDING : undefined;
+  return roomId === PAPER_MOON_FUNDING.roomId ? PAPER_MOON_FUNDING : roomId === KESSLER_FUNDING.roomId ? KESSLER_FUNDING : undefined;
 }
 
 export function fundingExplorerUrl(identifier: string, kind: "tx" | "address" = "tx"): string {

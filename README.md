@@ -59,11 +59,11 @@ The **Your first night** guide follows your progress from reading to your first 
 
 ## What works today
 
-**Fork Night is a hackathon prototype with a hosted shared pilot.** The table reflects the October 17 launch and published source updates through October 18, 2026.
+**Fork Night is a hackathon prototype with a hosted shared pilot.** The table reflects the October 18, 2026 activation checkpoint.
 
 | Start here | What you can explore | Scope |
 | --- | --- | --- |
-| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared moments, two branches and a shared idea board. | Open for reading and ideas. It launched with zero generation credits. Wren is inactive. |
+| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared moments, two branches, contribution history, guild backing and private Wren previews. | Live bounded testnet demo. Two real purchases added ten credits; one private preview used one. Prepared-scene Monad registration is pending. |
 | [Paper Moon](https://fork-night.vercel.app/pilot?room=paper-moon) | Shared ideas, private previews and published continuations. | Generation and room creation use configured credits and limits. |
 | [Midnight Signal](https://fork-night.vercel.app/pilot?room=midnight-signal) | Registered contributions, release support and contributor claims. | Monad testnet. Wallet transactions need test MON for network fees. |
 | [The Uncharted Star](https://fork-night.vercel.app/pilot?room=night-shift) · [Wren's activity](https://fork-night.vercel.app/agents) | Wren's published continuations and its recorded Tempo payment. | Completed demo. The founder started each agent turn locally. |
@@ -74,6 +74,8 @@ The **Your first night** guide follows your progress from reading to your first 
 Kessler's prepared moments are labeled **Prepared story**. The Uncharted Star retains the room ID `night-shift` and its earlier history. The room guide also links the relevant stories to their wallet, payment and treasury demonstrations.
 
 The Kessler centerpiece brings reading, branching, a Git-like contribution trail and room funding into one path. The trail follows the selected branch and distinguishes prepared scenes, published makers, Wren assistance and verified Monad registrations. Shared image credits, Wren's spending allowance and test MON support for creators stay separate. Public availability and receipts determine what the room reports; an empty pool or paused assistant remains visible.
+
+At activation, Wren bought five shared credits for **1 test pathUSD** and delivered one private scene. The founder-operated guild added five more for **1 test USDC**, then removed its spending allowance. **Nine credits remained** after the rehearsal. Wren's scoped top-up authorization expires October 19 at 11:39 UTC. No new scene was published by the rehearsal. [Live checkpoint and receipts](docs/submission/HOSTING.md#kessler-activation--october-18-2026).
 
 ## How it works
 
@@ -152,7 +154,7 @@ In the recorded demo, Wren read the story, left ideas and published three contin
 
 Wren used a limited Tempo access key to buy more room capacity when it ran out of attempts. Its earlier published turns used GPT-4.1 mini. The recorded Kimi test planned a turn without posting.
 
-The newer Kessler workflow adds private Wren drafts for the requesting maker to review and publish. Its web controls and database support are deployed. The hosted Wren task and funding policy remain inactive.
+The hosted Kessler workflow prepares private Wren drafts for the requesting maker to review and publish. Its October 18 rehearsal completed one private scene and one real Tempo top-up. The access key is limited to the configured recipient, 2 test pathUSD per day including fees, and a 24-hour expiry; the app permits one 1-token top-up per day. Existing inference limits remain in force. [Activation evidence](docs/submission/HOSTING.md#kessler-activation--october-18-2026).
 
 [Wren's contribution and payment proof](docs/submission/AGENT-ROOM.md) · [Agent source](agents/wren/README.md) · [Tempo walkthrough](https://fork-night.vercel.app/tempo)
 
@@ -350,7 +352,7 @@ The export uses the [explicit file selection](config/submission-files.json) and 
 ## What's next
 
 - **Host small Fork Nights.** Observe whether people continue another maker's work, return to the same story and invite a friend.
-- **Complete the hosted Wren activation.** Deploy its worker and configure a fresh, limited Tempo testnet allowance.
+- **Grow Kessler through real contributions.** Complete prepared-scene Monad registration, then invite storytellers to review, publish and register their own branches.
 - **Rehearse the full group journey.** Check new-room invitations and recovery of a generation interrupted by a closed browser or restarted worker.
 - **Develop artist-led worlds.** Explore creator guidance, shared asset libraries and supervised motion production.
 

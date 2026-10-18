@@ -176,13 +176,13 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
         <summary className="guild-funding-drawer-summary fn-disclosure-summary">
           <ChevronRight className="fn-disclosure-chevron" size={16} aria-hidden="true" />
           <BrandBadge brand="solana" />
-          <span>Funded by a {record.governance.stewardWallets}-person guild · {creditsText} · <strong>See how →</strong></span>
+          <span>Guild treasury · {creditsText} · <strong>See how →</strong></span>
         </summary>
         <div className="guild-funding-drawer-body">
           <div className="guild-funding-featured">
             <div className="guild-funding-summary-heading">
               <h2>Guild funding rehearsal</h2>
-              <p>{record.governance.threshold} of {record.governance.stewardWallets} guild members approved</p>
+              <p>{record.governance.threshold} of {record.governance.stewardWallets} steward wallets approved</p>
               <div className="fn-network-brand guild-funding-meta">
                 <CurrencyChip label={record.token.label} />
                 <strong>Recorded addition: +{record.appCredit.added} room credits</strong>

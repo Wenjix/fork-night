@@ -14,6 +14,20 @@ import {
 
 const record = getRecordedGuildFunding("paper-moon")!;
 
+test("Kessler records its own settled payment, full allowance use and cleanup", () => {
+  const kessler = getRecordedGuildFunding("kessler-ward")!;
+  assert.equal(kessler.roomId, "kessler-ward");
+  assert.notEqual(kessler.receipts.payment.signature, record.receipts.payment.signature);
+  assert.notEqual(kessler.accounts.allowance, record.accounts.allowance);
+  assert.equal(kessler.governance.founderOperated, true);
+  assert.equal(kessler.appCredit.historicalAfter - kessler.appCredit.historicalBefore, 5);
+  assert.equal(BigInt(kessler.balances.vaultBeforeDraw) - BigInt(kessler.amounts.draw), BigInt(kessler.cleanup.vaultAtCleanup));
+  assert.equal(BigInt(kessler.amounts.allowance) - BigInt(kessler.amounts.draw), 0n);
+  assert.equal(kessler.cleanup.unusedPermission, "0");
+  assert.equal(kessler.cleanup.receipts.length, 4);
+  assert.equal(kessler.cleanup.status, "removed");
+});
+
 test("treasury evidence belongs to Paper Moon, not a local guild or an arbitrary Solana room", () => {
   assert.equal(record.status, "recorded");
   assert.equal(record.protocol, "Squads v4");
