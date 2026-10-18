@@ -63,19 +63,21 @@ export function NetworkRow({ demo, size = "md", newTab = false }: { demo: RoomNe
 export function RoomNetworkPlate({
   roomId,
   className = "",
+  compact = false,
 }: {
   roomId: string;
   className?: string;
+  compact?: boolean;
 }) {
   const networks = getRoomNetworkShowcase(roomId);
   if (!networks.length) return null;
 
   return (
-    <aside className={`fn-network-plate ${className}`} aria-label="Testnet activity for this room">
+    <aside className={`fn-network-plate ${compact ? "fn-network-compact" : ""} ${className}`} aria-label="Testnet activity for this room">
       <Card className="fn-network-card">
         <CardContent className="fn-network-content">
           <ul className="fn-network-list">
-            {networks.map((demo) => <NetworkRow key={demo.network} demo={demo} size="lg" />)}
+            {networks.map((demo) => <NetworkRow key={demo.network} demo={demo} size={compact ? "sm" : "lg"} />)}
           </ul>
           <p className="fn-network-footnote">
             Testnet demo. Images use the operator’s budget.

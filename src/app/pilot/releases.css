@@ -3,22 +3,55 @@
 }
 /* The release is the Midnight Signal's context card; Kessler's collapsed panel sits in the reader column. */
 .pilot-reader-actions .pilot-release { margin: var(--space-5) 0 var(--space-2); }
-.pilot-release-card { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius-xl); padding: var(--space-4); }
+.pilot-release-card { container-type: inline-size; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius-xl); padding: var(--space-4) var(--space-5) var(--space-2); }
+.pilot-release-overview { display: grid; gap: var(--space-4); }
+.pilot-release-summary, .pilot-release-wallet { min-width: 0; }
+.pilot-release-summary-content { display: grid; gap: var(--space-3) var(--space-5); align-items: end; }
 .pilot-release-card-top { display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
+.pilot-release-card-top > div { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); min-width: 0; }
 .pilot-release-card h2 { margin: 0; font-size: var(--text-card); line-height: var(--leading-tight); letter-spacing: -0.02em; font-family: var(--font-display), sans-serif; font-weight: 700; }
-.pilot-release-badges { margin-top: var(--space-2); }
-.pilot-release-progress-copy { margin: var(--space-3) 0 7px; color: var(--muted); font-size: var(--text-sm); line-height: 1.5; }
+.pilot-release-badges { margin: 0; }
+.pilot-release-progress-copy { margin: var(--space-2) 0; color: var(--muted); font-size: var(--text-sm); line-height: 1.5; }
 .pilot-release-progress-copy > svg { margin-inline: 2px; }
-.pilot-release-progress { height: 7px; border-radius: var(--radius-pill); background: var(--line); overflow: hidden; }
+.pilot-release-progress { height: var(--space-1); border-radius: var(--radius-pill); background: var(--line); overflow: hidden; }
 .pilot-release-progress > span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
-.pilot-release-card-copy { margin: var(--space-3) 0 14px; color: var(--ink); line-height: 1.55; font-size: var(--text-base); max-width: 76ch; }
+.pilot-release-card-copy { margin: var(--space-2) 0 0; color: var(--ink); line-height: 1.55; font-size: var(--text-base); max-width: 76ch; }
 .pilot-release-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .pilot-release-actions .button { min-height: var(--control-h); }
-.pilot-release-card > .pilot-wallet-options { margin-top: var(--space-3); }
-.pilot-browser-payout { display: grid; justify-items: start; gap: var(--space-3); margin-top: var(--space-5); }
+.pilot-release-wallet { border-top: 1px solid var(--line); padding-top: var(--space-3); }
+.pilot-release-wallet-summary { display: grid; gap: var(--space-2); }
+.pilot-release-wallet-label { display: flex; align-items: center; gap: var(--space-2); color: var(--ink); }
+.pilot-release-wallet-label svg { color: var(--muted); flex-shrink: 0; }
+.pilot-release-wallet-identity { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); color: var(--muted); font-size: var(--text-sm); font-weight: 400; line-height: var(--leading-body); overflow-wrap: anywhere; }
+.pilot-release-wallet-identity strong { color: var(--ink); font-weight: 600; }
+.pilot-release-wallet-settings > .fn-disclosure-summary { padding-block: var(--space-1); align-items: start; }
+.pilot-release-wallet-settings > .fn-disclosure-summary > .fn-disclosure-chevron { flex-shrink: 0; margin-top: var(--space-1); color: var(--accent-strong); }
+.pilot-release-wallet-settings > .fn-disclosure-body { padding-top: var(--space-3); }
+.pilot-browser-payout { display: grid; gap: var(--space-3); }
+.pilot-wallet-options + .pilot-browser-payout { margin-top: var(--space-2); }
 .pilot-browser-payout p { margin: 0; max-width: 65ch; color: var(--muted); font-size: var(--text-base); line-height: 1.6; }
+.pilot-browser-payout-controls { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-2); min-width: 0; }
 .pilot-browser-payout label { display: grid; gap: 7px; max-width: 100%; font-size: var(--text-base); font-weight: 600; }
-.pilot-browser-payout select { width: 100%; min-width: 0; min-height: var(--control-h); padding: 10px var(--space-3); border: 1px solid var(--edge); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); font: inherit; font-size: var(--text-lg); }
+.pilot-browser-payout select { width: 100%; min-width: 0; min-height: var(--control-h); padding: var(--space-2) var(--space-3); border: 1px solid var(--edge); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); font: inherit; font-size: var(--text-lg); }
+.pilot-browser-payout .button { max-width: 100%; white-space: normal; text-align: left; }
+.pilot-release-footer { display: flex; align-items: start; justify-content: space-between; gap: 0 var(--space-5); flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: var(--space-4); padding-top: var(--space-1); }
+.pilot-release-footer > .pilot-release-details { min-width: 0; margin: 0; font-size: var(--text-base); }
+.pilot-release-footer > .pilot-release-details[open] { flex-basis: 100%; }
+.pilot-release-contract { min-height: var(--control-h); font-size: var(--text-sm); }
+@container (min-width: 760px) {
+  .pilot-release-overview { grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: var(--space-6); }
+  .pilot-release-wallet { border-top: 0; border-left: 1px solid var(--line); padding-top: 0; padding-left: var(--space-6); }
+}
+@container (min-width: 1100px) {
+  .pilot-release-summary-content { grid-template-columns: minmax(0, 1fr) auto; }
+  .pilot-release-actions { max-width: 18rem; }
+  .pilot-release-actions > .button { white-space: normal; text-align: left; }
+}
+@container (max-width: 400px) {
+  .pilot-release-actions > .button { max-width: 100%; white-space: normal; text-align: left; }
+  .pilot-browser-payout-controls { align-items: stretch; flex-direction: column; }
+  .pilot-release-footer > * { width: 100%; }
+}
 .pilot-release-card > .pilot-my-wallet-request { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line); }
 .pilot-release-confirm { width: min(560px, calc(100vw - 32px)); }
 .pilot-release-confirm footer { margin-top: 18px; }

@@ -44,7 +44,7 @@ function renderRelease(roomId: string) {
 
 test("the release card names its chain with a badge that carries the test network, and signs in with Google's own button", () => {
   const card = renderRelease("midnight-signal");
-  assert.match(card, /<ul class="fn-badges pilot-release-badges" aria-label="Release network and signed-in account">/);
+  assert.match(card, /<ul class="fn-badges pilot-release-badges" aria-label="Release network">/);
   assert.match(card, /<span class="fn-badge-name">Monad<\/span>/);
   assert.match(card, /<span class="fn-net">Testnet<\/span>/);
   assert.match(card, /<button[^>]*class="pilot-google-button\b[^"]*"[^>]*>[\s\S]*?Sign in with Google<\/span><\/button>/);
@@ -121,7 +121,7 @@ test("the shared-room styles keep the phone toolbar, the release card and the th
   assert.doesNotMatch(pilot, /\.pilot-room-toolbar \.pilot-room-choice \{ (?:flex: 1 1 200px|order: 0)/);
   assert.match(pilot, /\.pilot-room-toolbar \.pilot-room-choice \{ order: 3; flex-basis: 100%; \}/);
   // The release card is the shared info card: a hairline, the card radius, no glow or gradient.
-  assert.match(releases, /\.pilot-release-card \{ border: 1px solid var\(--line\); background: var\(--surface\); border-radius: var\(--radius-xl\);/);
+  assert.match(releases, /\.pilot-release-card \{[^}]*border: 1px solid var\(--line\); background: var\(--surface\); border-radius: var\(--radius-xl\);/);
   assert.doesNotMatch(releases, /gradient|rgba\(109, 53, 212/);
   assert.match(releases, /\.pilot-release-progress \{[^}]*background: var\(--line\)/, "the progress track is visible on the card");
   // Selection and focus come from the theme contract; fields use the 3:1 control border.

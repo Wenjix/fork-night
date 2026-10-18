@@ -45,11 +45,17 @@
 .pilot-create-name { margin-bottom: var(--space-5); }
 .pilot-room-grant { padding: var(--space-4); border-radius: var(--radius-sm); background: var(--signal-soft); color: var(--ink); }
 /* The page's bands (toolbar, context, roster, activity, workspace, footer) share one gutter. */
-.pilot-context { display: grid; gap: var(--space-3); margin: 0 var(--gutter) var(--space-5); }
+.pilot-room-page .pilot-intro { max-width: 1600px; margin-inline: auto; padding-block: var(--space-5) var(--space-4); text-align: left; }
+.pilot-room-page .pilot-intro h1 { font-size: 2rem; }
+.pilot-room-page .pilot-intro p { font-size: var(--text-lg); margin: 0; }
+.pilot-context { display: grid; gap: var(--space-2); width: calc(100% - var(--gutter) * 2); max-width: calc(1600px - var(--gutter) * 2); margin: 0 auto var(--space-4); }
 .pilot-context:empty { display: none; }
 .pilot-context > * { margin: 0; min-width: 0; }
 .pilot-context-disclosure { color: var(--muted); font-size: var(--text-base); }
-.pilot-room-sign { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); border-block: 1px solid var(--line); padding: var(--space-3) 0; margin: 0 var(--gutter) var(--space-5); }
+.pilot-room-sign { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); border-block: 1px solid var(--line); padding: var(--space-2) 0; width: calc(100% - var(--gutter) * 2); max-width: calc(1600px - var(--gutter) * 2); margin: 0 auto var(--space-4); }
+.pilot-room-page .pilot-room-activity { width: calc(100% - var(--gutter) * 2); max-width: calc(1600px - var(--gutter) * 2); margin: 0 auto var(--space-4); }
+.pilot-room-page .pilot-room-activity-summary { gap: var(--space-2) var(--space-3); padding-block: var(--space-2); }
+.pilot-room-page .pilot-room-activity-counts { flex-basis: auto; padding-left: 0; }
 .pilot-room-sign > .text-button { min-height: var(--control-h); }
 .pilot-roster { flex: 1; min-width: 180px; }
 .pilot-roster-preview { display: block; font-size: var(--text-base); font-weight: 400; margin-top: 2px; color: var(--muted); }

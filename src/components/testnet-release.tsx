@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type Ref } from "react";
-import { ArrowRight, Check, ChevronDown, Download, ExternalLink, Layers3, RefreshCw } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Download, ExternalLink, Layers3, RefreshCw, Wallet } from "lucide-react";
 import { formatEther, getAddress, ZeroAddress } from "ethers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../lib/supabase/database.types.ts";
@@ -17,7 +17,7 @@ import { ReleaseScenes } from "./release-scenes.tsx";
 import { browserWallet, usePilotAccount } from "./pilot-account.tsx";
 import { WalletRequests } from "./wallet-requests.tsx";
 import { GoogleButton, PrivyMark } from "./auth-branding.tsx";
-import { BrandBadge, BrandStrip, Chip } from "./brand-badge.tsx";
+import { BrandBadge, BrandStrip } from "./brand-badge.tsx";
 import { Disclosure } from "./disclosure.tsx";
 import { PilotDialog } from "./pilot-dialog.tsx";
 import { walletAccountIdentity } from "../lib/supabase/wallet-login.ts";
@@ -162,7 +162,11 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   const makerNeedsApproval = !!makerId && prepared.scenes.some((scene, index) => scene.moment.maker_id === makerId && snapshot?.scenes[index]?.maker === ZeroAddress);
   const needsBrowserChoice = !pending && identity?.walletMode !== "embedded" && !selectedProvider && ethereumWallets.length > 1;
   const nextAction = needsBrowserChoice
-    ? { label: "Choose a browser payout wallet", onClick: () => payoutSelect.current?.focus(), disabled: walletBusy }
+    ? { label: "Choose a browser payout wallet", onClick: () => {
+      const settings = payoutSelect.current?.closest("details");
+      if (settings) settings.open = true;
+      payoutSelect.current?.focus();
+    }, disabled: walletBusy }
     : !account
     ? { label: identity?.user?.is_anonymous ? "Save this guest with Google" : "Sign in with Google", onClick: () => void signInWithGoogle(), disabled: !identity?.enabled || signInWorking, google: true }
     : requiresProvider
@@ -192,32 +196,47 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
   }
   return <>
     <div className="pilot-release-card" aria-busy={walletBusy}>
+      <div className="pilot-release-overview">
+      <div className="pilot-release-summary">
       <div className="pilot-release-card-top">
         <div>
           <h2>{journey.ownShare?.claimable ? "Your next step" : journey.released ? "Story release on Monad" : ownScene ? "Your next step" : releaseRoom(prepared.scenes[0].moment.room_id)?.title}</h2>
-          <BrandStrip label="Release network and signed-in account" className="pilot-release-badges">
+          <BrandStrip label="Release network" className="pilot-release-badges">
             <BrandBadge brand="monad" />
-            {account && <span title={account}><Chip>Signed in · {shortAddress(account)}</Chip></span>}
-            {makerName && <Chip>Making as {makerName}</Chip>}
           </BrandStrip>
         </div>
         <button className="pilot-icon-button" type="button" disabled={walletBusy} onClick={() => void session.refresh(true)} aria-label="Refresh onchain release"><RefreshCw size={20} aria-hidden="true" /></button>
       </div>
-      <p className="pilot-release-progress-copy">{progress} · then Lock <ArrowRight size={16} aria-hidden="true" /> Support <ArrowRight size={16} aria-hidden="true" /> Claim</p>
-      <div className="pilot-release-progress" aria-hidden="true"><span style={{ width: `${progressPercent}%` }} /></div>
-      <p id={nextStepId} className="pilot-release-card-copy">{actionCopy({ journey, snapshot, ownScene, prepared, registrationBlocked })}</p>
+      <div className="pilot-release-summary-content">
+      <div>
+        <p className="pilot-release-progress-copy">{progress} · then Lock <ArrowRight size={16} aria-hidden="true" /> Support <ArrowRight size={16} aria-hidden="true" /> Claim</p>
+        <div className="pilot-release-progress" aria-hidden="true"><span style={{ width: `${progressPercent}%` }} /></div>
+        <p id={nextStepId} className="pilot-release-card-copy">{actionCopy({ journey, snapshot, ownScene, prepared, registrationBlocked })}</p>
+      </div>
       <div className="pilot-release-actions">
         {nextAction.google
           ? <GoogleButton type="button" aria-describedby={nextStepId} disabled={nextAction.disabled} onClick={nextAction.onClick}>{nextAction.label}</GoogleButton>
           : <button className="button primary" type="button" aria-describedby={nextStepId} disabled={nextAction.disabled} onClick={nextAction.onClick}>{nextAction.label}</button>}
-        {config.explorer && <a href={`${config.explorer}/address/${config.address}`} target="_blank" rel="noreferrer">Release contract on MonadScan <ExternalLink size={16} aria-hidden="true" /></a>}
       </div>
+      </div>
+      </div>
+      <aside className="pilot-release-wallet" aria-label="Payout wallet">
+      <Disclosure summary={<span className="pilot-release-wallet-summary">
+        <span className="pilot-release-wallet-label"><Wallet size={18} aria-hidden="true" />Payout wallet</span>
+        <span className="pilot-release-wallet-identity">
+          {account ? <span title={account}>Signed in · <strong>{shortAddress(account)}</strong></span> : <span>A wallet is only needed for testnet actions.</span>}
+          {makerName && <span>Making as <strong>{makerName}</strong></span>}
+        </span>
+      </span>} className="pilot-release-wallet-settings">
       {identity?.user?.is_anonymous === false && <div className="pilot-wallet-options" role="group" aria-label="Choose release wallet">
         <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "embedded"} onClick={() => { setBrowserPayoutOwner(null); identity.chooseWallet("embedded"); }}>In-app wallet <PrivyMark /></button>
         <button type="button" className="text-button" disabled={walletBusy || pending} aria-pressed={identity.walletMode === "external"} onClick={() => { setBrowserPayoutOwner(actorId); identity.chooseWallet("external"); }}>Use browser payout wallet</button>
       </div>}
       {identity?.walletMode !== "embedded" && <BrowserPayoutWallet wallets={ethereumWallets} provider={selectedProvider} account={account} blocked={walletBusy || pending} connecting={busy === "connect"} selectRef={payoutSelect} onChoose={choice => identity?.selectBrowserWallet?.(choice)} onConnect={() => void connectBrowserPayout()} />}
+      </Disclosure>
       {identity?.walletMode === "embedded" && account && !selectedProvider && <p role="status" className="pilot-release-loading">{identity.wallet.error || "Preparing your in-app wallet…"}</p>}
+      </aside>
+      </div>
       {loading && <p role="status" className="pilot-release-loading">Reading the recorded path…</p>}
       {busy && <p role="status" className="pilot-release-working"><RefreshCw size={16} aria-hidden="true" />{operationLabel(busy)} on Monad… You can keep reading.</p>}
       {receipt && config.explorer && <a className="pilot-release-receipt" href={`${config.explorer}/tx/${receipt}`} target="_blank" rel="noreferrer">View transaction on MonadScan <ExternalLink size={16} aria-hidden="true" /></a>}
@@ -226,6 +245,7 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
       {pending && <div className="pilot-release-recovery"><strong>Still waiting for Monad?</strong><p>Check again resumes the saved action and never sends twice.</p><div className="button-row"><button className="button secondary" type="button" disabled={walletBusy} onClick={() => void session.recover()}>Check again</button><button className="text-button" type="button" disabled={walletBusy} onClick={() => void session.recover(true)}>Retry saved action</button></div></div>}
       {account && (journey.curator || makerNeedsApproval) && <WalletRequests prepared={prepared} snapshot={snapshot} config={config} moments={moments} account={account} makerId={makerId} provider={selectedProvider} client={client} blocked={!!busy || pending || !snapshot || snapshot.curator === ZeroAddress} sessionError={error} onApprove={(index, address) => session.perform("approve", index, address)} onChoosePath={onChoosePath} onWorking={setRequestWorking} onFeedback={message => session.feedback(message)} />}
       {snapshot && snapshot.curator !== ZeroAddress && <PreparedWorkWallet key={prepared.projectId + account} prepared={prepared} snapshot={snapshot} config={config} account={account} blocked={blocked} onApprove={(index, address) => session.perform("approve", index, address)} />}
+      <div className="pilot-release-footer">
       <Disclosure summary="Terms, wallets and release record" className="pilot-release-details"><p>{RELEASE_TERMS}</p><p>Amounts and claims come from the contract. Wallets can belong to the same person. Test MON has no redemption value.</p>
         <dl className="pilot-release-addresses">
           {account && <div><dt>Connected wallet</dt><dd><code>{account}</code></dd></div>}
@@ -244,6 +264,8 @@ function ReleaseControls({ prepared, config, moments, makerId, makerName, client
           <form onSubmit={event => { event.preventDefault(); setConfirm(confirmCopy("support", 0, prepared)); }}><label>Test MON amount<input inputMode="decimal" value={amount} onChange={event => setAmount(event.target.value)} required disabled={blocked} /></label><button className="button secondary" type="submit" disabled={blocked || !account}>Support this release</button></form>
         </section>}
         <div className="pilot-release-record"><button className="button secondary" type="button" onClick={download}><Download size={16} aria-hidden="true" />Download exact release record</button>{config.explorer && <a href={`${config.explorer}/address/${config.address}`} target="_blank" rel="noreferrer">Payout contract <ExternalLink size={16} aria-hidden="true" /></a>}</div></Disclosure>
+      {config.explorer && <a className="pilot-release-contract" href={`${config.explorer}/address/${config.address}`} target="_blank" rel="noreferrer">Release contract on MonadScan <ExternalLink size={16} aria-hidden="true" /></a>}
+      </div>
     </div>
     {confirm && <ReleaseConfirmation confirm={confirm} account={account} busy={walletBusy} rememberedTerms={rememberedTerms} accepted={confirmTerms} onAccept={setConfirmTerms} onConfirm={() => void confirmAction()} onClose={() => { if (!walletBusy) setConfirm(null); }} />}
   </>;
@@ -256,11 +278,13 @@ export function BrowserPayoutWallet({ wallets, provider, account, blocked, conne
 }) {
   return <div className="pilot-browser-payout">
     <p>Use an existing browser payout wallet while keeping this storyteller’s byline and drafts.</p>
+    <div className="pilot-browser-payout-controls">
     {wallets.length > 0 && <label>Browser payout wallet<select ref={selectRef} disabled={blocked} value={wallets.find(wallet => wallet.provider === provider)?.id ?? ""} onChange={event => {
       const choice = wallets.find(wallet => wallet.id === event.target.value);
       if (choice) onChoose(choice);
     }}><option value="" disabled>Choose a wallet</option>{wallets.map(wallet => <option key={wallet.id} value={wallet.id}>{wallet.name}</option>)}</select></label>}
-    <button type="button" className="button secondary" disabled={blocked || !provider} onClick={onConnect}>{connecting ? "Connecting payout wallet…" : account ? "Reconnect browser payout wallet" : "Connect existing browser payout wallet"}</button>
+    <button type="button" className="button secondary" disabled={blocked || !provider} onClick={onConnect}>{connecting ? "Connecting…" : account ? "Reconnect wallet" : "Connect wallet"}</button>
+    </div>
     {!wallets.length && !provider && <p>No browser payout wallet is available. Enable an Ethereum-compatible wallet extension, or use Google sign-in.</p>}
   </div>;
 }
