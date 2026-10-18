@@ -380,7 +380,7 @@ svg {
   top: -80px;
   padding: 12px 20px;
   background: var(--ink);
-  color: white;
+  color: var(--surface);
   z-index: 100;
 }
 .skip-link:focus {
@@ -1278,8 +1278,8 @@ form .fine-print {
   align-items: flex-start;
   gap: 10px;
   padding: 15px 18px;
-  background: var(--ink);
-  color: #fffefa;
+  background: var(--navy);
+  color: var(--night-ink);
   border-radius: 12px;
   box-shadow: 0 8px 30px #20172e33;
   max-width: min(570px, calc(100vw - 32px));
@@ -1288,11 +1288,11 @@ form .fine-print {
   font-size: 14px;
 }
 .notice > svg {
-  color: var(--yellow);
+  color: var(--night-yellow);
   margin-top: 2px;
 }
 .notice button {
-  color: #fffefa;
+  color: var(--night-ink);
   border: 0;
   background: none;
   padding: 0;

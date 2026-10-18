@@ -239,3 +239,16 @@ test("neon: the selection, the focus ring and the placeholder come from the room
   assert.equal(declarations(find(":focus-visible")!.body).get("outline-color"), "var(--focus-ring)");
   assert.equal(declarations(find("::placeholder")!.body).get("color"), "var(--muted)");
 });
+
+test("the skip link and the toast stay readable in a themed room", () => {
+  // Both sit inside a room's outer shell, where --ink is the light colour in the neon room.
+  const css = rules(read("src/app/globals.css"));
+  const only = (selector: string) => declarations(css.find((rule) => rule.selector === selector)?.body ?? "");
+  assert.equal(only(".skip-link").get("background"), "var(--ink)");
+  assert.equal(only(".skip-link").get("color"), "var(--surface)", "ink is paired with the surface colour, which flips with it");
+  const notice = only(".notice");
+  assert.equal(notice.get("background"), "var(--navy)");
+  assert.equal(notice.get("color"), "var(--night-ink)");
+  assert.equal(only(".notice > svg").get("color"), "var(--night-yellow)");
+  assert.doesNotMatch(read(NEON), /--(?:navy|night-ink|night-yellow):/, "the neon block leaves the fixed night colours the toast uses alone");
+});
