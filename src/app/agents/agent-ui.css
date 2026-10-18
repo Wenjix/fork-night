@@ -173,6 +173,8 @@ a.ag-step:focus-visible {
 }
 .ag-address .ag-address-link .ag-hex-full {
   min-width: 0;
+  font-size: var(--text-xs);
+  letter-spacing: -0.02em;
   overflow-wrap: anywhere;
   word-break: break-all;
   white-space: normal;
