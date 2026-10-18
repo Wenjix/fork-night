@@ -1,11 +1,13 @@
 import { WREN, WREN_TOP_UPS, txUrl } from "./agents/wren.ts";
+import { BRANDS } from "./brands.ts";
 import { MIDNIGHT_SIGNAL_RELEASE_PROOF_LINE, MONAD_RELEASE_CONTRACT, MONAD_EXPLORER } from "./onchain/records.ts";
 
+/** The chains a room can show, with the currency its demo used. Name, mark and network word come from the brand registry. */
 export const NETWORK_BRANDS = {
-  monad: { name: "Monad", testnet: "Testnet", mark: "/brands/networks/monad.svg", currency: "test MON" },
-  solana: { name: "Solana", testnet: "Devnet", mark: "/brands/networks/solana.svg", currency: "test USDC" },
-  base: { name: "Base", testnet: "Sepolia", mark: "/brands/networks/base.svg", currency: "test USDC" },
-  tempo: { name: "Tempo", testnet: "Moderato testnet", mark: "/brands/networks/tempo.svg", currency: "test pathUSD" },
+  monad: { name: BRANDS.monad.name, testnet: BRANDS.monad.net, mark: BRANDS.monad.mark, currency: "test MON" },
+  solana: { name: BRANDS.solana.name, testnet: BRANDS.solana.net, mark: BRANDS.solana.mark, currency: "test USDC" },
+  base: { name: BRANDS.base.name, testnet: BRANDS.base.net, mark: BRANDS.base.mark, currency: "test USDC" },
+  tempo: { name: BRANDS.tempo.name, testnet: BRANDS.tempo.net, mark: BRANDS.tempo.mark, currency: "test pathUSD" },
 } as const;
 
 export type NetworkBrand = keyof typeof NETWORK_BRANDS;

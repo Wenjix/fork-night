@@ -119,7 +119,7 @@ export function PilotRecap({
           title="Story so far"
           description={`This path · ${path.length} ${path.length === 1 ? "moment" : "moments"}`}
           icon={BookOpen}
-          tone="lavender"
+          variant="inline"
           className="pilot-recap-sign"
         />
         {updates.newIds.size > 0 && (
@@ -137,7 +137,7 @@ export function PilotRecap({
           >
             Show {window.earlier} earlier{" "}
             {window.earlier === 1 ? "moment" : "moments"}{" "}
-            <ChevronDown size={15} />
+            <ChevronDown size={16} aria-hidden="true" />
           </button>
         )}
         {rows(window.moments)}
@@ -148,7 +148,7 @@ export function PilotRecap({
           >
             Show {window.later} later{" "}
             {window.later === 1 ? "moment" : "moments"}{" "}
-            <ChevronDown size={15} />
+            <ChevronDown size={16} aria-hidden="true" />
           </button>
         )}
         {expanded && path.length > 6 && (
@@ -161,17 +161,17 @@ export function PilotRecap({
             className="pilot-return text-button"
             onClick={() => choose(tip.id)}
           >
-            Back to {tipLetter} <ArrowRight size={16} />
+            Back to {tipLetter} <ArrowRight size={16} aria-hidden="true" />
           </button>
         )}
         <button className="pilot-map-link" onClick={onMap}>
-          <MapIcon size={20} /> Open full story map <ArrowRight size={16} />
+          <MapIcon size={20} aria-hidden="true" /> Open full story map <ArrowRight size={16} aria-hidden="true" />
         </button>
       </aside>
       <section className="pilot-recap-mobile" aria-label="Quick story recap">
         <div className="pilot-recap-mobile-heading">
           <button className="text-button" onClick={() => setOpen(true)}>
-            <BookOpen size={20} aria-hidden="true" /> Story so far <ChevronDown size={16} />
+            <BookOpen size={20} aria-hidden="true" /> Story so far <ChevronDown size={16} aria-hidden="true" />
           </button>
           <span>
             {momentLetter(0)}
@@ -218,7 +218,7 @@ export function PilotRecap({
             className="text-button pilot-mobile-return"
             onClick={() => onSelect(tip.id)}
           >
-            Back to {tipLetter} <ArrowRight size={14} />
+            Back to {tipLetter} <ArrowRight size={16} aria-hidden="true" />
           </button>
         )}
       </section>

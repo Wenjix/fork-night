@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, Download, Film, RotateCcw, X } from "lucide-react";
 import { isApprovedArtUrl, isLocalRasterUrl } from "@/lib/art";
 import { renderStoryFilm, type FilmPlan } from "@/lib/story-film";
+import { ToArrow } from "./inline-arrow";
 import { StoryArt } from "./story-art";
 import "@/app/story-film.css";
 
@@ -55,7 +56,7 @@ export function StoryFilm({ plan }: { plan: FilmPlan }) {
     </div>
     <p className="story-film-disclosure">Storyboard video · made from this path’s saved illustrations and captions</p>
     {error && <p className="error-message" role="alert">{error}</p>}
-    <div className="storyboard-toolbar"><div className="storyboard-layouts" role="group" aria-label="Storyboard reading direction"><button type="button" aria-pressed={layout === "horizontal"} onClick={() => setLayout("horizontal")}><ArrowRight size={16} />Left to right</button><button type="button" aria-pressed={layout === "vertical"} onClick={() => setLayout("vertical")}><ArrowDown size={16} />Top to bottom</button></div><span>Beginning → ending</span></div>
+    <div className="storyboard-toolbar"><div className="storyboard-layouts" role="group" aria-label="Storyboard reading direction"><button type="button" aria-pressed={layout === "horizontal"} onClick={() => setLayout("horizontal")}><ArrowRight size={16} />Left to right</button><button type="button" aria-pressed={layout === "vertical"} onClick={() => setLayout("vertical")}><ArrowDown size={16} />Top to bottom</button></div><span>Beginning <ToArrow />ending</span></div>
     <ol ref={storyboard} className={`storyboard-panels storyboard-${layout}`} tabIndex={layout === "horizontal" ? 0 : undefined} aria-label={`Storyboard, read ${layout === "horizontal" ? "left to right" : "top to bottom"}`}>
       {plan.shots.map((item, index) => <li key={item.id} aria-current={shotIndex === index ? "true" : undefined}>
         <button type="button" className="storyboard-art" onClick={() => inspect(index)} aria-label={`${result ? "Play from" : "Review"} panel ${index + 1}: ${item.title}`}><FilmArtwork src={item.imageUrl} caption={item.caption} /></button>

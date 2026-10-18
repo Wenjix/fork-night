@@ -1,11 +1,11 @@
 .fn-section-plate,
 .fn-context-plate {
-  --plate-surface: #faf7ef;
-  --plate-ink: #252044;
-  --plate-muted: #675d7c;
-  --plate-edge: #ddd7e4;
-  --plate-accent: #5937b9;
-  --plate-mount: #fffdf8;
+  --plate-surface: var(--paper);
+  --plate-ink: var(--ink);
+  --plate-muted: var(--muted);
+  --plate-edge: var(--line);
+  --plate-accent: var(--violet);
+  --plate-mount: var(--surface);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -18,27 +18,27 @@
   box-shadow: none;
 }
 .fn-section-plate {
-  border-radius: 14px 14px 5px 5px;
+  border-radius: var(--radius-plate);
 }
 .fn-context-plate {
   align-items: flex-start;
-  border-radius: 5px 14px 14px 14px;
+  border-radius: var(--radius-xs) var(--radius-xl) var(--radius-xl) var(--radius-xl);
 }
 :is(.fn-section-plate, .fn-context-plate)[data-tone="night"] {
-  --plate-surface: #222746;
-  --plate-ink: #faf6ff;
-  --plate-muted: #c0c5e0;
-  --plate-edge: #6c6a9e;
-  --plate-accent: #ffdb67;
-  --plate-mount: #181d3d;
+  --plate-surface: var(--night-raised);
+  --plate-ink: var(--night-ink);
+  --plate-muted: var(--night-muted);
+  --plate-edge: var(--night-edge);
+  --plate-accent: var(--night-yellow);
+  --plate-mount: var(--night-panel);
 }
 :is(.fn-section-plate, .fn-context-plate)[data-tone="lavender"] {
-  --plate-surface: #e9ddf6;
-  --plate-edge: #c2b1d0;
+  --plate-surface: var(--violet-wash);
+  --plate-edge: var(--violet-line);
 }
 :is(.fn-section-plate, .fn-context-plate)[data-tone="butter"] {
-  --plate-surface: #fff0cd;
-  --plate-edge: #d8c693;
+  --plate-surface: var(--yellow-soft);
+  --plate-edge: var(--yellow-line);
 }
 .fn-plate-mount {
   width: 46px;
@@ -46,10 +46,33 @@
   flex: 0 0 46px;
   display: grid;
   place-items: center;
-  border-radius: 12px 12px 4px 4px;
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-xs) var(--radius-xs);
   color: var(--plate-accent);
   background: var(--plate-mount);
   border: 1px solid var(--plate-edge);
+}
+/* Inside a panel the heading is a row, not a second card. */
+.fn-section-plate[data-variant="inline"] {
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.fn-section-plate[data-variant="inline"] .fn-plate-mount {
+  width: auto;
+  height: auto;
+  flex: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.fn-section-plate[data-variant="inline"] .fn-plate-heading {
+  font-size: var(--text-card);
+}
+.fn-section-plate[data-variant="inline"] .fn-plate-description {
+  margin-top: var(--space-1);
+  font-size: var(--text-base);
 }
 .fn-plate-copy {
   flex: 1;
@@ -60,18 +83,18 @@
   margin: 0;
   color: var(--plate-ink);
   font-family: var(--font-display), sans-serif;
-  font-size: 26px;
+  font-size: var(--text-section);
   font-weight: 650;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 .fn-section-plate .fn-plate-description {
-  margin-top: 8px;
+  margin-top: var(--space-2);
   max-width: 70ch;
   color: var(--plate-muted);
   font-family: var(--font-interface), sans-serif;
-  font-size: 15px;
+  font-size: var(--text-md);
   font-weight: 400;
   line-height: 1.55;
 }
@@ -114,7 +137,12 @@
     height: 40px;
     flex-basis: 40px;
   }
-  .fn-section-plate .fn-plate-heading {
-    font-size: 26px;
+  /* An inline heading keeps its row: the icon, then the words, and an action under the words. */
+  .fn-section-plate[data-variant="inline"] .fn-plate-copy {
+    flex-basis: 0;
+  }
+  .fn-section-plate[data-variant="inline"] .fn-plate-action {
+    flex-basis: 100%;
+    margin-left: 30px;
   }
 }

@@ -1,0 +1,77 @@
+/* The room's one segmented control: the story view switch, the restyle style and, inside a room, the storyboard
+   direction and the art direction. A track of equal cells; the pressed cell is tinted and edged, so it reads without
+   colour alone. Colours come from the theme contract, so Kessler's neon room wears it without a second shape.
+   The storyboard and art-direction groups are also drawn on other pages, so they are matched only inside .story-room. */
+:is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+:is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font: 600 var(--text-base) / 1.25 var(--font-interface), sans-serif;
+  text-align: center;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+:is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) > button:hover:not(:disabled):not([aria-pressed="true"]) {
+  background: color-mix(in srgb, var(--accent-soft) 65%, transparent);
+  color: var(--accent-strong);
+}
+:is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) > button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--accent-strong);
+}
+:is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) > button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+:is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) > button:disabled {
+  opacity: 0.58;
+  cursor: default;
+}
+/* The view switch fills its band on a phone, in equal cells with the icon over the label. */
+@media (max-width: 819px) {
+  .workspace-toolbar .fn-segments {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+  .workspace-toolbar .fn-segments > button {
+    flex-direction: column;
+    gap: 4px;
+    min-height: var(--control-h);
+    padding: 8px 4px;
+    font-size: var(--text-sm);
+  }
+}
+@media (pointer: coarse) {
+  :is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) > button {
+    min-height: var(--control-h);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.fn-segments, .story-room .storyboard-layouts, .story-room .fandom-art-options) > button {
+    transition: none;
+  }
+}

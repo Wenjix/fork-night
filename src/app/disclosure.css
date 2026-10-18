@@ -1,0 +1,33 @@
+/* The shared expander (components/disclosure.tsx). It takes its colour from the surrounding text. */
+.fn-disclosure-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--control-h);
+  color: inherit;
+  font: 600 var(--text-base) / var(--leading-snug) var(--font-interface), sans-serif;
+  list-style: none;
+  cursor: pointer;
+}
+.fn-disclosure-summary::-webkit-details-marker {
+  display: none;
+}
+.fn-disclosure-summary::marker {
+  content: "";
+}
+.fn-disclosure-chevron {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.fn-disclosure[open] > .fn-disclosure-summary .fn-disclosure-chevron {
+  transform: rotate(90deg);
+}
+.fn-disclosure-summary:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fn-disclosure-chevron {
+    transition: none;
+  }
+}

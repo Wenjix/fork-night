@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { ArrowRight, BookOpen, Check, ChevronDown, GitBranch, Play, RotateCcw } from "lucide-react";
 import { panelImage, type Release } from "@/lib/world-demo/model";
 import { RoleIdentity } from "./identity";
+import { Disclosure } from "../disclosure";
 import { StoryFilm } from "../story-film";
 import { makeFilmPlan } from "@/lib/story-film";
 
@@ -39,8 +40,8 @@ export function ChapterFilm({ release, onReadWork }: { release: Release; onReadW
       {mode === "storyboard" ? <StoryFilm plan={makeFilmPlan(release.snapshot.title, release.snapshot.works.map(work => ({ id: work.id, title: work.title, maker: work.maker_label, panels: work.panels.map(panel => ({ imageUrl: panelImage(panel).src, caption: panel.caption })) })))} /> : <>
       <div className="wd-film-heading">
         <h2 id="chapter-film-title">After Hours, in motion</h2>
-        <button type="button" className="wd-button wd-yellow" onClick={playClip} disabled={busy} aria-controls="chapter-film-player" aria-describedby="chapter-film-status">
-          {started ? <RotateCcw size={17} aria-hidden="true" /> : <Play size={17} aria-hidden="true" />}
+        <button type="button" className="wd-button wd-yellow" onClick={playClip} disabled={busy} aria-busy={playback === "loading" || undefined} aria-controls="chapter-film-player" aria-describedby="chapter-film-status">
+          {started ? <RotateCcw size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
           {playback === "loading" ? "Loading video…" : playback === "playing" ? "Playing video" : error ? "Try video again" : started ? "Replay video" : "Play motion example"}
         </button>
       </div>
@@ -68,7 +69,7 @@ export function ChapterFilm({ release, onReadWork }: { release: Release; onReadW
 function ContributionHistory({ release, onReadWork }: { release: Release; onReadWork: (id: string) => void }) {
   const works = release.snapshot.works;
   return <aside className="wd-contribution-history" aria-labelledby="contribution-history-title">
-    <h2 id="contribution-history-title"><GitBranch size={21} aria-hidden="true" /> Contribution history</h2>
+    <h2 id="contribution-history-title"><GitBranch size={20} aria-hidden="true" /> Contribution history</h2>
     <p>One story, carried forward. Every maker stays attached.</p>
     <ol className="wd-history-path">
       {works.map(work => {
@@ -77,9 +78,9 @@ function ContributionHistory({ release, onReadWork }: { release: Release; onRead
           <details className="wd-contribution">
             <summary>
               <span className="wd-history-node" aria-hidden="true" />
-              {work.role === "opening" ? <span className="wd-history-opening"><BookOpen size={17} aria-hidden="true" /> Prepared opening</span> : <RoleIdentity role={work.role} name={work.maker_label} detail={work.role === "maker" ? "Original contribution" : `Continues ${parent?.maker_label ?? "the story"}’s scene`} />}
+              {work.role === "opening" ? <span className="wd-history-opening"><BookOpen size={16} aria-hidden="true" /> Prepared opening</span> : <RoleIdentity role={work.role} name={work.maker_label} detail={work.role === "maker" ? "Original contribution" : `Continues ${parent?.maker_label ?? "the story"}’s scene`} />}
               <strong className="wd-history-title">{work.title}</strong>
-              <span className="wd-history-summary"><code>{work.id.slice(0, 8)}</code><span>+{work.panels.length} {work.panels.length === 1 ? "panel" : "panels"}</span><ChevronDown size={17} aria-hidden="true" /></span>
+              <span className="wd-history-summary"><code>{work.id.slice(0, 8)}</code><span>+{work.panels.length} {work.panels.length === 1 ? "panel" : "panels"}</span><ChevronDown size={16} aria-hidden="true" /></span>
               <span className="wd-history-hint">View contribution</span>
             </summary>
             <div className="wd-history-expanded">
@@ -97,6 +98,6 @@ function ContributionHistory({ release, onReadWork }: { release: Release; onRead
       })}
       <li className="wd-history-release"><span className="wd-history-node" aria-hidden="true"><Check size={12} /></span><strong>{release.snapshot.title}</strong><span>Published by {release.snapshot.curator.label}</span></li>
     </ol>
-    <details className="wd-history-record"><summary>Chapter record</summary><p>These exact contributions are preserved in the published chapter.</p><dl><div><dt>Release</dt><dd><code>{release.id}</code></dd></div><div><dt>SHA-256</dt><dd><code>{release.digest}</code></dd></div></dl></details>
+    <Disclosure className="wd-history-record" summary="Chapter record"><p>These exact contributions are preserved in the published chapter.</p><dl><div><dt>Release</dt><dd><code>{release.id}</code></dd></div><div><dt>SHA-256</dt><dd><code>{release.digest}</code></dd></div></dl></Disclosure>
   </aside>;
 }

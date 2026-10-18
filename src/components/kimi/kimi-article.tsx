@@ -1,5 +1,9 @@
 import { ArrowRight, Bird, Check, ChevronDown, Code2, Image, ListChecks, LockKeyhole, MoonStar, Play, ShieldCheck, Sparkles, Sunrise } from "lucide-react";
 import type { ReactNode } from "react";
+import { BRANDS, type BrandId } from "../../lib/brands.ts";
+import { BrandBadge } from "../brand-badge.tsx";
+import { ForkNightMark } from "../fork-night-mark.tsx";
+import { ArticleLinks } from "./article-links.tsx";
 import {
   ARTICLE,
   CLOSE_HREFS,
@@ -53,9 +57,22 @@ const money = (usd: string, approximate: boolean) => `${approximate ? "≈" : ""
 const JOB_ICONS = { desk: Sparkles, night: MoonStar, wren: Bird };
 const FLOW_ICONS = [Sparkles, LockKeyhole, MoonStar, ShieldCheck, ListChecks, Image, Sunrise];
 
+/**
+ * A short credit line whose tool names are drawn as badges. The words around the names stay text and keep their
+ * order, so the line reads the same in both languages; only the names named in `brands` change shape.
+ */
+function Credit({ text, brands }: { text: string; brands: readonly BrandId[] }) {
+  const names = brands.map((id) => BRANDS[id].name);
+  const parts = text.split(new RegExp(`(${names.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`));
+  return <>{parts.map((part, index) => {
+    const id = brands.find((item) => BRANDS[item].name === part);
+    return id ? <BrandBadge key={index} brand={id} /> : part.trim() ? <span key={index}>{part.trim()}</span> : null;
+  })}</>;
+}
+
 function Details({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) {
   return <details className={`km-details ${className}`.trim()}>
-    <summary>{label}<ChevronDown size={17} aria-hidden="true" /></summary>
+    <summary>{label}<ChevronDown size={16} aria-hidden="true" /></summary>
     <div className="km-details-body">{children}</div>
   </details>;
 }
@@ -77,7 +94,7 @@ export function VideoSlot({ video, copy }: { video: KimiVideo; copy: ArticleCopy
         title={copy.hero.videoLabel} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" />
       <figcaption className="km-video-caption">
-        <a href={video.href} target="_blank" rel="noreferrer">{copy.hero.videoLabel}<ArrowRight size={15} aria-hidden="true" /></a>
+        <a href={video.href} target="_blank" rel="noreferrer">{copy.hero.videoLabel}<ArrowRight size={16} aria-hidden="true" /></a>
       </figcaption>
     </figure>;
   }
@@ -131,7 +148,7 @@ function CopilotMock({ copy, locale }: { copy: ArticleCopy; locale: Locale }) {
   const original = copy.wrote.originalLabel;
   return <figure className="km-mock km-copilot">
     <figcaption className="km-mock-head">
-      <span className="km-mock-title"><Sparkles size={17} aria-hidden="true" />{copy.wrote.copilot.title}</span>
+      <span className="km-mock-title"><Sparkles size={20} aria-hidden="true" />{copy.wrote.copilot.title}</span>
       <LiveLabel copy={copy} />
     </figcaption>
     <blockquote className="km-spotlight-quote">
@@ -162,7 +179,7 @@ function BrainMock({ copy, locale }: { copy: ArticleCopy; locale: Locale }) {
   const words = copy.wrote.night;
   return <figure className="km-mock km-brain">
     <figcaption className="km-mock-head">
-      <span className="km-mock-title"><MoonStar size={17} aria-hidden="true" />{words.title}</span>
+      <span className="km-mock-title"><MoonStar size={20} aria-hidden="true" />{words.title}</span>
       <LiveLabel copy={copy} />
     </figcaption>
     <div className="km-mock-meta"><Quote locale={locale} original={original} en={quote.brief} zh={zh.brief} label={<span className="km-label">{words.briefLabel}</span>} /></div>
@@ -172,7 +189,7 @@ function BrainMock({ copy, locale }: { copy: ArticleCopy; locale: Locale }) {
         return <li key={take.caption} className="km-take" data-pick={picked || undefined}>
           <div className="km-take-heading">
             <p className="km-take-label">{words.takeLabel} {index + 1}</p>
-            {picked && <p className="km-pick"><Check size={14} aria-hidden="true" />{words.pickBadge}</p>}
+            {picked && <p className="km-pick"><Check size={16} aria-hidden="true" />{words.pickBadge}</p>}
           </div>
           <Quote locale={locale} original={original} className="km-take-caption" en={take.caption} zh={zh.takes[index].caption} />
           <p className="km-verdict">{picked ? <Check size={16} aria-hidden="true" /> : <ListChecks size={16} aria-hidden="true" />}{copy.reading.verdicts[index]}</p>
@@ -206,7 +223,7 @@ function WrenMock({ copy, locale }: { copy: ArticleCopy; locale: Locale }) {
   const words = copy.wrote.wren;
   return <figure className="km-mock km-wren">
     <figcaption className="km-mock-head">
-      <span className="km-mock-title"><Bird size={17} aria-hidden="true" />{words.title}</span>
+      <span className="km-mock-title"><Bird size={20} aria-hidden="true" />{words.title}</span>
       <LiveLabel copy={copy} />
     </figcaption>
     <dl className="km-wren-facts">
@@ -241,9 +258,9 @@ export function ArticleBody({ locale }: { locale: Locale }) {
       <div className="km-hero-copy">
         <h1 id={id("title")}>{copy.hero.title}</h1>
         <p className="km-dek">{copy.hero.dek}</p>
-        <p className="km-byline"><span>{copy.hero.eyebrow}</span><span>{fill(copy.hero.byline, copy)}</span></p>
+        <p className="km-byline"><span className="km-byline-credit"><Credit text={copy.hero.eyebrow} brands={["kimi", "tokenrouter"]} /></span><span>{fill(copy.hero.byline, copy)}</span></p>
         <nav className="km-jump" aria-label={copy.reading.jumpLabel}>
-          {copy.reading.jumps.map((jump) => <a key={jump.target} href={`#${id(jump.target)}`}>{jump.label}<ArrowRight size={14} aria-hidden="true" /></a>)}
+          {copy.reading.jumps.map((jump) => <a key={jump.target} href={`#${id(jump.target)}`}>{jump.label}<ArrowRight size={16} aria-hidden="true" /></a>)}
         </nav>
       </div>
       <VideoSlot video={KIMI_VIDEO} copy={copy} />
@@ -256,7 +273,7 @@ export function ArticleBody({ locale }: { locale: Locale }) {
           const facts = KIMI_FACTS.jobs[key];
           const Icon = JOB_ICONS[key];
           return <li key={key} className="km-job" data-job={key}>
-            <h3><Icon size={25} aria-hidden="true" />{words.name}</h3>
+            <h3><Icon size={24} aria-hidden="true" />{words.name}</h3>
             <p className="km-job-when">{words.when}</p>
             <p className="km-job-does">{words.does}</p>
             <p className="km-job-metric">
@@ -278,9 +295,9 @@ export function ArticleBody({ locale }: { locale: Locale }) {
         {copy.flow.steps.map((step, index) => {
           const Icon = FLOW_ICONS[index];
           return <li key={step.title} className="km-step" data-kimi={FLOW_KIMI[index] || undefined}>
-            <span className="km-step-icon" aria-hidden="true"><Icon size={23} /><span className="km-step-number">{index + 1}</span></span>
+            <span className="km-step-icon" aria-hidden="true"><Icon size={24} /><span className="km-step-number">{index + 1}</span></span>
             <p className="km-step-title">{step.title}</p>
-            <p className="km-step-actor">{step.actor}</p>
+            <p className="km-step-actor"><Credit text={step.actor} brands={["kimi", "privy"]} /></p>
           </li>;
         })}
       </ol>
@@ -315,7 +332,7 @@ export function ArticleBody({ locale }: { locale: Locale }) {
         </ul>
         <figure className="km-request">
           <figcaption>
-            <p className="km-request-title"><Code2 size={17} aria-hidden="true" />{copy.why.requestHeading}</p>
+            <p className="km-request-title"><Code2 size={16} aria-hidden="true" />{copy.why.requestHeading}</p>
             <p className="km-request-note">{copy.why.requestNote}</p>
           </figcaption>
           <pre lang="en"><code>{KIMI_REQUEST}</code></pre>
@@ -325,7 +342,7 @@ export function ArticleBody({ locale }: { locale: Locale }) {
 
     <Section id={id("safe")} title={copy.safe.heading}>
       <ul className="km-safeguards">
-        {copy.reading.safeguards.map((item) => <li key={item}><ShieldCheck size={22} aria-hidden="true" /><span>{item}</span></li>)}
+        {copy.reading.safeguards.map((item) => <li key={item}><ShieldCheck size={24} aria-hidden="true" /><span>{item}</span></li>)}
       </ul>
       <Details label={copy.reading.safetyDetails}>
         <ul className="km-checklist">
@@ -347,7 +364,7 @@ export function ArticleBody({ locale }: { locale: Locale }) {
       <ul className="km-links">
         {copy.close.links.map((link, index) => <li key={link.label}>
           <a className="km-link-card" href={CLOSE_HREFS[index]}>
-            <span className="km-link-label">{link.label}<ArrowRight size={17} aria-hidden="true" /></span>
+            <span className="km-link-label">{link.label}<ArrowRight size={16} aria-hidden="true" /></span>
             <span className="km-link-note">{link.note}</span>
           </a>
         </li>)}
@@ -357,6 +374,7 @@ export function ArticleBody({ locale }: { locale: Locale }) {
           {KIMI_CODE_PATHS.map((path, index) => <li key={path}><code lang="en">{path}</code><span>{copy.close.codeRoles[index]}</span></li>)}
         </ul>
       </Details>
+      <ArticleLinks className="km-more" />
     </Section>
   </article>;
 }
@@ -366,12 +384,12 @@ export function KimiArticle() {
     <script dangerouslySetInnerHTML={{ __html: LANG_BOOT }} />
     <a className="km-skip" href="#km-main"><Both pick={(copy) => copy.skip} /></a>
     <header className="km-header">
-      <a className="km-brand" href={KIMI_HREFS.home}>Fork <span>Night</span></a>
+      <ForkNightMark href={KIMI_HREFS.home} />
       <nav className="km-nav" aria-label="Fork Night">
         <a href={KIMI_HREFS.rooms}><Both pick={(copy) => copy.nav.rooms} /></a>
         <a href={KIMI_HREFS.agents}><Both pick={(copy) => copy.nav.agents} /></a>
         <a href={KIMI_HREFS.nightWatch}><Both pick={(copy) => copy.nav.nightWatch} /></a>
-        <a href={KIMI_HREFS.kimi} aria-current="page"><MoonStar size={15} aria-hidden="true" /><Both pick={(copy) => copy.nav.kimi} /></a>
+        <a href={KIMI_HREFS.kimi} aria-current="page"><Both pick={(copy) => copy.nav.kimi} /></a>
       </nav>
       <LanguageToggle label={TOGGLE_LABEL} announce={ANNOUNCE} compact />
       <script dangerouslySetInnerHTML={{ __html: PRESSED_BOOT }} />

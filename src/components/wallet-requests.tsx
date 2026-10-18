@@ -28,7 +28,7 @@ export function WalletReviewDialog({ request, action, config, busy, disabled = f
       <div><dt>Network</dt><dd>{config.name}</dd></div>
       <div><dt>Requested wallet</dt><dd><code>{address}</code><button type="button" className="text-button" onClick={async () => { try { await navigator.clipboard.writeText(address); setCopied(true); } catch { setCopied(false); } }}><Copy size={15} aria-hidden="true" />{copied ? "Copied" : "Copy address"}</button></dd></div>
     </dl>
-    <p className="pilot-wallet-verified"><ShieldCheck size={17} aria-hidden="true" />The maker signed this wallet request.</p>
+    <p className="pilot-wallet-verified"><ShieldCheck size={16} aria-hidden="true" />The maker signed this wallet request.</p>
     <p className="pilot-wallet-review-warning">{action === "approve"
       ? "Double-check the full address. Approval permanently sets this byline's payout wallet for the project. Each distinct wallet counts once in the release split."
       : "The maker can review their address and send a new request. Denying a request does not revoke an approval already recorded onchain."}</p>
@@ -43,7 +43,7 @@ export function WalletRequestList({ requests, busy, onReview }: {
   requests: WalletRequest[]; busy: boolean; onReview: (request: WalletRequest, action: "approve" | "deny", motion: boolean) => void;
 }) {
   return <ul className="pilot-wallet-request-list">{requests.map(request => <li key={request.id}>
-    <div><strong>{request.maker_label}</strong><p>{request.moment_title}</p><span className="pilot-request-address"><Wallet size={14} aria-hidden="true" /><code title={request.wallet_address}>{shortAddress(request.wallet_address)}</code><span><ShieldCheck size={14} aria-hidden="true" />Signed request</span></span></div>
+    <div><strong>{request.maker_label}</strong><p>{request.moment_title}</p><span className="pilot-request-address"><Wallet size={16} aria-hidden="true" /><code title={request.wallet_address}>{shortAddress(request.wallet_address)}</code><span><ShieldCheck size={14} aria-hidden="true" />Signed request</span></span></div>
     <div className="pilot-request-actions"><button type="button" className="button secondary" disabled={busy} onClick={event => onReview(request, "approve", event.detail > 0)}>Approve</button><button type="button" className="text-button" disabled={busy} onClick={event => onReview(request, "deny", event.detail > 0)}>Deny</button></div>
   </li>)}</ul>;
 }

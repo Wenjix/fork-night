@@ -1,6 +1,9 @@
+import type { BrandId } from "./brands.ts";
 import { fandomStory } from "./fandom-stories.ts";
 
 const story = fandomStory("blade-runner-memory")!;
+/** Which registered brand draws each model and the provider, so the film page can show them as badges beside the same words. */
+const BRANDS_USED = { imageModel: "hunyuan", videoModel: "wan", provider: "gmi" } as const satisfies Record<string, BrandId>;
 
 /** A fixed, previously generated example; independent of browser-local story edits. */
 export const BLADE_RUNNER_FILM = {
@@ -10,6 +13,7 @@ export const BLADE_RUNNER_FILM = {
   provider: "GMI Cloud",
   imageModel: "Hunyuan v3.5",
   videoModel: "Wan 3.0",
+  brands: BRANDS_USED,
   preparedOn: "2026-10-07",
   preparedOnLabel: "October 7, 2026",
   duration: 12,
@@ -51,6 +55,7 @@ export const NIGHT_SHIFT_FILM = {
   provider: "GMI Cloud",
   imageModel: "Hy-Image 3.5 preview",
   videoModel: "Wan 3.0",
+  brands: BRANDS_USED,
   preparedOn: "2026-10-14",
   preparedOnLabel: "October 14, 2026",
   duration: 18,

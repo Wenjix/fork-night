@@ -1,77 +1,78 @@
-.fn-film-invite[data-slot="card"] { display: flex; flex-direction: row; align-items: center; gap: 20px; padding: 18px 24px; margin: 0 30px 24px; border: 0; border-radius: 14px; background: #f0ebff; box-shadow: none; color: #292042; }
-.fn-film-invite > img { flex: 0 0 72px; width: 72px; height: 72px; object-fit: cover; border-radius: 12px; }
-.fn-film-invite > div { flex: 1; min-width: 0; }
-.fn-film-invite h2 { font: 650 24px/1.2 var(--font-display), sans-serif; letter-spacing: -.02em; }
-.fn-film-invite p { margin: 7px 0 0; font-size: 15px; color: #5d4b68; }
-.fn-film-button[data-slot="button"] { min-height: 44px; height: auto; padding: 11px 16px; border: 0; border-radius: 10px; background: var(--violet); color: white; font: 600 14px/1.4 var(--font-interface), sans-serif; white-space: normal; text-align: center; box-shadow: none; transition: background-color 150ms ease-out; }
-.fn-film-button[data-slot="button"]:hover { background: var(--violet-dark); }
-.fn-film-button[data-slot="button"]:focus-visible { outline: 3px solid var(--violet); outline-offset: 4px; }
+/* The invitation to the film: the section-plate anatomy (mount, heading, text, action) with the film's poster as its mount. */
+.fn-film-plate.fn-section-plate { margin: 0 var(--gutter) var(--space-5); padding: var(--space-3) var(--space-4); }
+.fn-film-plate .fn-plate-mount { width: 56px; height: 56px; flex-basis: 56px; padding: 0; overflow: hidden; }
+.fn-film-plate .fn-plate-mount img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.fn-film-plate .fn-plate-heading { font-size: var(--text-card); }
+.fn-film-plate .fn-plate-description { margin-top: var(--space-1); font-size: var(--text-md); }
+.fn-film-button[data-slot="button"] { min-height: var(--control-h); height: auto; padding: 11px 16px; border: 0; border-radius: var(--radius-md); background: var(--accent-fill); color: var(--on-accent); font: 600 var(--text-base)/1.4 var(--font-interface), sans-serif; white-space: normal; text-align: center; box-shadow: none; transition: background-color var(--dur-fast) var(--ease-out); }
+.fn-film-button[data-slot="button"]:hover { background: color-mix(in srgb, var(--accent-fill), #000 14%); }
+.fn-film-button[data-slot="button"]:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 4px; }
 .fn-film-button[data-slot="button"]:disabled { cursor: default; opacity: .65; }
 .workspace.fn-film-workspace { display: block; }
 .fn-film-workspace > .main-pane { overflow: visible; }
-.fn-film-demo { max-width: 1200px; margin: 0 auto; padding: 36px 30px 40px; }
+.fn-film-demo { max-width: 1200px; margin: 0 auto; padding: var(--space-7) var(--gutter) var(--space-8); }
 .fn-film-intro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 30px; }
-.fn-film-intro h2 { grid-column: 1; margin: 0; font: 650 clamp(30px, 3vw, 40px)/1.13 var(--font-display), sans-serif; letter-spacing: -.025em; text-wrap: balance; }
-.fn-film-intro p { grid-column: 1; max-width: 68ch; margin: 0; font-size: 16px; line-height: 1.65; color: #5d4b68; }
+.fn-film-intro h2 { grid-column: 1; margin: 0; font: 650 var(--text-page)/1.13 var(--font-display), sans-serif; letter-spacing: var(--tracking-display); text-wrap: balance; }
+.fn-film-intro p { grid-column: 1; max-width: 68ch; margin: 0; font-size: var(--text-lg); line-height: 1.65; color: var(--muted); }
 .fn-film-intro > button { grid-column: 2; grid-row: 1 / span 2; }
-.fn-film-sources { margin-top: 36px; }
-.fn-film-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
-.fn-film-section-heading h3 { font: 650 25px/1.25 var(--font-display), sans-serif; letter-spacing: -.02em; }
-.fn-film-badge[data-slot="badge"] { padding: 5px 10px; border: 0; background: #e9ddf6; color: #48218e; font: 600 13px/1.5 var(--font-interface), sans-serif; white-space: normal; }
+.fn-film-sources { margin-top: var(--space-7); }
+.fn-film-section-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 16px; margin-bottom: 18px; }
+.fn-film-section-heading h3 { font: 650 var(--text-section)/1.25 var(--font-display), sans-serif; letter-spacing: -.02em; }
 .fn-film-images { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding: 0; margin: 0; list-style: none; }
 .fn-film-images figure { margin: 0; }
-.fn-film-images img { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 12px; background: var(--navy); }
-.fn-film-image-position { display: block; margin: 16px 0 7px; font-size: 13px; font-weight: 600; color: #5d4b68; font-variant-numeric: tabular-nums; }
-.fn-film-images h4 { margin: 0; font: 650 23px/1.25 var(--font-display), sans-serif; letter-spacing: -.015em; text-wrap: balance; }
-.fn-film-images figcaption p { margin: 10px 0 0; font-size: 15px; line-height: 1.65; color: #5d4b68; overflow-wrap: anywhere; }
-.fn-film-motion[data-slot="card"] { display: block; margin-top: 40px; padding: 26px; border: 0; border-radius: 16px; background: var(--navy); color: #f8f6ff; box-shadow: 0 12px 28px rgb(40 41 71 / .12); }
+.fn-film-images img { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: var(--radius-lg); background: var(--navy); }
+.fn-film-image-position { display: block; margin: 16px 0 7px; font-size: var(--text-sm); font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fn-film-images h4 { margin: 0; font: 650 var(--text-card)/1.25 var(--font-display), sans-serif; letter-spacing: -.015em; text-wrap: balance; }
+.fn-film-images figcaption p { margin: 10px 0 0; font-size: var(--text-md); line-height: 1.65; color: var(--muted); overflow-wrap: anywhere; }
+.fn-film-motion[data-slot="card"] { display: block; margin-top: 40px; padding: 26px; border: 0; border-radius: var(--radius-2xl); background: var(--navy); color: var(--night-ink); box-shadow: var(--shadow-raised); }
 .fn-film-motion-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
-.fn-film-motion-heading h3 { font: 650 30px/1.2 var(--font-display), sans-serif; letter-spacing: -.02em; outline-offset: 5px; }
-.fn-film-motion-heading p { margin: 8px 0 0; color: #d8d2ed; font-size: 14px; }
-.fn-film-button-light[data-slot="button"] { background: var(--yellow); color: #292042; }
-.fn-film-button-light[data-slot="button"]:hover { background: #ffdf7e; }
-.fn-film-motion .fn-film-button:focus-visible, .fn-film-motion summary:focus-visible { outline-color: var(--yellow); }
+.fn-film-motion-heading h3 { font: 650 var(--text-section)/1.2 var(--font-display), sans-serif; letter-spacing: -.02em; outline-offset: 5px; }
+/* The video model, its provider and the clip's length: two badges and a plain line. */
+.fn-film-credit { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); color: var(--night-muted); font-size: var(--text-base); }
+.fn-film-credit .fn-badge { color: var(--night-ink); }
+.fn-film-button-light[data-slot="button"] { background: var(--signal); color: var(--on-signal); }
+.fn-film-button-light[data-slot="button"]:hover { background: color-mix(in srgb, var(--signal), #fff 25%); }
+.fn-film-motion .fn-film-button:focus-visible, .fn-film-motion summary:focus-visible { outline-color: var(--night-yellow); }
 .fn-film-motion-body { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 30px; align-items: start; }
 .fn-film-motion-body figure { margin: 0; min-width: 0; }
-.fn-film-motion video { display: block; width: 100%; height: auto; border-radius: 12px; background: #10162e; }
-.fn-film-motion figcaption { margin-top: 14px; font-size: 14px; line-height: 1.6; color: #d8d2ed; }
-.fn-film-badge-night[data-slot="badge"] { background: #4b3f65; color: #f8f6ff; }
-.fn-film-film-note > p { max-width: 68ch; margin: 20px 0 0; font-size: 16px; line-height: 1.65; }
-.fn-film-film-note > p + p { color: #d8d2ed; font-size: 15px; }
+.fn-film-motion video { display: block; width: 100%; height: auto; border-radius: var(--radius-lg); background: var(--night); }
+.fn-film-motion figcaption { margin-top: 14px; font-size: var(--text-base); line-height: 1.6; color: var(--night-muted); }
+.fn-film-film-note > p { max-width: 68ch; margin: 20px 0 0; font-size: var(--text-lg); line-height: 1.65; }
+.fn-film-film-note > p + p { color: var(--night-muted); font-size: var(--text-md); }
 .fn-film-downloads { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
-.fn-film-button-outline[data-slot="button"] { border: 1px solid #a9a1c5; background: transparent; color: #f8f6ff; }
-.fn-film-button-outline[data-slot="button"]:hover { background: #3c3c5e; }
-.fn-film-film-note details { margin-top: 24px; font-size: 15px; }
-.fn-film-film-note summary { cursor: pointer; padding: 10px 0; min-height: 44px; color: #e5d9ff; }
+.fn-film-button-outline[data-slot="button"] { border: 1px solid var(--night-control-line); background: transparent; color: var(--night-ink); }
+.fn-film-button-outline[data-slot="button"]:hover { background: color-mix(in srgb, var(--night-ink) 10%, transparent); }
+.fn-film-film-note details { margin-top: 24px; font-size: var(--text-md); }
+.fn-film-film-note summary { cursor: pointer; padding: 10px 0; min-height: var(--control-h); color: var(--night-link); }
 .fn-film-film-note details ol { padding-left: 20px; }
-.fn-film-film-note details li { margin: 12px 0; color: #d8d2ed; }
-.fn-film-playback { margin: 20px 0 0; color: #d8d2ed; font-size: 14px; }
-.fn-film-error { margin: 12px 0 0; padding: 12px 16px; border-radius: 10px; background: #532c3b; color: #ffe0de; font-size: 15px; }
-.fn-film-disclosure { margin: 24px 0 0; max-width: 75ch; font-size: 14px; color: #5d4b68; }
+.fn-film-film-note details li { margin: 12px 0; color: var(--night-muted); }
+.fn-film-playback { margin: 20px 0 0; color: var(--night-muted); font-size: var(--text-base); }
+.fn-film-error { margin: 12px 0 0; padding: 12px 16px; border-radius: var(--radius-md); background: #532c3b; color: #ffe0de; font-size: var(--text-md); }
+.fn-film-disclosure { margin: 24px 0 0; max-width: 75ch; font-size: var(--text-base); color: var(--muted); }
 .workspace-toolbar.fn-film-toolbar { flex-wrap: wrap; }
-.fn-film-toolbar .view-switch { flex-wrap: wrap; }
 /* Six source images sit three by two on wide screens instead of four plus two. */
 @media (min-width: 1001px) { .fn-film-images:has(> li:nth-child(5)) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1000px) {
   .fn-film-images { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 24px; }
 }
 @media (max-width: 700px) {
-  .fn-film-invite[data-slot="card"] { margin: 0 18px 20px; padding: 18px; flex-wrap: wrap; gap: 14px; }
-  .fn-film-invite > img { width: 56px; height: 56px; flex-basis: 56px; }
-  .fn-film-invite h2 { font-size: 21px; }
-  .fn-film-invite > button { width: 100%; }
-  .fn-film-demo { padding: 28px 18px; }
+  .fn-film-demo { padding-block: 28px; }
   .fn-film-intro { grid-template-columns: 1fr; align-items: start; gap: 18px; }
   .fn-film-intro > button { grid-column: 1; grid-row: auto; width: 100%; }
   .fn-film-section-heading { flex-direction: column; align-items: start; gap: 10px; }
   .fn-film-images { grid-template-columns: 1fr; gap: 32px; }
-  .fn-film-images h4 { font-size: 24px; }
   .fn-film-motion[data-slot="card"] { padding: 20px 16px; margin-top: 32px; }
   .fn-film-motion-heading { flex-direction: column; align-items: start; gap: 18px; }
   .fn-film-motion-heading > button { width: 100%; }
   .fn-film-motion-body { grid-template-columns: 1fr; gap: 24px; }
   .fn-film-downloads { flex-direction: column; }
-  .fn-film-toolbar .view-switch > button { flex-basis: calc(50% - 4px); justify-content: center; }
+}
+/* On a phone the plate wraps like every section plate: the action sits under the text, in line with it. */
+@media (max-width: 680px) {
+  .fn-film-plate .fn-plate-mount { width: 44px; height: 44px; flex-basis: 44px; }
+  .fn-film-plate .fn-plate-copy { flex-basis: calc(100% - 56px); }
+  .fn-film-plate .fn-plate-action { flex-basis: calc(100% - 56px); margin-left: 56px; }
+  .fn-film-plate .fn-film-button { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .fn-film-button[data-slot="button"] { transition: none; }

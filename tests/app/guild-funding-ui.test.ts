@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { createElement, Fragment } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -43,6 +44,12 @@ test("Squads stays first and the branded Solana and Base funding rows remain vis
   assert.equal((html.match(/src="\/brands\/networks\/base.svg"/g) ?? []).length, 1);
   assert.equal((html.match(/src="\/brands\/networks\/usdc.svg" width="32" height="32"/g) ?? []).length, 3);
   assert.equal((html.match(/\bfn-network-card\b/g) ?? []).length, 1);
+});
+
+test("the USDC mark is drawn at 32px or more, as docs/submission/BRAND-ASSETS.md says", () => {
+  const css = readFileSync(new URL("../../src/app/room-networks.css", import.meta.url), "utf8");
+  assert.match(css, /\.fn-network-currency:not\(\[data-plain\]\)\s*\{[^}]*--badge-tile:\s*32px/, "the chip that carries the mark sets a 32px tile");
+  assert.match(css, /\.fn-network-currency img\s*\{[^}]*width:\s*var\(--badge-tile\)/, "and the image takes its size from that tile");
 });
 
 test("funding history opens from a primary button with explicit dialog semantics", () => {

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { BadgeCheck, BookOpen, Bot, CircleDashed, ExternalLink, Fingerprint, Globe, HandCoins, IdCard, MoonStar, RefreshCw, Send, Wallet } from "lucide-react";
+import { BadgeCheck, BookOpen, Bot, CircleDashed, ExternalLink, Fingerprint, Globe, HandCoins, MoonStar, RefreshCw, Send, Wallet } from "lucide-react";
 import type { IdentityResponse } from "../../night-watch/api-types.ts";
+import { BrandBadge, BrandStrip } from "../brand-badge";
+import { Disclosure } from "../disclosure";
 import { errorMessage, safeHref, shortHex, type NightWatchClient } from "./api.ts";
 
 const IDENTITY_NOTE = "An identity registration on a draft standard; it does not prove quality, ownership or trust.";
@@ -32,18 +34,22 @@ export function IdentityCard({ api }: { api: NightWatchClient }) {
 
   // aria-disabled rather than disabled while reading, so the button keeps keyboard focus.
   const refresh = <button type="button" className="pilot-icon-button nw-icon-button" aria-label="Read the identity again" aria-disabled={reading || undefined}
-    onClick={reading ? undefined : () => setVersion((value) => value + 1)}><RefreshCw size={18} aria-hidden="true" className={reading ? "nw-spin" : undefined} /></button>;
+    onClick={reading ? undefined : () => setVersion((value) => value + 1)}><RefreshCw size={20} aria-hidden="true" className={reading ? "nw-spin" : undefined} /></button>;
   // One element type in every state, so React keeps the section and the refresh button (and its focus) when the first read lands.
   return <AgentCard identity={identity} titleId={`${ids}-identity`} action={refresh} error={error} />;
 }
 
 function AgentTop({ titleId, name, action }: { titleId: string; name: string; action?: ReactNode }) {
   return <div className="nw-agent-card-top">
-    <span className="nw-agent-card-avatar" aria-hidden="true"><MoonStar size={32} /></span>
+    <span className="nw-agent-card-avatar" aria-hidden="true"><MoonStar size={24} /></span>
     <div>
-      <p className="nw-agent-card-eyebrow"><IdCard size={14} aria-hidden="true" />ERC-8004 calling card</p>
-      <h3 id={titleId}>{name}</h3>
-      <span className="nw-agent-badge"><Bot size={14} aria-hidden="true" />AI agent</span>
+      <div className="nw-agent-card-title">
+        <h3 id={titleId}>{name}</h3>
+        <span className="nw-agent-badge"><Bot size={16} aria-hidden="true" />AI agent</span>
+      </div>
+      <BrandStrip label="Identity standard" className="nw-agent-card-chips">
+        <BrandBadge brand="erc8004" role="calling card" />
+      </BrandStrip>
     </div>
     {action}
   </div>;
@@ -72,20 +78,23 @@ export function AgentCard({ identity, titleId, action, error = "" }: { identity:
     {error && <p role="alert" className="nw-error">{error}</p>}
     <p className="nw-agent-card-byline">{AGENT_ROLE}</p>
     <p className="nw-agent-card-steward">Steward: <strong>{card.steward}</strong></p>
-    <p className="nw-agent-card-status" data-pending={identity.registered ? undefined : ""}>
-      {identity.registered
-        ? <><BadgeCheck size={16} aria-hidden="true" />Registered on Monad testnet{agentNumber}</>
-        : <><CircleDashed size={16} aria-hidden="true" />Not registered yet. This card shows what a registration would say.</>}
-    </p>
+    <div className="nw-agent-card-statusrow">
+      <p className="nw-agent-card-status" data-pending={identity.registered ? undefined : ""}>
+        {identity.registered
+          ? <><BadgeCheck size={16} aria-hidden="true" />Registered on Monad testnet{agentNumber}</>
+          : <><CircleDashed size={16} aria-hidden="true" />Not registered yet. This card shows what a registration would say.</>}
+      </p>
+      <BrandBadge brand="monad" />
+    </div>
     <dl className="nw-agent-card-rows">
-      <div><dt><Send size={13} aria-hidden="true" />Publishes</dt><dd>Never. The maker chooses in the morning.</dd></div>
-      <div><dt><Wallet size={13} aria-hidden="true" />Spends</dt><dd>Only within a Privy policy the maker authorizes: Base Sepolia test USDC, to one room’s door, capped, expiring and revocable.</dd></div>
-      <div><dt><HandCoins size={13} aria-hidden="true" />Delivers shares</dt><dd>As a Privy server wallet whose policy allows only <code>claim()</code> on the release contract, plus its one identity registration.</dd></div>
-      <div><dt><Fingerprint size={13} aria-hidden="true" />Identity</dt><dd>{identity.registered
+      <div><dt><Send size={16} aria-hidden="true" />Publishes</dt><dd>Never. The maker chooses in the morning.</dd></div>
+      <div><dt><Wallet size={16} aria-hidden="true" />Spends</dt><dd>Only within a Privy policy the maker authorizes: Base Sepolia test USDC, to one room’s door, capped, expiring and revocable.</dd></div>
+      <div><dt><HandCoins size={16} aria-hidden="true" />Delivers shares</dt><dd>As a Privy server wallet whose policy allows only <code>claim()</code> on the release contract, plus its one identity registration.</dd></div>
+      <div><dt><Fingerprint size={16} aria-hidden="true" />Identity</dt><dd>{identity.registered
         ? `ERC-8004 on Monad testnet${identity.agentId !== null ? `, agent #${identity.agentId}` : ""}`
         : "ERC-8004 on Monad testnet, not registered yet"}</dd></div>
-      <div><dt><BookOpen size={13} aria-hidden="true" />World kit</dt><dd>{card.kitVersion}</dd></div>
-      <div><dt><Globe size={13} aria-hidden="true" />Service</dt><dd>{service ? <a href={service}>{card.service}</a> : card.service}</dd></div>
+      <div><dt><BookOpen size={16} aria-hidden="true" />World kit</dt><dd>{card.kitVersion}</dd></div>
+      <div><dt><Globe size={16} aria-hidden="true" />Service</dt><dd>{service ? <a href={service}>{card.service}</a> : card.service}</dd></div>
     </dl>
     {card.capabilities.length > 0 && <div className="nw-agent-card-block">
       <h4>What it does</h4>
@@ -95,20 +104,19 @@ export function AgentCard({ identity, titleId, action, error = "" }: { identity:
       <h4>Evidence</h4>
       <ul className="nw-agent-card-links">{card.evidence.map((item) => {
         const href = safeHref(item.url);
-        return <li key={`${item.label}-${item.url}`}>{href ? <a href={href} target="_blank" rel="noreferrer">{item.label} <ExternalLink size={13} aria-hidden="true" /></a> : item.label}</li>;
+        return <li key={`${item.label}-${item.url}`}>{href ? <a href={href} target="_blank" rel="noreferrer">{item.label} <ExternalLink size={16} aria-hidden="true" /></a> : item.label}</li>;
       })}</ul>
     </div>}
     <p className="nw-agent-card-note">{identity.note || IDENTITY_NOTE}</p>
-    <details className="nw-technical">
-      <summary>Registry, owner and transaction</summary>
+    <Disclosure className="nw-technical" summary="Registry, owner and transaction">
       <dl>
         <div><dt>Registered as</dt><dd>{card.name}. {card.description}</dd></div>
         <div><dt>Registry (chain {identity.chainId})</dt><dd><code>{identity.registry}</code></dd></div>
         {identity.agentId !== null && <div><dt>Agent ID</dt><dd><code>{identity.agentId}</code></dd></div>}
         {identity.owner && <div><dt>Owner</dt><dd><code>{identity.owner}</code></dd></div>}
         {identity.agentURI && <div><dt>Agent URI</dt><dd><code title={identity.agentURI}>{identity.agentURI.length > 96 ? `${identity.agentURI.slice(0, 96)}…` : identity.agentURI}</code></dd></div>}
-        {identity.transaction && <div><dt>Registration</dt><dd>{transaction ? <a href={transaction} target="_blank" rel="noreferrer">{shortHex(identity.transaction)} <ExternalLink size={13} aria-hidden="true" /></a> : <code>{identity.transaction}</code>}</dd></div>}
+        {identity.transaction && <div><dt>Registration</dt><dd>{transaction ? <a href={transaction} target="_blank" rel="noreferrer">{shortHex(identity.transaction)} <ExternalLink size={16} aria-hidden="true" /></a> : <code>{identity.transaction}</code>}</dd></div>}
       </dl>
-    </details>
+    </Disclosure>
   </section>;
 }

@@ -1,6 +1,9 @@
 import { BrainCircuit, Check, Flag, Sparkles } from "lucide-react";
 import type { BrainView } from "../../night-watch/api-types.ts";
+import { BrandStrip } from "../brand-badge";
 import { candidateLetter } from "./api.ts";
+import { CardHeading } from "./card-heading";
+import { ModelBadge, RouterBadge } from "./night-watch-badges";
 
 /**
  * The Night Watch's brain as the maker meets it in the morning: what it read in the room, its note,
@@ -77,31 +80,40 @@ export function brainRecapLine(brain: BrainView | null | undefined): string | nu
   return models.length ? `Night Watch brain: ${models.join(", ")} (via TokenRouter)` : null;
 }
 
+/** Who thought it: the model (or models) that planned and checked, and the router they were asked through. */
+function BrainCredit({ brain }: { brain: BrainView }) {
+  const models = [...new Set([brain.planner?.label, brain.critic?.label].filter((label): label is string => !!label))];
+  if (!models.length) return null;
+  return <BrandStrip label="Models and provider" className="nw-brain-credit">
+    {models.map((label) => <ModelBadge key={label} label={label} />)}
+    <RouterBadge />
+  </BrandStrip>;
+}
+
 /** "What your Night Watch thought": the card in Act 3. */
 export function BrainCard({ brain, titleId }: { brain: BrainView | null | undefined; titleId: string }) {
   if (!brain) return null;
   if (brain.state === "plain") {
     const spent = Number(brain.expenseUsd) > 0 || !!brain.planner;
     return <section className="nw-card nw-brain-card" data-state="plain" aria-labelledby={titleId}>
-      <p className="nw-brain-eyebrow"><BrainCircuit size={15} aria-hidden="true" />Room co-pilot</p>
-      <h3 id={titleId}>What your Night Watch thought</h3>
+      <CardHeading id={titleId} title="What your Night Watch thought" kind="Room co-pilot" icon={BrainCircuit} />
       <p className="nw-brain-plain">{brain.message}</p>
-      {spent && <p className="nw-brain-byline">{brainByline(brain)}</p>}
+      {spent && <>
+        <BrainCredit brain={brain} />
+        <p className="nw-brain-byline">{brainByline(brain)}</p>
+      </>}
     </section>;
   }
   const pick = brainPick(brain);
   return <section className="nw-card nw-brain-card" data-state="planned" aria-labelledby={titleId}>
-    <div className="nw-brain-head">
-      <span className="nw-brain-pulse" aria-hidden="true" />
-      <p className="nw-brain-eyebrow"><BrainCircuit size={15} aria-hidden="true" />Room co-pilot</p>
-    </div>
-    <h3 id={titleId}>What your Night Watch thought</h3>
+    <CardHeading id={titleId} title="What your Night Watch thought" kind="Room co-pilot" icon={BrainCircuit} lead={<span className="nw-brain-pulse" aria-hidden="true" />} />
     {brain.readOfTheRoom && <p className="nw-brain-read"><strong>Read the room:</strong> {brain.readOfTheRoom}</p>}
     {brain.morningNote && <blockquote className="nw-brain-note">
       <p>“{brain.morningNote}”</p>
       <footer>Your Night Watch{brain.critic && !selfChecked(brain) ? `, after ${brain.critic.label}’s check` : ""}</footer>
     </blockquote>}
-    {pick && <p className="nw-brain-pick"><Sparkles size={15} aria-hidden="true" />It suggests starting with candidate {candidateLetter(pick)}.</p>}
+    {pick && <p className="nw-brain-pick"><Sparkles size={16} aria-hidden="true" />It suggests starting with candidate {candidateLetter(pick)}.</p>}
+    <BrainCredit brain={brain} />
     <p className="nw-brain-byline">{brainByline(brain)}</p>
     <p className="nw-brain-fine">It plans and checks before anything is drawn. It cannot publish: you choose.</p>
   </section>;
@@ -109,7 +121,7 @@ export function BrainCard({ brain, titleId }: { brain: BrainView | null | undefi
 
 /** The badge on the take the brain suggests looking at first. */
 export function PickChip() {
-  return <span className="nw-pick-chip"><Sparkles size={13} aria-hidden="true" />Night Watch suggests starting here</span>;
+  return <span className="nw-pick-chip"><Sparkles size={16} aria-hidden="true" />Night Watch suggests starting here</span>;
 }
 
 /** Under a candidate's caption: why the brain planned this take, and the second brain's check. */
@@ -121,7 +133,7 @@ export function CandidateThought({ thought }: { thought: BrainCandidate | null }
       ? <span className="nw-thought-plain">Plain prompt</span>
       : thought.why && <span className="nw-thought-why">{thought.why}</span>}
     {thought.check && <span className="nw-thought-check" data-ok={ok ? "true" : "false"}>
-      {ok ? <Check size={13} aria-hidden="true" /> : <Flag size={13} aria-hidden="true" />}
+      {ok ? <Check size={16} aria-hidden="true" /> : <Flag size={16} aria-hidden="true" />}
       <span><span className="nw-visually-hidden">{ok ? "Checked: " : "Flagged: "}</span>{thought.check.note}</span>
     </span>}
   </span>;

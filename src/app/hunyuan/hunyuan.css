@@ -1,14 +1,17 @@
-/* /hunyuan — sponsor article. Scoped to .hy-page; night palette shared with /agents. */
+/* /hunyuan: sponsor article. Scoped to .hy-page; the night palette of the other article pages (the root night
+   tokens, under this page's own names). The hero, the section rhythm and the video frame follow /kimi. */
 .hy-page {
-  --hy-night: #10162e;
-  --hy-panel: #181d3d;
-  --hy-raised: #222746;
-  --hy-ink: #f8f6ff;
-  --hy-muted: #c0c5e0;
-  --hy-line: #484b79;
-  --hy-link: #d9c7ff;
-  --hy-violet: #6941f6;
-  --hy-yellow: #ffdb67;
+  --hy-night: var(--night);
+  --hy-panel: var(--night-panel);
+  --hy-raised: var(--night-raised);
+  --hy-ink: var(--night-ink);
+  --hy-muted: var(--night-muted);
+  --hy-line: var(--night-line);
+  --hy-link: var(--night-link);
+  --hy-violet: var(--night-violet);
+  --hy-yellow: var(--night-yellow);
+  --hy-width: 1072px;
+  --focus-ring: var(--night-yellow);
   min-height: 100svh;
   background: var(--hy-night);
   color: var(--hy-ink);
@@ -22,92 +25,147 @@
 .hy-page :where(p, figure, dl, dd, ol, ul) { margin: 0; }
 .hy-page :where(p, li) { text-wrap: pretty; }
 .hy-page a { color: var(--hy-link); text-underline-offset: 4px; }
-.hy-page ::selection { background: var(--hy-yellow); color: #21113e; }
-.hy-page * { scrollbar-color: #78749b var(--hy-night); }
-.hy-page :is(a, button, input):focus-visible { outline: 3px solid var(--hy-yellow); outline-offset: 4px; }
+.hy-page .fn-mark { color: var(--hy-ink); }
+.hy-page ::selection { background: var(--selection); color: var(--ink); }
+/* The page owns the whole window: the scrollbar track and the overscroll area are navy, not the app's paper. */
+html:has(.hy-page) { background: var(--night); color-scheme: dark; scrollbar-color: var(--night-control-line) var(--night); }
+.hy-page * { scrollbar-color: var(--night-control-line) var(--hy-night); }
+.hy-page :is(a, button, input):focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
 .hy-page img { display: block; max-width: 100%; height: auto; }
 .hy-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.hy-skip { position: absolute; left: 16px; top: -80px; z-index: 30; padding: 10px 18px; border-radius: 8px; background: var(--hy-yellow); color: #21113e !important; font-weight: 650; text-decoration: none; }
+.hy-skip { position: absolute; left: 16px; top: -80px; z-index: var(--z-skip); padding: 10px 18px; border-radius: var(--radius-sm); background: var(--hy-yellow); color: var(--ink-on-yellow) !important; font-weight: 650; text-decoration: none; }
 .hy-skip:focus { top: 10px; }
 
-.hy-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
-.hy-brand { display: inline-flex; align-items: center; min-height: 44px; white-space: nowrap; font-family: var(--font-display), sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--hy-ink) !important; text-decoration: none; }
-.hy-button { display: inline-flex; align-items: center; min-height: 44px; gap: 8px; padding: 12px 20px; border-radius: 999px; background: var(--hy-yellow); color: #21113e !important; font-weight: 700; text-decoration: none; }
-.hy-button-light { padding: 0 18px; background: transparent; border: 1px solid var(--hy-line); color: var(--hy-ink) !important; }
+/* Header: the shared wordmark, the language toggle and one call to action. */
+.hy-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); max-width: calc(var(--hy-width) + 2 * var(--gutter)); margin: 0 auto; padding: var(--space-4) var(--gutter); }
+.hy-header-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; justify-content: flex-end; }
+/* The yellow call to action on navy: the same recipe as the signup and world-demo buttons. */
+.hy-page .hy-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: var(--control-h); padding: 10px 20px; border: 1px solid transparent; border-radius: var(--radius-md); background: var(--hy-yellow); color: var(--ink-on-yellow); font-size: var(--text-md); font-weight: 650; line-height: 1.4; text-decoration: none; }
+.hy-page .hy-button:hover { background: var(--yellow-hover); }
+.hy-page .hy-button-light { background: transparent; border-color: var(--night-edge); color: var(--hy-ink); }
+.hy-page .hy-button-light:hover { background: var(--hy-raised); border-color: var(--night-control-line); }
+/* Language toggle: the same segmented control as /kimi; the chosen language is yellow on navy. */
+.hy-lang { display: inline-flex; padding: 3px; border-radius: var(--radius-pill); border: 1px solid var(--hy-line); background: var(--night-deep); }
+.hy-lang button { min-height: var(--control-h); min-width: 64px; padding: 6px 14px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--hy-muted); font: inherit; font-size: var(--text-md); font-weight: 650; cursor: pointer; }
+.hy-lang button:hover { color: var(--hy-ink); background: var(--hy-raised); }
+.hy-lang button[aria-pressed="true"] { background: var(--hy-yellow); color: var(--ink-on-yellow); }
 
-.hy-page article { max-width: 1080px; margin: 0 auto; padding: 0 16px 80px; }
-.hy-hero { padding: 32px 0 48px; text-align: center; }
-.hy-hero h1 { margin: 8px auto 14px; max-width: 20ch; font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.05; }
-.hy-hero h1 span { display: inline-block; }
-.hy-byline { margin-bottom: 20px; color: var(--hy-yellow); font-size: 0.95rem; font-weight: 600; }
-.hy-lede { max-width: 62ch; margin: 0 auto 36px; color: var(--hy-muted); font-size: 1.1rem; }
-.hy-video { max-width: 860px; margin: 0 auto; }
-.hy-video video, .hy-video iframe, .hy-video-placeholder { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 20px; background: #000; border: 1px solid var(--hy-line); }
+.hy-page article { max-width: calc(var(--hy-width) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter) 80px; }
+
+/* Hero: the copy beside the video, as on /kimi. */
+.hy-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); align-items: center; gap: 40px; padding: 64px 0 8px; }
+.hy-hero-copy { min-width: 0; }
+.hy-hero h1 { font-size: clamp(40px, 4.5vw, 58px); line-height: 1.06; letter-spacing: -0.03em; }
+.hy-hero h1 span { display: block; }
+/* The sponsor line keeps its butter-yellow lead-in; the chips inside it read in the page's ink. */
+.hy-byline { margin-top: 20px; color: var(--hy-yellow); font-size: var(--text-md); font-weight: 600; line-height: 2; }
+.hy-byline .fn-badge { margin-inline: 2px 0; color: var(--hy-ink); }
+.hy-nowrap { white-space: nowrap; }
+.hy-lede { max-width: 44ch; margin-top: 16px; color: var(--hy-muted); font-size: 19px; line-height: 1.6; }
+.hy-video { min-width: 0; }
+.hy-video video, .hy-video iframe, .hy-video-placeholder { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-2xl); background: #000; border: 1px solid var(--hy-line); }
 .hy-video-placeholder { position: relative; overflow: hidden; display: grid; place-items: center; }
 .hy-video-placeholder img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.45; }
-.hy-video-placeholder span { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 999px; background: rgba(16, 22, 46, 0.85); font-weight: 600; }
-.hy-video figcaption { margin-top: 12px; color: var(--hy-muted); font-size: 0.95rem; }
+.hy-video-placeholder span { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: var(--radius-pill); background: rgb(16 22 46 / 0.85); font-weight: 600; }
+.hy-video figcaption { margin-top: 12px; color: var(--hy-muted); font-size: var(--text-md); }
 
-.hy-section { padding: 48px 0; border-top: 1px solid var(--hy-line); }
-.hy-section > h2 { font-size: clamp(1.6rem, 3.5vw, 2.3rem); margin-bottom: 16px; }
-.hy-section > p { max-width: 68ch; color: var(--hy-muted); font-size: 1.05rem; }
+/* Sections: whitespace, not rules, as on /kimi. */
+.hy-section { margin-top: 80px; }
+.hy-section > h2 { margin-bottom: 20px; font-size: clamp(28px, 3.2vw, 38px); line-height: 1.15; }
+.hy-section > p { max-width: 68ch; color: var(--hy-muted); font-size: 18px; }
 
-.hy-uses { list-style: none; padding: 0; display: grid; gap: 28px; margin-top: 24px; }
-.hy-uses > li { position: relative; padding: 28px; padding-left: 84px; border-radius: 20px; background: var(--hy-panel); border: 1px solid var(--hy-line); }
-.hy-step { position: absolute; left: 24px; top: 26px; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--hy-violet); font-weight: 700; }
-.hy-uses h3 { font-size: 1.4rem; margin-bottom: 8px; }
-.hy-uses p { color: var(--hy-muted); max-width: 70ch; margin-bottom: 20px; }
+/* Three places Hunyuan shows up: a numbered panel each; the film's poster sits beside its text. */
+.hy-uses { list-style: none; padding: 0; display: grid; gap: 24px; }
+.hy-uses > li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 20px; padding: 28px; border-radius: var(--radius-2xl); background: var(--hy-panel); border: 1px solid var(--hy-line); }
+.hy-step { grid-column: 1; grid-row: 1; align-self: start; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--hy-violet); font-weight: 700; }
+.hy-use-copy { grid-column: 2; min-width: 0; }
+.hy-strip, .hy-film, .hy-compares { grid-column: 2; min-width: 0; }
+.hy-uses > .hy-use-film { grid-template-columns: 40px 360px minmax(0, 1fr); }
+.hy-use-film .hy-film { grid-column: 2; grid-row: 1; align-self: start; }
+.hy-use-film .hy-use-copy { grid-column: 3; grid-row: 1; align-self: center; }
+.hy-uses h3 { font-size: var(--text-card); line-height: 1.25; }
+.hy-uses p { max-width: 70ch; margin-top: 8px; color: var(--hy-muted); }
+.hy-use-tools { margin-top: 16px; }
+.hy-use-tools .fn-badge { color: var(--hy-ink); }
 .hy-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.hy-strip img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
-.hy-film { position: relative; display: block; max-width: 360px; border-radius: 14px; overflow: hidden; text-decoration: none; }
-.hy-film span { position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: var(--hy-yellow); color: #21113e; font-weight: 700; font-size: 0.9rem; }
+.hy-strip img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-lg); }
+.hy-film { position: relative; display: block; border-radius: var(--radius-xl); overflow: hidden; text-decoration: none; }
+.hy-film span { position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-md); background: var(--hy-yellow); color: var(--ink-on-yellow); font-weight: 650; font-size: var(--text-base); }
+.hy-film:hover span { background: var(--yellow-hover); }
 .hy-compares { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 
-.hy-compare-stage { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; }
+.hy-compare-stage { position: relative; aspect-ratio: 1; border-radius: var(--radius-lg); overflow: hidden; }
 .hy-compare-stage .story-art, .hy-compare-after { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .hy-compare-line { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; background: var(--hy-yellow); pointer-events: none; }
-.hy-compare-tag { position: absolute; top: 8px; padding: 3px 10px; border-radius: 999px; background: var(--hy-night); font-size: 0.8rem; font-weight: 600; line-height: 1.4; pointer-events: none; }
+.hy-compare-tag { position: absolute; top: 8px; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--hy-night); font-size: var(--text-sm); font-weight: 600; line-height: 1.4; pointer-events: none; }
 .hy-compare-tag-left { left: 8px; }
-.hy-compare-tag-right { right: 8px; color: var(--hy-yellow); }
-.hy-compare-control input { display: block; width: 100%; min-height: 44px; margin: 2px 0; accent-color: var(--hy-yellow); cursor: ew-resize; }
-.hy-compare figcaption { font-size: 0.95rem; font-weight: 600; color: var(--hy-ink); }
+.hy-compare-tag-right { right: 8px; padding-left: 3px; color: var(--hy-yellow); }
+.hy-compare-tag .fn-badge-tile { --badge-tile: 20px; }
+.hy-compare-control input { display: block; width: 100%; min-height: var(--control-h); margin: 2px 0; accent-color: var(--hy-yellow); cursor: ew-resize; }
+.hy-compare figcaption { font-size: var(--text-md); font-weight: 600; color: var(--hy-ink); }
 
-.hy-flow { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; }
-.hy-flow li { padding: 20px; border-radius: 16px; background: var(--hy-panel); border: 1px solid var(--hy-line); }
-.hy-flow-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--hy-raised); color: var(--hy-yellow); }
-.hy-flow-number { display: block; margin-top: 14px; color: var(--hy-muted); font-size: 0.85rem; font-weight: 600; }
-.hy-flow h3 { font-size: 1.15rem; margin: 2px 0 6px; }
-.hy-flow p { color: var(--hy-muted); font-size: 1rem; }
+/* The flow in the video: ruled rows, the step as a chip beside its title, no card chrome. */
+.hy-flow { list-style: none; padding: 0; display: grid; border-bottom: 1px solid var(--hy-line); }
+.hy-flow > li { display: grid; grid-template-columns: 40px minmax(200px, 300px) minmax(0, 1fr); column-gap: 24px; align-items: start; padding: 20px 0; border-top: 1px solid var(--hy-line); }
+.hy-flow-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-lg); background: var(--hy-raised); color: var(--hy-yellow); }
+.hy-flow-copy { display: contents; }
+.hy-flow-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-height: 40px; }
+.hy-flow-head .fn-badge { color: var(--hy-muted); }
+.hy-flow h3 { font-size: var(--text-card); line-height: 1.25; }
+.hy-flow p { color: var(--hy-muted); font-size: var(--text-lg); line-height: 1.5; padding-top: 6px; }
 
-.hy-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; }
-.hy-stats > div { padding: 20px; border-radius: 16px; background: var(--hy-panel); border: 1px solid var(--hy-line); }
-.hy-stats dt { display: flex; align-items: center; gap: 8px; color: var(--hy-muted); font-size: 0.95rem; }
-.hy-stats dd { font-family: var(--font-display), sans-serif; font-size: 2.4rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--hy-yellow); margin: 6px 0; }
-.hy-stats .hy-stat-note { font-family: inherit; font-size: 0.95rem; font-weight: 400; color: var(--hy-muted); margin: 0; }
+/* What Hunyuan brought: ruled rows of label, figure and note. */
+.hy-stats { display: grid; border-bottom: 1px solid var(--hy-line); }
+.hy-stats > div { display: grid; grid-template-columns: minmax(180px, 280px) minmax(120px, 200px) minmax(0, 1fr); align-items: center; column-gap: 24px; padding: 18px 0; border-top: 1px solid var(--hy-line); }
+.hy-stats dt { display: flex; align-items: center; gap: 8px; color: var(--hy-muted); font-size: var(--text-md); }
+.hy-stats dd { font-family: var(--font-display), sans-serif; font-size: 32px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--hy-yellow); }
+.hy-stats .hy-stat-note { font-family: inherit; font-size: var(--text-md); font-weight: 400; line-height: 1.5; color: var(--hy-muted); }
 
-.hy-cta { margin: 24px 0 40px; padding: 40px 24px; border-radius: 24px; background: var(--hy-violet); text-align: center; }
-.hy-cta h2 { font-size: clamp(1.6rem, 3.5vw, 2.3rem); margin-bottom: 8px; }
+.hy-cta { margin: 80px 0 0; padding: 40px 24px; border-radius: var(--radius-2xl); background: var(--hy-violet); text-align: center; }
+.hy-cta h2 { margin-bottom: 8px; font-size: clamp(28px, 3.2vw, 38px); line-height: 1.15; }
 .hy-cta p { margin-bottom: 20px; }
-.hy-notes h2 { font-size: 1.05rem; margin-bottom: 8px; }
-.hy-notes ul { max-width: 80ch; padding-left: 20px; color: var(--hy-muted); font-size: 0.95rem; display: grid; gap: 8px; }
+.hy-notes { margin-top: 48px; }
+.hy-notes h2 { font-size: var(--text-lg); margin-bottom: 8px; }
+.hy-notes ul { max-width: 80ch; padding-left: 20px; color: var(--hy-muted); font-size: var(--text-md); display: grid; gap: 8px; }
+/* The quiet strip of the other tool pages, handed in by the page. */
+.hy-more { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--hy-line); }
+.hy-more .fn-badge { color: var(--hy-ink); }
 
-@media (max-width: 860px) {
-  .hy-flow, .hy-stats { grid-template-columns: repeat(2, 1fr); }
-  .hy-compares { grid-template-columns: 1fr; max-width: 420px; }
-}
-@media (max-width: 560px) {
-  .hy-uses > li { padding: 20px; padding-top: 72px; }
-  .hy-step { left: 20px; top: 20px; }
-  .hy-strip { grid-template-columns: repeat(2, 1fr); }
-  .hy-flow, .hy-stats { grid-template-columns: 1fr; }
-}
-
-.hy-header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-.hy-lang { display: inline-flex; padding: 3px; border-radius: 999px; border: 1px solid var(--hy-line); background: var(--hy-panel); }
-.hy-lang button { min-height: 44px; min-width: 64px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--hy-muted); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
-.hy-lang button[aria-pressed="true"] { background: var(--hy-yellow); color: #21113e; }
 /* Chinese: system CJK faces, no negative tracking, a little more line height. */
 .hy-page:lang(zh) { font-family: var(--font-interface), "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif; line-height: 1.75; }
 .hy-page:lang(zh) :where(h1, h2, h3) { font-family: var(--font-display), "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif; letter-spacing: 0; line-height: 1.3; }
-.hy-page:lang(zh) .hy-hero h1 { max-width: none; }
 .hy-page:lang(zh) .hy-lede, .hy-page:lang(zh) .hy-section > p { max-width: 38em; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hy-page .hy-button, .hy-lang button, .hy-film span, a.fn-badge { transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease; }
+}
+
+@media (max-width: 900px) {
+  .hy-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-top: 36px; }
+  .hy-lede { max-width: 55ch; }
+  .hy-flow > li { grid-template-columns: 40px minmax(0, 1fr); }
+  .hy-flow-copy { display: block; }
+  .hy-flow p { padding-top: 4px; }
+}
+@media (max-width: 860px) {
+  .hy-compares { grid-template-columns: 1fr; max-width: 420px; }
+  .hy-uses > .hy-use-film { grid-template-columns: 40px minmax(0, 1fr); }
+  .hy-use-film .hy-use-copy { grid-column: 2; grid-row: 1; align-self: start; }
+  .hy-use-film .hy-film { grid-column: 2; grid-row: 2; max-width: 360px; }
+}
+@media (max-width: 720px) {
+  .hy-section { margin-top: 64px; }
+  .hy-cta { margin-top: 64px; }
+  .hy-stats > div { grid-template-columns: minmax(0, 1fr); row-gap: 4px; }
+}
+@media (max-width: 560px) {
+  /* The wordmark and the toggle share the first row; the call to action takes the second. */
+  .hy-header { flex-wrap: wrap; }
+  .hy-header-actions { display: contents; }
+  .hy-lang { margin-left: auto; }
+  .hy-page .hy-button-light { flex: 1 0 100%; }
+  .hy-uses > li, .hy-uses > .hy-use-film { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 20px; }
+  .hy-use-copy, .hy-strip, .hy-film, .hy-compares, .hy-use-film .hy-use-copy, .hy-use-film .hy-film { grid-column: 1; grid-row: auto; }
+  .hy-step { grid-row: auto; }
+  .hy-strip { grid-template-columns: repeat(2, 1fr); }
+}

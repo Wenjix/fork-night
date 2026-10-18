@@ -2,7 +2,6 @@ import { SectionPlate } from "../visual-plates";
 import {
   ArrowRight,
   Bird,
-  Brush,
   Cpu,
   Eye,
   Heart,
@@ -12,12 +11,12 @@ import {
   Pause,
   Repeat,
   Share2,
-  ShieldCheck,
   Users,
-  Wallet,
   type LucideIcon,
 } from "lucide-react";
+import { BrandBadge } from "../brand-badge";
 import { AgentBadge, ConceptTag } from "./agent-bits";
+import { StepStrip, type StepItem } from "./agent-ui";
 
 const FUTURE_AGENTS: {
   name: string;
@@ -49,19 +48,19 @@ const FUTURE_AGENTS: {
   },
 ];
 
-const PATH_STEPS = [
+const PATH_STEPS: StepItem[] = [
   "Finds the room’s most-built-on path",
   "Drafts a post from its panels",
   "The room’s host approves it",
   "Posts it with a link back to the room",
   "New makers arrive and continue",
-];
+].map((title) => ({ id: title, title }));
 
-const INFERENCE_FLOW: { icon: LucideIcon; title: string; body: string }[] = [
-  { icon: Wallet, title: "Steward’s allowance", body: "Limits set on chain" },
-  { icon: ShieldCheck, title: "MPP payment", body: "One charge per request" },
-  { icon: Cpu, title: "Model provider", body: "Text and image models" },
-  { icon: Brush, title: "The agent’s next panel", body: "Paid for by the agent" },
+const INFERENCE_FLOW: StepItem[] = [
+  { id: "allowance", title: "Steward’s allowance", body: "Limits set on chain" },
+  { id: "mpp", title: <><BrandBadge brand="mpp" /> payment</>, body: "One charge per request" },
+  { id: "provider", title: "Model provider", body: "Text and image models" },
+  { id: "panel", title: "The agent’s next panel", body: "Paid for by the agent" },
 ];
 
 function MockSwitch({ label, on }: { label: string; on: boolean }) {
@@ -88,7 +87,7 @@ export function AgentConcepts() {
       id="concept"
       aria-labelledby="concept-title"
     >
-      <div className="ag-concept-banner" role="note">
+      <div className="ag-callout" data-tone="concept" role="note">
         <span>
           Everything in this section is a design concept. None of it is live,
           and any numbers are illustrative.
@@ -116,7 +115,7 @@ export function AgentConcepts() {
             <article key={name} className="ag-future-agent" data-tone={tone}>
               <div className="ag-future-top">
                 <span className="ag-avatar ag-avatar-concept" aria-hidden="true">
-                  <Icon size={18} />
+                  <Icon size={20} />
                 </span>
                 <span>
                   <strong>{name}</strong>
@@ -143,7 +142,7 @@ export function AgentConcepts() {
             <span data-tone="kestrel">
               <Megaphone size={16} />
             </span>
-            <Repeat size={22} className="ag-orbit-center" />
+            <Repeat size={24} className="ag-orbit-center" />
           </div>
           <div>
             <h4>
@@ -192,26 +191,22 @@ export function AgentConcepts() {
               <span />
             </div>
             <span className="ag-mock-link">
-              Continue the story <ArrowRight size={14} aria-hidden="true" />
+              Continue the story <ArrowRight size={16} aria-hidden="true" />
             </span>
             <footer>
               <span>
-                <Heart size={14} aria-hidden="true" /> 240
+                <Heart size={16} aria-hidden="true" /> 240
               </span>
               <span>
-                <Share2 size={14} aria-hidden="true" /> 36
+                <Share2 size={16} aria-hidden="true" /> 36
               </span>
               <span>
-                <MessageCircle size={14} aria-hidden="true" /> 18
+                <MessageCircle size={16} aria-hidden="true" /> 18
               </span>
               <span className="ag-illustrative">Illustrative numbers</span>
             </footer>
           </article>
-          <ol className="ag-path-steps">
-            {PATH_STEPS.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
+          <StepStrip label="How the influencer path would run" variant="list" steps={PATH_STEPS} />
         </div>
 
         <div className="ag-concept-stack">
@@ -223,26 +218,7 @@ export function AgentConcepts() {
               </h3>
               <ConceptTag long />
             </div>
-            <ol className="ag-flow">
-              {INFERENCE_FLOW.map(({ icon: Icon, title, body }, index) => (
-                <li key={title}>
-                  <span className="ag-flow-icon" aria-hidden="true">
-                    <Icon size={18} />
-                  </span>
-                  <span>
-                    <strong>{title}</strong>
-                    <small>{body}</small>
-                  </span>
-                  {index < INFERENCE_FLOW.length - 1 && (
-                    <ArrowRight
-                      className="ag-flow-arrow"
-                      size={16}
-                      aria-hidden="true"
-                    />
-                  )}
-                </li>
-              ))}
-            </ol>
+            <StepStrip label="How an agent would pay for its own inference" variant="list" steps={INFERENCE_FLOW} />
             <p className="ag-today">
               <strong>Today:</strong> Fork Night’s operator pays for every
               image through its own pipeline. Wren’s test pathUSD only ever
@@ -279,7 +255,7 @@ export function AgentConcepts() {
               </label>
               <div className="ag-mock-buttons">
                 <button type="button" disabled>
-                  <Pause size={15} aria-hidden="true" /> Pause Wren
+                  <Pause size={16} aria-hidden="true" /> Pause Wren
                 </button>
                 <button type="button" disabled>
                   Change allowance

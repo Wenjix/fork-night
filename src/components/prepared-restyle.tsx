@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, RotateCcw, Sparkles, Wand2 } from "lucide-react";
 import { BLADE_RUNNER_RESTYLE as restyle } from "@/lib/prepared-restyle";
+import { BrandBadge, BrandStrip } from "./brand-badge";
 import { StoryArt } from "./story-art";
 import "@/app/prepared-restyle.css";
 
@@ -54,11 +55,17 @@ export function PreparedRestyle({ scenes, applied, onApply, onRestore }: {
           <span>{scenes[index].title}</span>
         </li>)}
       </ol>
-      <fieldset className="restyle-styles">
+      <fieldset className="restyle-style">
         <legend>Style</legend>
-        <button type="button" aria-pressed="true">{restyle.style}</button>
+        <div className="fn-segments"><button type="button" aria-pressed="true">{restyle.style}</button></div>
       </fieldset>
-      <p className="restyle-model">{restyle.model} · {restyle.provider} · image references</p>
+      <div className="restyle-credit">
+        <BrandStrip label="Image model and provider">
+          <BrandBadge brand={restyle.brands.model} label={restyle.model} />
+          <BrandBadge brand={restyle.brands.provider} label={restyle.provider} />
+        </BrandStrip>
+        <span>image references</span>
+      </div>
       <button type="button" className="button primary full" onClick={() => { setProgress(0); setStage("working"); }}>
         <Wand2 size={17} aria-hidden="true" /> Restyle 3 scenes <ArrowRight size={16} aria-hidden="true" />
       </button>

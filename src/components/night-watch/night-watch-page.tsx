@@ -3,7 +3,7 @@ import { AgentRoomHeader } from "../agents/agent-room-header";
 import { SectionPlate } from "../visual-plates";
 import { Monitor } from "lucide-react";
 import { KIMI_HREFS, KIMI_VIDEO } from "../../lib/kimi-article";
-import { NightWatchIntro } from "./night-watch-intro";
+import { NightWatchFooter, NightWatchIntro } from "./night-watch-intro";
 import { NightWatchApp } from "./night-watch-app";
 
 const LOOPBACK = new Set(["localhost", "127.0.0.1", "[::1]"]);
@@ -36,6 +36,7 @@ function RunsLocally({ privyDemo }: { privyDemo: boolean }) {
         <p>This proof needs the operator&apos;s local runner and local x402 door, so it is not served from this hosted site. See <a href={DEMO_HREF} target="_blank" rel="noreferrer">the recorded demo</a> and <a href={README_HREF} target="_blank" rel="noreferrer">the project README</a>.</p>
       </>} />
     </main>
+    <NightWatchFooter />
   </div>;
 }
 

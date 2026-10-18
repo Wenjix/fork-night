@@ -2,7 +2,7 @@
 
 import { AppHeader } from "./app-header";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   ArrowDownToLine,
   ArrowLeft,
@@ -14,21 +14,25 @@ import {
   ChevronDown,
   ChevronRight,
   CircleHelp,
+  Clapperboard,
   Download,
   GitBranch,
   Globe2,
   Layers3,
   LockKeyhole,
+  Palette,
   Plus,
   RotateCcw,
   Send,
   Settings2,
   ShieldCheck,
+  Sparkles,
   Trash2,
   Users,
   Wallet,
   Film,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import {
   acceptGroupTerms,
@@ -58,11 +62,16 @@ import {
   type ForkQuote,
   type Panel,
 } from "@/domain";
+import { BrandStrip, Chip } from "./brand-badge";
+import { ToArrow } from "./inline-arrow";
+import { MakerName } from "./maker-name";
+import { SectionPlate } from "./visual-plates";
 import { StoryArt } from "./story-art";
 import { StoryMap } from "./story-map";
 import { StoryFilm } from "./story-film";
 import { PreparedFilmInvite, PreparedStoryFilm } from "./prepared-story-film";
 import { PREPARED_FILMS } from "@/lib/prepared-story-film";
+import { roomTheme, type RoomTheme } from "@/lib/room-theme";
 import { BLADE_RUNNER_RESTYLE, restyledMoment } from "@/lib/prepared-restyle";
 import { PreparedRestyle } from "./prepared-restyle";
 import { makeFilmPlan } from "@/lib/story-film";
@@ -74,6 +83,9 @@ import { extendFandomDemo } from "@/domain/fandom-fixtures";
 import { fandomStory } from "@/lib/fandom-stories";
 import { ART_DIRECTIONS_STORAGE_KEY, fandomImageInStyle, fandomMomentInStyle, fandomVisualStyle, restoreArtDirections, type ArtDirections } from "@/lib/fandom-art-direction";
 import { FandomArtDirection } from "./fandom-art-direction";
+// The film page and the segmented control are styled with the room, so their components import no CSS and can be rendered in a test.
+import "@/app/prepared-story-film.css";
+import "@/app/segments.css";
 import {
   formatSocialRoute,
   parseSocialRoute,
@@ -125,6 +137,14 @@ function Credits({ amount }: { amount: number }) {
       <span>{amount === DEMO_UNIT ? " credit" : " credits"}</span>
     </span>
   );
+}
+/**
+ * A local room from its toolbar to its footer in one element, so the room's skin has no cream edge:
+ * the toolbar, the preview band and the footer sit inside the skin together with the story.
+ * The page header stays outside it.
+ */
+function StoryRoomShell({ active, skin, children }: { active: boolean; skin?: RoomTheme; children: ReactNode }) {
+  return active ? <div className="story-room" data-room-theme={skin}>{children}</div> : <>{children}</>;
 }
 function downloadFile(text: string, type: string, filename: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -218,8 +238,14 @@ export function ForkNight() {
   const membership = state.memberships.find(
     (item) => item.userId === userId && item.groupId === project.groupId,
   );
-  const mayNameProject =
-    projectRouteAvailable && (accessible || membership?.status === "invited");
+  const invited = projectRouteAvailable && membership?.status === "invited";
+  const mayNameProject = projectRouteAvailable && (accessible || invited);
+  const inProject = socialRoute.kind === "project";
+  // An open room wears the skin it has. A room that is not available wears the skin of the room that was asked for,
+  // never the skin of the room opened last.
+  const roomSkin = accessible
+    ? fanStory?.theme
+    : roomTheme(socialRoute.kind === "project" ? socialRoute.projectId : projectId);
   const visibleProjects = state.projects.filter(
     (item) =>
       canAccessProject(state, userId, item.id) ||
@@ -751,12 +777,20 @@ export function ForkNight() {
       <ArrowLeft size={16} /> Back to the moment
     </button>
   );
+  // Each view has its own icon; the button that is on says so with aria-pressed, like the one for the prepared film always did.
+  const storyViews: { id: "map" | "read" | "video" | "images-to-video"; label: ReactNode; icon: LucideIcon; pressed: boolean }[] = [
+    { id: "map", label: "Story map", icon: GitBranch, pressed: view === "map" && !mobileDetails },
+    { id: "read", label: "Read this path", icon: BookOpen, pressed: view === "read" && !mobileDetails },
+    { id: "video", label: "Make a video", icon: Clapperboard, pressed: view === "video" },
+    ...(hasPreparedFilm ? [{ id: "images-to-video" as const, label: <>Images <ToArrow />video</>, icon: Film, pressed: showingPreparedFilm }] : []),
+  ];
 
   return (
     <div
-      className={socialRoute.kind === "project" ? "app-shell" : "social-root"}
+      className={inProject ? "app-shell" : "social-root"}
+      data-room-theme={inProject ? roomSkin : undefined}
     >
-      {socialRoute.kind === "project" && (
+      {inProject && (
         <>
           <a
             className="skip-link"
@@ -768,7 +802,7 @@ export function ForkNight() {
           >
             Skip to your story
           </a>
-          <AppHeader current="spaces" onLocalNavigate={navigate}>
+          <AppHeader current="spaces" onLocalNavigate={navigate} tone={roomSkin === "neon" ? "night" : undefined}>
             <label className="user-switch workspace-user-switch">
               <span className="avatar" style={{ backgroundColor: user.color }}>{user.initials}</span>
               <select aria-label="Preview as collaborator" value={userId} onChange={event => switchUser(event.target.value)}>
@@ -777,6 +811,11 @@ export function ForkNight() {
               <ChevronDown size={13} aria-hidden="true" />
             </label>
           </AppHeader>
+        </>
+      )}
+      <StoryRoomShell active={inProject} skin={roomSkin}>
+      {inProject && (
+        <>
           <div className="story-room-toolbar" role="group" aria-label="Story workspace tools">
             <div className="project-navigation">
               <button
@@ -814,33 +853,33 @@ export function ForkNight() {
                 </div>
               )}
             </div>
-            <span className="header-spacer" />
-            <span className="demo-badge">Local preview</span>
             <a className="button primary" href="/pilot">Make a story together</a>
             {account && (
               <button
                 className="balance-button"
                 onClick={() => openTask("balance")}
               >
-                <Wallet size={17} />
+                <Wallet size={17} aria-hidden="true" />
                 <span>{formatCredits(account.available)}</span>
-                <span className="desktop-only"> credits</span>
-                <Plus size={14} />
+                <span> credits</span>
+                <Plus size={14} aria-hidden="true" />
               </button>
             )}
           </div>
 
           <div className="demo-strip" role="region" aria-label="Local preview">
-            <span>
+            <span className="demo-strip-text">
+              <Chip>Local preview</Chip>{" "}
               Prepared stories · simulated generation and credits · saved
               in this browser
             </span>
             <button
+              type="button"
               onClick={() => setShowInfo(!showInfo)}
               aria-expanded={showInfo}
               aria-label="How this preview works"
             >
-              <CircleHelp size={14} />
+              <CircleHelp size={16} aria-hidden="true" />
               <span>How this preview works</span>
             </button>
           </div>
@@ -965,15 +1004,15 @@ export function ForkNight() {
         </section>
       )}
 
-      {socialRoute.kind === "project" ? (
-        <main id="story-workspace" tabIndex={-1} data-room-theme={fanStory?.theme}>
+      {inProject ? (
+        <main id="story-workspace" tabIndex={-1}>
           <section className="project-heading">
-            <div>
+            <div className="project-heading-main">
               <h1>
                 {mayNameProject ? project.title : "Project unavailable"}
                 <span className="title-period">.</span>
               </h1>
-              <div className="project-meta">
+              <div className="project-meta" data-stack={mayNameProject && project.visibility === "open" ? undefined : "true"}>
                 <span>
                   {mayNameProject && project.visibility === "open" ? (
                     <Globe2 size={14} />
@@ -989,20 +1028,21 @@ export function ForkNight() {
                   ? "Everyone can make a version"
                   : "A private workspace, with shareable finished stories"}
               </div>
-              <p>
+              {mayNameProject && fanStory && (
+                <BrandStrip label="Story origin and style" className="project-tags">
+                  <Chip icon={BookOpen}>{fanStory.original ? fanStory.fandom : `Unofficial fan story · ${fanStory.fandom}`}</Chip>
+                  <Chip icon={Palette}>{visualStyle?.label ?? fanStory.artStyle}</Chip>
+                </BrandStrip>
+              )}
+              <p className="project-description">
                 {mayNameProject
                   ? project.description
                   : "This project is unavailable to this sample collaborator."}
               </p>
-              {mayNameProject && fanStory && (
-                <p className="project-fandom-note">
-                  {fanStory.original ? fanStory.fandom : `Unofficial fan story · ${fanStory.fandom}`} · {visualStyle?.label ?? fanStory.artStyle}
-                </p>
-              )}
-              {mayNameProject && projectId === "kessler-night-shift" && <p className="kessler-shared-invitation">
+              {mayNameProject && projectId === "kessler-night-shift" && <div className="project-actions">
                 <a className="button secondary" href="/pilot?room=kessler-ward">Join the shared Kessler Ward room <ArrowUpRight size={17} aria-hidden="true" /></a>
                 <small>This prepared preview stays in your browser. Make new scenes together in the shared room.</small>
-              </p>}
+              </div>}
             </div>
             {accessible && (
               <div className="collaborators">
@@ -1023,6 +1063,7 @@ export function ForkNight() {
                         title={`${item.name}, sample collaborator`}
                       >
                         {item.initials}
+                        {item.agent && <Sparkles className="avatar-agent-mark" size={11} aria-hidden="true" />}
                       </span>
                     ))}
                 </div>
@@ -1041,64 +1082,69 @@ export function ForkNight() {
           </section>
 
           {!accessible ? (
-            <section className="join-project">
-              <div className="join-symbol">
-                <Users size={32} />
-              </div>
-              <h2>
-                {projectRouteAvailable && membership?.status === "invited"
-                  ? "There’s a place for you here."
-                  : "This story belongs to a friend group."}
-              </h2>
-              <p>
-                {projectRouteAvailable && membership?.status === "invited"
-                  ? `${group?.name ?? "This group"} invited you to make something together. Before you enter, here’s what sharing means.`
-                  : "You don’t currently have access. Switch to an invited sample collaborator to try the group flow."}
-              </p>
-              {projectRouteAvailable && membership?.status === "invited" && (
+            <SectionPlate
+              className="join-project"
+              icon={Users}
+              title={invited ? "There’s a place for you here." : "This story belongs to a friend group."}
+              description={
                 <>
-                  <ul>
-                    <li>
-                      Your unpublished drafts and prompts stay yours. The member
-                      list stays inside this group.
-                    </li>
-                    <li>
-                      Members may publish finished branches externally,
-                      including credited contributions.
-                    </li>
-                    <li>
-                      New moments spend shared credits within your personal
-                      group allowance.
-                    </li>
-                  </ul>
-                  <p className="fine-print">
-                    Sample terms {group?.termsVersion}. This local preview does
-                    not provide real privacy.
+                  <p>
+                    {invited
+                      ? `${group?.name ?? "This group"} invited you to make something together. Before you enter, here’s what sharing means.`
+                      : "You don’t currently have access. Switch to an invited sample collaborator to try the group flow."}
                   </p>
+                  {invited && (
+                    <>
+                      <ul>
+                        <li>
+                          Your unpublished drafts and prompts stay yours. The member
+                          list stays inside this group.
+                        </li>
+                        <li>
+                          Members may publish finished branches externally,
+                          including credited contributions.
+                        </li>
+                        <li>
+                          New moments spend shared credits within your personal
+                          group allowance.
+                        </li>
+                      </ul>
+                      <p className="fine-print">
+                        Sample terms {group?.termsVersion}. This local preview does
+                        not provide real privacy.
+                      </p>
+                    </>
+                  )}
+                </>
+              }
+              action={
+                <>
+                  {invited && (
+                    <button
+                      className="button primary"
+                      onClick={() =>
+                        update(
+                          (current) =>
+                            acceptGroupTerms(current, {
+                              userId,
+                              groupId: project.groupId!,
+                            }),
+                          "You joined the sample group and accepted its finished-work sharing terms.",
+                        )
+                      }
+                    >
+                      Agree & join the story <ArrowRight size={17} />
+                    </button>
+                  )}
                   <button
-                    className="button primary"
-                    onClick={() =>
-                      update(
-                        (current) =>
-                          acceptGroupTerms(current, {
-                            userId,
-                            groupId: project.groupId!,
-                          }),
-                        "You joined the sample group and accepted its finished-work sharing terms.",
-                      )
-                    }
+                    className="button secondary"
+                    onClick={() => navigate({ kind: "lobby" })}
                   >
-                    Agree & join the story <ArrowRight size={17} />
+                    Explore open projects
                   </button>
                 </>
-              )}
-              <button
-                className="button secondary"
-                onClick={() => navigate({ kind: "lobby" })}
-              >
-                Explore open projects
-              </button>
-            </section>
+              }
+            />
           ) : (
             <>
               {hasPreparedFilm && !showingPreparedFilm && <PreparedFilmInvite film={preparedFilm} onOpen={() => showStoryView("images-to-video")} />}
@@ -1108,29 +1154,13 @@ export function ForkNight() {
                 </div>
               )}
               <div className={`workspace-toolbar ${hasPreparedFilm ? "fn-film-toolbar" : ""}`}>
-                <div className="view-switch" role="group" aria-label="Story view">
-                  <button
-                    className={view === "map" && !mobileDetails ? "active" : ""}
-                    onClick={() => {
-                      showStoryView("map");
-                    }}
-                  >
-                    <GitBranch size={16} /> Story map
-                  </button>
-                  <button
-                    className={
-                      view === "read" && !mobileDetails ? "active" : ""
-                    }
-                    onClick={() => {
-                      showStoryView("read");
-                    }}
-                  >
-                    <BookOpen size={16} /> Read this path
-                  </button>
-                  <button className={view === "video" ? "active" : ""} onClick={() => showStoryView("video")}>
-                    <Film size={16} /> Make a video
-                  </button>
-                  {hasPreparedFilm && <button className={showingPreparedFilm ? "active" : ""} aria-pressed={showingPreparedFilm} onClick={() => showStoryView("images-to-video")}><Film size={16} aria-hidden="true" />Images → video</button>}
+                <div className="fn-segments" role="group" aria-label="Story view">
+                  {storyViews.map(({ id, label, icon: Icon, pressed }) => (
+                    <button key={id} type="button" aria-pressed={pressed} onClick={() => showStoryView(id)}>
+                      <Icon size={16} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
                 </div>
                 <span className="toolbar-hint">
                   {showingPreparedFilm ? "Prepared four-image example" : <><Layers3 size={15} /> {path.length} moment{path.length === 1 ? "" : "s"} in your selected path</>}
@@ -1167,7 +1197,9 @@ export function ForkNight() {
                           <span>Other endings stay on their own branches.</span>
                         </p>
                       </div>
-                      {presentedPath.map((moment, index) => (
+                      {presentedPath.map((moment, index) => {
+                        const maker = state.users.find((item) => item.id === moment.authorId);
+                        return (
                         <article key={moment.id} className="reader-moment">
                           <div className="reader-title">
                             <span className="sequence-number">{index + 1}</span>
@@ -1175,11 +1207,7 @@ export function ForkNight() {
                               <h2>{moment.title}</h2>
                               <p>
                                 by{" "}
-                                {
-                                  state.users.find(
-                                    (item) => item.id === moment.authorId,
-                                  )?.name
-                                }
+                                {maker && <MakerName name={maker.name} agent={maker.agent} />}
                               </p>
                             </div>
                           </div>
@@ -1201,7 +1229,8 @@ export function ForkNight() {
                             Make a version from here <ArrowUpRight size={15} />
                           </button>
                         </article>
-                      ))}
+                        );
+                      })}
                       <button
                         className="button primary"
                         onClick={exportStory}
@@ -1245,10 +1274,8 @@ export function ForkNight() {
                           >
                             {author.initials}
                           </span>
-                          Made by {author.name}
-                          <span className="version-label">
-                            v{selected.version}
-                          </span>
+                          Made by <MakerName name={author.name} agent={author.agent} />
+                          <Chip className="version-chip">v{selected.version}</Chip>
                         </span>
                       </div>
                       <p className="selected-caption">
@@ -1264,13 +1291,12 @@ export function ForkNight() {
                             {path.length} credit{path.length === 1 ? "" : "s"}
                           </span>
                         </div>
-                        {path.map((item) => (
+                        {path.map((item) => {
+                          const maker = state.users.find((u) => u.id === item.authorId);
+                          return (
                           <div className="credit-row" key={item.id}>
                             <span>
-                              {
-                                state.users.find((u) => u.id === item.authorId)
-                                  ?.name
-                              }
+                              {maker && <MakerName name={maker.name} agent={maker.agent} />}
                               <small>
                                 {item.parentId ? item.title : "The opening"}
                               </small>
@@ -1281,7 +1307,8 @@ export function ForkNight() {
                                 : "Shared"}
                             </span>
                           </div>
-                        ))}
+                          );
+                        })}
                         <div className="total-row">
                           <span>To build on this path</span>
                           <Credits amount={upstream} />
@@ -2011,7 +2038,7 @@ export function ForkNight() {
           )}
         />
       )}
-      {socialRoute.kind === "project" && (
+      {inProject && (
         <footer className="app-footer">
           <span>
             <GitBranch size={14} /> A story is better with another point of
@@ -2020,6 +2047,7 @@ export function ForkNight() {
           <span>Fork Night · local prototype</span>
         </footer>
       )}
+      </StoryRoomShell>
       {notice && (
         <div className="notice" role="status">
           <Check size={17} />

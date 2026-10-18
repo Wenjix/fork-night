@@ -147,7 +147,7 @@ export function PilotVoice({
           }}
           onBlur={release}
         >
-          <Mic size={23} />
+          <Mic size={24} aria-hidden="true" />
           <span>
             {phase === "connecting"
               ? "Opening mic…"
@@ -167,7 +167,7 @@ export function PilotVoice({
             className="text-button"
             onClick={() => recorder.current?.stop()}
           >
-            <Square size={14} /> Finish recording
+            <Square size={16} aria-hidden="true" /> Finish recording
           </button>
         ) : !active ? (
           <button
@@ -188,7 +188,7 @@ export function PilotVoice({
               setPartial("");
             }}
           >
-            <X size={15} /> Cancel recording
+            <X size={16} aria-hidden="true" /> Cancel recording
           </button>
         )}
       </div>

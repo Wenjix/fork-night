@@ -1,9 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./room-networks.css";
 import "./guild-funding.css";
 import "./first-night.css";
+import "./brand-badge.css";
+import "./disclosure.css";
+import "./room-theme-neon.css";
 
 const interfaceFont = localFont({
   src: "../../public/fonts/inter-latin.woff2",
@@ -18,6 +21,9 @@ const displayFont = localFont({
   display: "swap",
   weight: "200 800",
 });
+
+/** Every page opens under the navy header, so the browser chrome takes its colour. */
+export const viewport: Viewport = { themeColor: "#10152f" };
 
 export const metadata: Metadata = {
   title: "Fork Night — a story made together",

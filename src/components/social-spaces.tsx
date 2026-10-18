@@ -71,7 +71,8 @@ import { StoryArt } from "./story-art";
 import { AppHeader } from "./app-header";
 import { FirstNightGuide } from "./first-night-guide";
 import { FirstNightInvitation } from "./first-night-invitation";
-import { FeaturedStories } from "./featured-stories";
+import { BuiltWith, FeaturedStories } from "./featured-stories";
+import { Chip } from "./brand-badge";
 import { fandomStory, showcaseProjects, storyStyleLabel } from "@/lib/fandom-stories";
 import { fandomImageInStyle, type ArtDirections } from "@/lib/fandom-art-direction";
 import { FandomArtDirection } from "./fandom-art-direction";
@@ -213,7 +214,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
       >
         Skip to content
       </a>
-      <AppHeader current={route.kind === "desk" ? "desk" : ["spaces", "hall", "ideas"].includes(route.kind) ? "spaces" : "lobby"} onLocalNavigate={navigate} guide={<FirstNightGuide compact={route.kind !== "lobby"} />}>
+      <AppHeader current={route.kind === "desk" ? "desk" : ["spaces", "hall", "ideas"].includes(route.kind) ? "spaces" : "lobby"} onLocalNavigate={navigate} guide={<FirstNightGuide compact={route.kind !== "lobby"} tone={paper ? "paper" : "night"} />}>
         {route.kind !== "lobby" && previewIdentity}
       </AppHeader>
       {route.kind !== "lobby" && previewInfo}
@@ -283,7 +284,7 @@ export function SocialSpaces(props: SocialSpacesProps) {
             </button>
           </div>
         )}
-        {route.kind === "lobby" && <><FeaturedStories /><FirstNightInvitation variant="lobby" /></>}
+        {route.kind === "lobby" && <><FeaturedStories /><BuiltWith /><FirstNightInvitation variant="lobby" /></>}
         {!restored ? (
           <div className="social-loading" role="status">
             <Lamp size={32} />
@@ -490,7 +491,7 @@ function RoomProgress({
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.7"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
@@ -1184,8 +1185,10 @@ function GuildHall(props: ViewProps & { guildId: string }) {
               label="A pot full of growing clouds"
             />
             <div>
-              <p>An idea looking for company</p>
-              <h3>{ideas[0]?.title ?? "What should we make next?"}</h3>
+              <div className="hall-idea-title">
+                <h3>{ideas[0]?.title ?? "What should we make next?"}</h3>
+                <Chip icon={Feather}>An idea looking for company</Chip>
+              </div>
               <p>
                 {ideas[0]?.body ?? "Leave a little spark for someone to find."}
               </p>

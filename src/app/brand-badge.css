@@ -1,0 +1,199 @@
+/* Brand badges: one way to show a chain, wallet, protocol or tool, on any surface.
+   The chip borrows the surrounding text colour (currentColor), so it reads on cream, navy and neon alike;
+   only the tile is fixed (white, so a brand's own colours stay true). */
+.fn-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fn-badges > li {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+}
+.fn-badge {
+  --badge-h: 28px;
+  --badge-tile: 20px;
+  --badge-gap: 7px;
+  --badge-font: 13px;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  gap: var(--badge-gap);
+  max-width: 100%;
+  min-height: var(--badge-h);
+  padding: 3px 10px 3px 3px;
+  border: 1px solid rgb(128 128 152 / 0.4);
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 9px;
+  background: rgb(128 128 152 / 0.08);
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  color: inherit;
+  font: 600 var(--badge-font) / 1.2 var(--font-interface), sans-serif;
+  letter-spacing: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.fn-badge[data-plain="true"] {
+  padding-left: 10px;
+}
+.fn-badge[data-size="md"] {
+  --badge-h: 36px;
+  --badge-tile: 26px;
+  --badge-font: 14px;
+  padding-right: 12px;
+}
+.fn-badge[data-size="lg"] {
+  --badge-h: 48px;
+  --badge-tile: 36px;
+  --badge-font: 16px;
+  --badge-gap: 10px;
+  padding-right: 16px;
+  border-radius: 12px;
+}
+.fn-badge-tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--badge-tile, 20px);
+  height: var(--badge-tile, 20px);
+  border-radius: calc(var(--badge-tile, 20px) * 0.3);
+  background: #fffefa;
+  box-shadow: inset 0 0 0 1px rgb(32 32 57 / 0.13);
+  color: #202039;
+  overflow: hidden;
+}
+.fn-badge-tile[data-round="true"] {
+  border-radius: 50%;
+}
+.fn-badge-tile img {
+  display: block;
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+/* A mark that is already a filled square is the whole tile. */
+.fn-badge-tile[data-fit="bleed"] img {
+  width: 100%;
+  height: 100%;
+}
+/* A wide logotype, shown as supplied, on a plate as wide as it needs. It stands in for the name (the name stays in the page for
+   screen readers), and its height is capped so a very wide mark never makes the chip long. */
+.fn-badge-tile[data-lockup] {
+  width: auto;
+  padding-inline: calc(var(--badge-tile, 20px) * 0.2);
+}
+.fn-badge-tile[data-lockup] img {
+  width: auto;
+  max-width: none;
+  height: min(calc(var(--badge-tile, 20px) - 4px), calc(var(--badge-tile, 20px) * 2.6 / var(--lockup-ratio, 2)));
+}
+/* The wordmark whose letters are white was drawn for a dark ground. */
+.fn-badge-tile[data-lockup="dark"] {
+  background: #0b1024;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
+  color: #f8f6ff;
+}
+/* While the logotype has not arrived, or if it never does, the plate spells the name in plain type (see lockup-image.tsx). */
+.fn-badge-tile[data-lockup] {
+  position: relative;
+}
+.fn-lockup-word {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 calc(var(--badge-tile, 20px) * 0.52) / 1 var(--font-interface), sans-serif;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.fn-badge[data-bare="true"] {
+  padding-right: 3px;
+}
+.fn-badge[data-lockup="true"] > .fn-badge-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.fn-badge-tile[data-mono="true"] {
+  background: color-mix(in srgb, var(--badge-accent, #202039) 16%, #fff);
+  color: color-mix(in srgb, var(--badge-accent, #202039) 55%, #202039);
+}
+.fn-badge-tile b {
+  font: 700 max(10px, calc(var(--badge-tile, 20px) * 0.46)) / 1 var(--font-interface), sans-serif;
+  letter-spacing: -0.02em;
+}
+.fn-badge-tile svg {
+  width: 60%;
+  height: 60%;
+}
+.fn-badge-name,
+.fn-badge-version {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fn-badge[data-size="lg"] :is(.fn-badge-name, .fn-badge-version) {
+  font: 650 18px / 1.2 var(--font-display), sans-serif;
+  letter-spacing: -0.01em;
+}
+.fn-badge-role {
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font-weight: 500;
+}
+.fn-net {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 2px;
+  padding-left: 8px;
+  border-left: 1px solid rgb(128 128 152 / 0.45);
+  border-left: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  color: color-mix(in srgb, currentColor 80%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fn-net::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f7d66a;
+  box-shadow: inset 0 0 0 1px rgb(120 84 0 / 0.55);
+}
+.fn-badge-out {
+  margin-left: 1px;
+  opacity: 0.75;
+}
+a.fn-badge {
+  transition: background-color 140ms ease-out, border-color 140ms ease-out;
+}
+a.fn-badge:hover {
+  border-color: rgb(128 128 152 / 0.7);
+  border-color: color-mix(in srgb, currentColor 42%, transparent);
+  background: rgb(128 128 152 / 0.16);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+a.fn-badge:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+@media (pointer: coarse) {
+  a.fn-badge[data-size="sm"] {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  a.fn-badge {
+    transition: none;
+  }
+}

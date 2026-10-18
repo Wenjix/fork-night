@@ -45,18 +45,20 @@ export const featuredRooms = [
     id: "midnight-signal",
     title: "The midnight signal",
     focus: "Monad releases · Privy wallets",
-    status: "Recorded Oct 12 · Monad testnet",
+    stack: [{ brand: "monad", role: "releases" }, { brand: "privy", role: "wallets" }],
+    status: "Recorded Oct 12",
     description: `${monadProof.paidTestMon.replace(/\.0$/, "")} test MON split across ${monadProof.walletCount} wallets, all claimed. ${monadProof.makerCount} maker bylines in the recorded story.`,
     artwork: "/art/midnight-story.webp#frame=0",
     artworkDescription: "A keeper approaches a lighthouse above the harbour.",
     href: featuredStoryLinks.midnight,
     action: "View Monad release",
-    record: { label: "Contract record", href: monadProof.contractUrl },
+    record: { label: "Contract record", href: monadProof.contractUrl, brand: "monad" as const },
   },
   {
     id: WREN.roomId,
     title: WREN.roomTitle,
     focus: "Tempo · MPP agent payments",
+    stack: [{ brand: "tempo" }, { brand: "mpp", role: "agent payments" }],
     status: tempoProof?.label ?? "Agent payment limits",
     description: tempoProof
       ? "Wren paid for a room-credit top-up within its testnet allowance."
@@ -65,13 +67,14 @@ export const featuredRooms = [
     artworkDescription: "A lighthouse beam reaches across the harbour.",
     href: featuredStoryLinks.nightShift,
     action: "See Wren’s recorded turn",
-    record: tempoProof ? { label: "Tempo receipt", href: tempoProof.receiptUrl } : undefined,
+    record: tempoProof ? { label: "Tempo receipt", href: tempoProof.receiptUrl, brand: "tempo" as const } : undefined,
   },
   {
     id: "paper-moon",
     title: guild?.roomTitle ?? "Paper Moon",
     focus: "Solana · Squads guild funding",
-    status: "Recorded Oct 12 · Solana devnet",
+    stack: [{ brand: "solana" }, { brand: "squads", role: "guild funding" }],
+    status: "Recorded Oct 12",
     description: guild
       ? `${guild.governance.threshold} of ${guild.governance.stewardWallets} steward wallets approved funding. A separate payment added ${guild.appCredit.added} room credits.`
       : "Explore the room’s recorded guild funding.",
@@ -79,12 +82,13 @@ export const featuredRooms = [
     artworkDescription: "A keeper looks toward a map of constellations above the harbour.",
     href: featuredStoryLinks.paperMoonGuild,
     action: "View guild funding",
-    record: guildProof ? { label: "Solana receipt", href: guildProof.solanaReceiptUrl } : undefined,
+    record: guildProof ? { label: "Solana receipt", href: guildProof.solanaReceiptUrl, brand: "solana" as const } : undefined,
   },
   {
     id: KESSLER_ROOM_ID,
     title: "Kessler Ward",
     focus: "Shared branching story",
+    stack: [],
     status: "Open for reading and ideas",
     description: "Explore two prepared branches and leave an idea for what comes next.",
     artwork: "/art/night-shift-neon.webp#frame=0",
@@ -96,3 +100,13 @@ export const featuredRooms = [
 ] as const;
 
 export const proofRoomIds = new Set(["midnight-signal", "paper-moon", WREN.roomId]);
+
+/** What the rooms are built with. Each links to the page that shows it working: Privy and Monad on the Night Watch, Tempo on Wren's page, Solana on the Paper Moon guild's treasury. */
+export const builtWith = [
+  { brand: "monad", href: "/night-watch-privy" },
+  { brand: "tempo", href: "/tempo" },
+  { brand: "solana", href: featuredStoryLinks.paperMoonGuild },
+  { brand: "privy", href: "/night-watch-privy" },
+  { brand: "kimi", href: "/kimi" },
+  { brand: "hunyuan", href: "/hunyuan" },
+] as const;

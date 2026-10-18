@@ -11,7 +11,7 @@
   margin: 12px 0 22px;
 }
 .creative-desk-heading h1 {
-  font-size: 40px;
+  font-size: var(--text-page);
   margin: 0 0 4px;
   font-weight: 700;
 }
@@ -676,42 +676,47 @@
   max-height: calc(100svh - 24px);
   overflow: auto;
   border: 0;
-  border-radius: 14px;
-  color: #f8f6ff;
-  background: #1c2145;
+  border-radius: var(--radius-xl);
+  color: var(--night-ink);
+  background: var(--night-raised);
   box-shadow: 0 14px 50px #06081880;
   font: inherit;
 }
 .room-peek-panel::backdrop {
   background: transparent;
 }
+/* The title leads the panel; "A look inside" is a chip under it, not a label above it. */
 .room-peek-heading {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  color: #d7c9ff;
-  font-size: 13px;
-}
-.room-peek-heading > span {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
 }
 .room-peek-heading button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--control-h);
+  height: var(--control-h);
   border: 0;
-  padding: 10px;
-  margin: -6px;
-  color: #f8f6ff;
+  padding: 0;
+  margin: -10px -10px -10px 0;
+  color: var(--night-ink);
   background: transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 .room-peek-heading button:hover {
   background: #3e3d66;
 }
 .room-peek-panel h2 {
-  font-size: 28px;
-  margin: 8px 0 16px;
+  min-width: 0;
+  font-size: var(--text-section);
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+}
+.room-peek-chip {
+  margin: var(--space-2) 0 var(--space-4);
+  color: var(--night-link);
 }
 .room-peek-panels {
   display: grid;
@@ -774,9 +779,6 @@
   }
 }
 @media (max-width: 760px) {
-  .creative-desk-heading h1 {
-    font-size: 36px;
-  }
   .creative-desk-heading {
     margin-bottom: 18px;
   }

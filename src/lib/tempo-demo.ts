@@ -6,10 +6,10 @@
 const EXPLORER = "https://explore.testnet.tempo.xyz/tx/";
 const REPO = "https://github.com/Wenjix/fork-night/blob/main/";
 
-export type TempoTx = { hash: string; href: string; short: string };
+export type TempoTx = { hash: string; href: string };
 
 function tx(hash: string): TempoTx {
-  return { hash, href: `${EXPLORER}${hash}`, short: `${hash.slice(0, 10)}…${hash.slice(-8)}` };
+  return { hash, href: `${EXPLORER}${hash}` };
 }
 
 export const TEMPO_DEMO = {

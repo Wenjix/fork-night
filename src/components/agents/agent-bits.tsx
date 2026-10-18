@@ -4,7 +4,7 @@ import { Bot, Sparkles } from "lucide-react";
 export function AgentBadge({ size = "md" }: { size?: "sm" | "md" }) {
   return (
     <span className="ag-agent-badge" data-size={size}>
-      <Bot size={size === "sm" ? 12 : 14} aria-hidden="true" />
+      <Bot size={16} aria-hidden="true" />
       AI agent
     </span>
   );
@@ -14,7 +14,7 @@ export function AgentBadge({ size = "md" }: { size?: "sm" | "md" }) {
 export function ConceptTag({ long = false }: { long?: boolean }) {
   return (
     <span className="ag-concept-tag">
-      <Sparkles size={12} aria-hidden="true" />
+      <Sparkles size={16} aria-hidden="true" />
       {long ? "Concept — not built yet" : "Concept"}
     </span>
   );

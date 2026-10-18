@@ -2,6 +2,7 @@
 
 import { ArrowRight, Bird, ChevronDown, MoonStar } from "lucide-react";
 import { WREN } from "@/lib/agents/wren";
+import { BrandBadge, BrandStrip } from "../brand-badge";
 import { useWrenRoom, type WrenRoomState } from "./use-wren-room";
 import { VerifiedPanelImage } from "./verified-panel-image";
 import { WrenProfile } from "./wren-profile";
@@ -35,7 +36,7 @@ function LatestFromWren({ room }: { room: WrenRoomState }) {
             <span className="ag-hero-caption">{panel.caption}</span>
             <span className="ag-hero-meta">
               <span className="ag-avatar ag-avatar-agent" aria-hidden="true">
-                <Bird size={14} />
+                <Bird size={20} />
               </span>
               <span>
                 <strong>{scene.moment.title}</strong>
@@ -47,7 +48,7 @@ function LatestFromWren({ room }: { room: WrenRoomState }) {
             </span>
             <a href={momentHref(WREN.roomId, scene.moment.id)}>
               Open this scene in the room{" "}
-              <ArrowRight size={15} aria-hidden="true" />
+              <ArrowRight size={16} aria-hidden="true" />
             </a>
           </figcaption>
         </>
@@ -68,7 +69,7 @@ function LatestFromWren({ room }: { room: WrenRoomState }) {
           </p>
           <figcaption>
             <a href={ROOM_HREF}>
-              Open The Uncharted Star <ArrowRight size={15} aria-hidden="true" />
+              Open The Uncharted Star <ArrowRight size={16} aria-hidden="true" />
             </a>
           </figcaption>
         </>
@@ -85,7 +86,7 @@ export function AgentsShowcase() {
         Skip to Wren
       </a>
       <AgentRoomHeader current="agents">
-        <a className="ag-button ag-button-yellow ag-header-room" href={ROOM_HREF}><ArrowRight size={18} aria-hidden="true" /><span className="ag-header-room-label">Open the room</span></a>
+        <a className="ag-button ag-button-yellow ag-header-room" href={ROOM_HREF}><ArrowRight size={20} aria-hidden="true" /><span className="ag-header-room-label">Open the room</span></a>
       </AgentRoomHeader>
 
       <main>
@@ -115,7 +116,7 @@ export function AgentsShowcase() {
                 How Wren takes a turn <ChevronDown size={16} aria-hidden="true" />
               </a>
             </div>
-            <a className="ag-night-watch-link" href="/night-watch"><MoonStar size={19} aria-hidden="true" /><span>Looking for your own agent? <strong>Meet Night Watch</strong></span><ArrowRight size={17} aria-hidden="true" /></a>
+            <a className="ag-callout" data-tone="invite" href="/night-watch"><MoonStar size={20} aria-hidden="true" /><span>Looking for your own agent? <strong>Meet Night Watch</strong></span><ArrowRight size={16} aria-hidden="true" /></a>
             <ul className="ag-legend" aria-label="How to read this page">
               <li>
                 <LiveTag label="Live" /> read from the room as you watch
@@ -132,7 +133,7 @@ export function AgentsShowcase() {
 
       <footer className="ag-footer">
         <h2>What is real here</h2>
-        <ul>
+        <ul className="ag-real">
           <li>
             <strong>Testnet only.</strong> Wren’s allowance spent test
             pathUSD from its steward’s Tempo Moderato testnet account until it
@@ -157,9 +158,17 @@ export function AgentsShowcase() {
             not built yet, and its numbers are illustrative.
           </li>
         </ul>
+        <div className="ag-built-with">
+          <span aria-hidden="true">Built with</span>
+          <BrandStrip label="Built with">
+            <BrandBadge brand="tempo" />
+            <BrandBadge brand="mpp" />
+            <BrandBadge brand="kimi" />
+          </BrandStrip>
+        </div>
         <p>
           <a href={ROOM_HREF}>
-            Visit The Uncharted Star <ArrowRight size={15} aria-hidden="true" />
+            Visit The Uncharted Star <ArrowRight size={16} aria-hidden="true" />
           </a>
         </p>
       </footer>

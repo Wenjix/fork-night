@@ -6,6 +6,7 @@ import "../pilot/releases.css";
 import "../night-watch/night-watch.css";
 import "../night-watch-privy/privy-demo.css";
 import "../wren-studio/wren-studio.css";
+import "../agents/agent-ui.css";
 import "./tempo-demo.css";
 
 export const metadata: Metadata = {

@@ -14,7 +14,9 @@ import { FirstNightInvitation } from "./first-night-invitation";
 import { FeaturedStories } from "./featured-stories";
 import { SectionPlate } from "./visual-plates";
 import { PilotImage } from "./pilot-panels";
+import { StoryArt } from "./story-art";
 import { pilotPanels } from "../lib/pilot";
+import { featuredRooms } from "../lib/featured-stories";
 
 type Room = Tables<"pilot_rooms">;
 type Template = Tables<"pilot_room_templates">;
@@ -151,9 +153,12 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
   const cards = (items: Room[]) => <div className="pilot-room-cards">{items.map(room => {
     const template = templates.find(item => item.id === room.template_id && item.version === room.template_version);
     const opening = template ? pilotPanels(template.panels)[0] : undefined;
+    // A room the lobby already features keeps its artwork here, instead of one shared icon on every card.
+    const featured = featuredRooms.find(item => new URL(item.href, "https://fork-night.invalid").searchParams.get("room") === room.id);
     return <a className={`pilot-room-card${opening && client ? " pilot-room-card-illustrated" : ""}`} key={room.id} href={`/pilot?room=${encodeURIComponent(room.id)}`}>
-      {opening && client ? <div className="pilot-room-card-art"><PilotImage client={client} panel={opening} allowRetry={false} /><span>Prepared opening</span></div> : <BookOpen size={26} aria-hidden="true" />}
-      <div className="pilot-room-card-copy"><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={17} aria-hidden="true" /></span></div>
+      {opening && client ? <div className="pilot-room-card-art"><PilotImage client={client} panel={opening} allowRetry={false} /><span>Prepared opening</span></div>
+        : <div className="pilot-room-card-thumb" aria-hidden="true">{featured ? <StoryArt src={featured.artwork} description={featured.artworkDescription} /> : <BookOpen size={24} />}</div>}
+      <div className="pilot-room-card-copy"><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={16} aria-hidden="true" /></span></div>
     </a>;
   })}</div>;
   return <div className="pilot-page" ref={page}>
@@ -175,14 +180,14 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
         <p>Published stories and your room name are public. Your previews stay private until you publish. Your storyteller name will be visible in the room.</p>
         {policy?.enabled && <p className="pilot-room-grant"><strong>{policy.creditsPerRoom} room credits to start.</strong> One or two panels use one credit; three use two. Generation depends on the remaining demo allowance.</p>}
         {policy && !available && !pending && <p role="status">{policy.ownRoomId ? <>Your demo room is ready. <a href={`/pilot?room=${encodeURIComponent(policy.ownRoomId)}`}>Return to your room</a>.</> : policy.enabled ? "All demo rooms have been created. You can still join an existing story." : "New room creation is paused. Existing stories are open to read and join."}</p>}
-        <button className="button primary" disabled={busy || !profile || !client || !!account?.loading || (!pending && !available)}>{busy ? "Checking your room…" : pending ? "Check room" : "Create room"}<ArrowRight size={18} aria-hidden="true" /></button>
+        <button className="button primary" disabled={busy || !profile || !client || !!account?.loading || (!pending && !available)}>{busy ? "Checking your room…" : pending ? "Check room" : "Create room"}<ArrowRight size={16} aria-hidden="true" /></button>
         {pending && !busy && <p>Your room request is saved. Check it to confirm the same room.</p>}
       </form>
     </> : <>
       <h1 className="sr-only">Make a story together.</h1>
       <FeaturedStories />
       <FirstNightInvitation variant="rooms" />
-      <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={18} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={17} aria-hidden="true" /></a></div>
+      <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={16} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={16} aria-hidden="true" /></a></div>
     </>}
     {error && <div className="pilot-notice" role="alert"><p>{error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
     {account?.notice && <div className="pilot-notice" role="alert"><p>{account.notice}</p><button type="button" className="text-button" onClick={account.dismissNotice}>Dismiss</button></div>}
@@ -190,14 +195,14 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     <section className="pilot-directory-section" id="shared-directory" aria-label="Open shared stories" aria-busy={!policy && !error}>
       <SectionPlate icon={BookOpen} title="Stories to pick up" description="Read first. Join when you have an idea for the next moment." />
       {rooms.length ? cards(rooms) : <div className="pilot-directory-empty" role="status">
-        {!policy && !error ? <><BookOpen size={28} aria-hidden="true" /><p>Opening the shared stories…</p></> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <><h3>No stories in the directory yet.</h3><p>If someone invited you, open their room link. Share-link rooms do not appear in this directory.</p><a className="text-button" href="/pilot?create=1">Start your own room <ArrowRight size={17} aria-hidden="true" /></a></>}
+        {!policy && !error ? <><BookOpen size={24} aria-hidden="true" /><p>Opening the shared stories…</p></> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <><h3>No stories in the directory yet.</h3><p>If someone invited you, open their room link. Share-link rooms do not appear in this directory.</p><a className="text-button" href="/pilot?create=1">Start your own room <ArrowRight size={16} aria-hidden="true" /></a></>}
       </div>}
     </section>
     <section className="pilot-explore-more" aria-labelledby="pilot-explore-title">
       <h2 id="pilot-explore-title">More ways to make.</h2>
-      <div><a href="/"><BookOpen size={20} aria-hidden="true" /><span><strong>Explore the lobby</strong><small>Prepared stories and guilds · local preview</small></span><ArrowRight size={18} aria-hidden="true" /></a>
-        <a href="/agents"><Feather size={20} aria-hidden="true" /><span><strong>Make with agents</strong><small>Wren’s room, Night Watch and creator review</small></span><ArrowRight size={18} aria-hidden="true" /></a>
-        <a href="/world-demo"><Users size={20} aria-hidden="true" /><span><strong>Night City After Hours</strong><small>Shared-world concept · fictional participation</small></span><ArrowRight size={18} aria-hidden="true" /></a></div>
+      <div><a href="/"><BookOpen size={20} aria-hidden="true" /><span><strong>Explore the lobby</strong><small>Prepared stories and guilds · local preview</small></span><ArrowRight size={16} aria-hidden="true" /></a>
+        <a href="/agents"><Feather size={20} aria-hidden="true" /><span><strong>Make with agents</strong><small>Wren’s room, Night Watch and creator review</small></span><ArrowRight size={16} aria-hidden="true" /></a>
+        <a href="/world-demo"><Users size={20} aria-hidden="true" /><span><strong>Night City After Hours</strong><small>Shared-world concept · fictional participation</small></span><ArrowRight size={16} aria-hidden="true" /></a></div>
     </section>
     </main>
   </div>;

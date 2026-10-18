@@ -8,7 +8,7 @@ import { tsImport } from "tsx/esm/api";
 const { FeaturedStories } = await tsImport("../../src/components/featured-stories.tsx", import.meta.url);
 const { featuredRooms, featuredStoryLinks, monadProof, tempoProof, guildProof } = await tsImport("../../src/lib/featured-stories.ts", import.meta.url);
 const render = () => renderToStaticMarkup(createElement(FeaturedStories));
-const roomRows = () => [...render().matchAll(/<li class="fn-featured-room">(.*?)<\/li>/gs)].map(match => match[1]);
+const roomRows = () => render().split('<li class="fn-featured-room">').slice(1);
 const row = (title: string) => {
   const result = roomRows().find(html => html.includes(`<h3>${title}</h3>`));
   assert.ok(result, `Missing judge route for ${title}`);
@@ -35,6 +35,19 @@ test("judges have four distinct room routes with the focus and action visible to
     assert.equal(new URL(primaryHref(html), "https://fork-night.invalid").searchParams.get("room"), roomId);
   }
   assert.doesNotMatch(render(), /Step inside|an AI maker is writing|The Night Shift|Add a scene alongside/);
+});
+
+test("each room names its stack with brand badges, and a chain badge carries its test network", () => {
+  const badgeNames = (html: string) => [...html.matchAll(/<span class="fn-badge-name">([^<]*)<\/span>(?:<span class="fn-badge-version">([^<]*)<\/span>)?/g)].map(match => match[1] + (match[2] ?? ""));
+  const midnight = row("The midnight signal");
+  assert.deepEqual(badgeNames(midnight), ["Monad", "Privy", "Contract record"]);
+  assert.match(midnight, /<span class="fn-net">Testnet<\/span>/);
+  assert.match(midnight, /aria-label="Monad releases · Privy wallets"/);
+  assert.deepEqual(badgeNames(row("The Uncharted Star")), ["Tempo", "MPP", "Tempo receipt"]);
+  assert.match(row("The Uncharted Star"), /<span class="fn-net">Moderato testnet<\/span>/);
+  assert.deepEqual(badgeNames(row("Paper Moon")), ["Solana", "Squads", "Solana receipt"]);
+  assert.match(row("Paper Moon"), /<span class="fn-net">Devnet<\/span>/);
+  assert.deepEqual(badgeNames(row("Kessler Ward")), ["Shared branching story"]);
 });
 
 test("historical guides retain the recorded amounts and link to their actual path, turn and receipts", () => {
