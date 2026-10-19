@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { register as registerLoader } from "node:module";
-import { after, test } from "node:test";
+import { after, test, type TestContext } from "node:test";
 import { act, createElement, StrictMode } from "react";
 import { JSDOM } from "jsdom";
 import { register as registerTsx } from "tsx/esm/api";
 import { firstNightRoomHref, FIRST_NIGHT_MOMENT_ID, FIRST_NIGHT_ROOM_ID, parseFirstNightStarter } from "../../src/lib/first-night.ts";
-import { kesslerSeedMoments, KESSLER_DESCRIPTION } from "../../src/lib/kessler-room.ts";
+import { kesslerSeedMoments, KESSLER_BEAT_IDS, KESSLER_DESCRIPTION } from "../../src/lib/kessler-room.ts";
+import { visitKey, visitSnapshot } from "../../src/lib/pilot-social.ts";
 import type { PilotAccount } from "../../src/components/pilot-account.tsx";
 
 // Mount the real room and its film studio with account readiness, HTTP and layout
@@ -65,6 +66,93 @@ function gate() {
   const promise = new Promise<void>(resolve => { release = resolve; });
   return { promise, release };
 }
+
+async function mountOverview(t: TestContext, query: string, options: { saved?: boolean; draft?: boolean } = {}) {
+  const room = { id: FIRST_NIGHT_ROOM_ID, title: "Kessler Ward", description: KESSLER_DESCRIPTION, is_open: true, is_listed: true };
+  const maker = "35000000-0000-4000-8000-000000000001";
+  const story = kesslerSeedMoments();
+  const unexpected: string[] = [];
+  respond = async (input, init) => {
+    const href = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    const url = new URL(href, dom.window.location.origin);
+    const table = url.pathname.split("/").at(-1);
+    let body: unknown;
+    if (url.origin === api && table === "pilot_rooms") body = url.searchParams.has("id") ? room : [room];
+    else if (url.origin === api && table === "pilot_room_snapshot") body = { roomId: room.id, title: room.title, revision: 1, participants: [], credits: { limit: 2, used: 0, reserved: 0, available: 2, enabled: true } };
+    else if (url.origin === api && table === "pilot_moments") body = story;
+    else if (url.origin === api && table === "pilot_profiles" && options.draft) body = { id: maker, display_name: "Saved storyteller" };
+    else if (url.origin === api && table === "pilot_room_participants") body = url.searchParams.get("select") === "public_id" ? null : [];
+    else if (url.origin === api && ["pilot_ideas", "pilot_wren_assistance", "pilot_operations", "pilot_wren_requests"].includes(table!)) body = [];
+    else if (url.origin === api && table === "pilot_kessler_overview") body = null;
+    else if (url.pathname === "/api/pilot/activity") body = { queued_requests: 0, generating_requests: 0, checking_requests: 0 };
+    else if (url.pathname === "/api/pilot/local-refill" && (init?.method ?? "GET") === "GET") body = { enabled: false };
+    else { unexpected.push(`${init?.method ?? "GET"} ${url.pathname}`); return Response.json({}, { status: 500 }); }
+    return Response.json(body);
+  };
+  dom.window.localStorage.clear(); dom.window.sessionStorage.clear();
+  dom.reconfigure({ url: `https://fork-night.invalid/pilot?room=${room.id}${query}` });
+  if (options.saved) {
+    dom.window.sessionStorage.setItem(`pilot-selected:${room.id}`, KESSLER_BEAT_IDS["dawn-81"]);
+    dom.window.sessionStorage.setItem(`pilot-tip:${room.id}`, KESSLER_BEAT_IDS["dawn-81"]);
+    dom.window.localStorage.setItem(visitKey(room.id), JSON.stringify(visitSnapshot(story, KESSLER_BEAT_IDS["dawn-81"])));
+  }
+  if (options.draft) dom.window.localStorage.setItem(`fork-night-pilot-draft:${maker}:${room.id}`, JSON.stringify({ requestId: "35000000-0000-4000-8000-000000000002", roomId: room.id, parentId: FIRST_NIGHT_MOMENT_ID, captions: ["", ""], thought: "Find another way upstairs", stage: "idea" }));
+  const account: PilotAccount = { loading: false, enabled: false, error: "", authenticatingWallet: false,
+    wallet: { owner: "", address: "", loading: false, error: "" }, walletMode: "external", signIn: async () => {}, signInWallet: async () => {}, signOut: async () => {}, chooseWallet() {},
+    ...(options.draft ? { user: { id: maker, app_metadata: {}, user_metadata: {}, aud: "authenticated", created_at: "2026-10-19T00:00:00Z", is_anonymous: true } } : {}),
+  };
+  let root = createRoot(dom.window.document.getElementById("root")!);
+  const mount = () => root.render(createElement(StrictMode, null, createElement(PilotAccountContext.Provider, { value: account }, createElement(SharedPilot))));
+  t.after(async () => { await act(async () => root.unmount()); assert.deepEqual(unexpected, [], "all external work is fixture-only"); });
+  await act(async () => mount());
+  return { reload: async () => { await act(async () => root.unmount()); root = createRoot(dom.window.document.getElementById("root")!); await act(async () => mount()); } };
+}
+
+function roomButton(text: string, within: ParentNode = dom.window.document) {
+  const button = [...within.querySelectorAll("button")].find(button => button.textContent?.trim() === text);
+  assert.ok(button, `Missing button: ${text}`);
+  return button;
+}
+
+test("bare Kessler entry offers saved reading without opening or overwriting it", async t => {
+  const mounted = await mountOverview(t, "", { saved: true });
+  assert.ok(dom.window.document.getElementById("kessler-overview-title"));
+  assert.equal(dom.window.document.querySelector<HTMLElement>(".pilot-table")?.hidden, true);
+  assert.match(dom.window.document.querySelector(".kessler-overview-resume")?.textContent ?? "", /Dawn on eighty-one/);
+  assert.equal(JSON.parse(dom.window.localStorage.getItem(visitKey(FIRST_NIGHT_ROOM_ID))!).lastMomentId, KESSLER_BEAT_IDS["dawn-81"]);
+  const rooftop = [...dom.window.document.querySelectorAll(".kessler-path-preview")].find(article => article.querySelector("h3")?.textContent === "The rooftops")!;
+  await act(async () => roomButton("Read path", rooftop).click());
+  assert.equal(dom.window.document.querySelector("#pilot-story-reader h2")?.textContent, "Lights out in Kessler Ward");
+  assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 6, "the selected path remains six scenes long at its opening");
+  assert.equal(new URL(dom.window.location.href).searchParams.get("tip"), KESSLER_BEAT_IDS["window-81"]);
+  await mounted.reload();
+  assert.equal(dom.window.document.getElementById("kessler-overview-title"), null, "explicit scene links keep the reader");
+  assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 6, "reload retains the selected path");
+  await act(async () => roomButton("Room overview").click());
+  assert.ok(dom.window.document.getElementById("kessler-overview-title"));
+  assert.equal(new URL(dom.window.location.href).searchParams.has("moment"), false);
+  assert.equal(new URL(dom.window.location.href).searchParams.has("tip"), false);
+});
+
+test("watching from the overview opens the chosen film and returns to the same room entrance", async t => {
+  await mountOverview(t, "");
+  const neighbors = [...dom.window.document.querySelectorAll(".kessler-path-preview")].find(article => article.querySelector("h3")?.textContent === "The neighbors")!;
+  await act(async () => roomButton("Watch film", neighbors).click());
+  assert.equal(dom.window.document.querySelector(".room-film-about h3")?.textContent, "Dawn on eighty-one");
+  assert.equal(new URL(dom.window.location.href).searchParams.has("moment"), false);
+  await act(async () => dom.window.document.querySelector<HTMLButtonElement>('[aria-label="Close film workspace"]')!.click());
+  assert.ok(dom.window.document.getElementById("kessler-overview-title"));
+  assert.equal(dom.window.document.querySelector<HTMLElement>(".pilot-table")?.hidden, true);
+  assert.equal(new URL(dom.window.location.href).searchParams.has("film"), false);
+});
+
+test("a recovered draft takes precedence over the bare room overview", async t => {
+  await mountOverview(t, "", { draft: true });
+  assert.equal(dom.window.document.getElementById("kessler-overview-title"), null);
+  assert.equal(dom.window.document.querySelector<HTMLElement>(".pilot-table")?.hidden, false);
+  assert.match(dom.window.document.body.textContent ?? "", /saved|draft/i);
+  assert.ok(dom.window.localStorage.getItem(`fork-night-pilot-draft:35000000-0000-4000-8000-000000000001:${FIRST_NIGHT_ROOM_ID}`));
+});
 
 for (const readyFirst of ["room", "account"] as const) {
   test(`a film deep link consumes its invitation once when ${readyFirst} data is ready first`, async t => {

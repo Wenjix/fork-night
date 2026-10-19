@@ -7,6 +7,7 @@ import "./composer.css";
 import "./releases.css";
 import "./kessler.css";
 import "./films.css";
+import "./overview.css";
 
 export const metadata = {
   title: "Fork Night — shared stories",
