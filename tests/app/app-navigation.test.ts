@@ -68,16 +68,18 @@ test("the initial shared-room entrance is navigable while data loads and does no
   const { PilotEntrance } = await tsImport("../../src/components/pilot-entrance.tsx", import.meta.url);
   const html = renderToStaticMarkup(createElement(PilotEntrance, { creating: false, navigate: () => undefined }));
   assert.match(html, /aria-label="Main navigation"/);
-  assert.match(html, /id="shared-directory"[^>]*aria-busy="true"/);
-  assert.match(html, /Opening the shared stories/);
-  assert.doesNotMatch(html, /No stories in the directory yet/);
+  assert.match(html, /class="room-home-directory-body" aria-busy="true"/);
+  assert.match(html, /Opening the shared rooms/);
+  assert.doesNotMatch(html, /No listed rooms yet/);
   assert.match(html, /public stories, private previews/);
   assert.match(html, /Start in Kessler Ward/);
   assert.match(html, /Start with an idea/);
   assert.match(html, /Join a story/);
   assert.match(html, /Make your mark/);
   assert.match(html, /href="\/pilot\?create=1"/);
-  assert.match(html, /href="\/world-demo"/);
+  assert.match(html, /href="\/#\/guild\/paper-lantern"/);
+  assert.match(html, /href="\/#\/project\/malfoy-hogwarts"/);
+  assert.match(html, /href="\/#\/project\/blade-runner-memory"/);
 });
 
 test("shared-room routing waits for the actual query before presenting an invitation or draft", async () => {
