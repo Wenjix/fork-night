@@ -44,9 +44,9 @@ export const featuredRooms = [
   {
     id: KESSLER_ROOM_ID,
     title: "Kessler Ward",
-    focus: "Branching stories · Monad contributions · Wren",
+    focus: "Branching stories · Monad contributions · Wren · Films",
     stack: [],
-    status: "Read, branch and trace a story together",
+    status: "Read a branch, watch its film, trace its makers",
     description: "A blackout, an insulin case and eighty-one floors before dawn. Choose a path, add a scene, and follow the people behind it.",
     artwork: "/art/night-shift-neon.webp#frame=0",
     artworkDescription: "Mika stands above the towers of Kessler Ward during a blackout.",
@@ -85,7 +85,7 @@ export const featuredRooms = [
   {
     id: "paper-moon",
     title: guild?.roomTitle ?? "Paper Moon",
-    focus: "Solana · Squads guild funding",
+    focus: "Solana · Squads v4 guild funding",
     stack: [{ brand: "solana" }, { brand: "squads", role: "guild funding" }],
     status: "Recorded Oct 12",
     description: guild

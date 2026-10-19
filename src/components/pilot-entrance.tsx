@@ -163,7 +163,7 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
   return <div className="pilot-page" ref={page}>
     <a className="skip-link" href="#shared-stories">Skip to shared stories</a>
     <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} />} account={false} />
-    <main className="pilot-shell pilot-entrance" id="shared-stories" tabIndex={-1}>
+    <main className={`pilot-shell pilot-entrance${creating ? "" : " pilot-entrance-directory"}`} id="shared-stories" tabIndex={-1}>
     <div className="pilot-entrance-account"><span>Shared rooms · public stories, private previews</span><div className="pilot-header-actions">{account?.signingOut ? <p className="pilot-signout-status" role="status">Signing out of this browser…</p> : <PilotIdentity profile={profile} disabled={!!pending || busy || !!account?.loading} signOutBlockedReason={signOutBlock} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" />}</div></div>
     {/* Hidden while the sign-out runs: an earlier "could not be verified, refresh" no longer applies, since the sign-out goes ahead regardless. */}
     {account?.error && !account.signingOut && <div ref={accountNotice} className="pilot-notice" role="alert"><p>{account.error}</p></div>}
@@ -183,7 +183,6 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
         {pending && !busy && <p>Your room request is saved. Check it to confirm the same room.</p>}
       </form>
     </> : <>
-      <h1 className="sr-only">Make a story together.</h1>
       <FeaturedStories />
       <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={16} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={16} aria-hidden="true" /></a></div>
     </>}

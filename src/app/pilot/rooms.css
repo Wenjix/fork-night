@@ -1,4 +1,5 @@
 .pilot-entrance { max-width: min(1120px, calc(100% - 32px)); margin-inline: auto; }
+.pilot-entrance-directory { max-width: 1600px; padding: 0 var(--gutter) var(--space-7); }
 .pilot-entrance h2, .pilot-room-card h3 { font-family: var(--font-display), sans-serif; }
 .pilot-entrance-account { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3) var(--space-6); padding: var(--space-5) 0; margin-bottom: var(--space-6); border-bottom: 1px solid var(--line); }
 .pilot-entrance-account > span { color: var(--muted); font-size: var(--text-sm); margin-right: auto; }

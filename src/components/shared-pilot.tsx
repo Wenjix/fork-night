@@ -463,6 +463,25 @@ export function SharedPilot() {
   const updates = pathUpdates(path, baseline);
   const reviewing = operation?.status === "delivered";
   const signOutBlock = roomSignOutBlock({ generating: hasActive || wrenBusy || !!wrenPreviewId, drafting: !!draft, walletBusy: releaseBusy, checking: !!account?.loading, busy });
+  const entranceDestinationHandled = useRef(false);
+
+  useEffect(() => {
+    if (entranceDestinationHandled.current || roomId !== KESSLER_ROOM_ID || loadedRoom !== roomId || !path.length || account?.loading || composing || hasActive || reviewing || wrenBusy) return;
+    const destination = window.location.hash.slice(1);
+    if (!["kessler-contributions", "kessler-wren", "kessler-backing"].includes(destination)) return;
+    if (view !== "read") { setView("read"); return; }
+    const target = document.getElementById(destination);
+    if (!target) return;
+    const frame = requestAnimationFrame(() => {
+      entranceDestinationHandled.current = true;
+      if (target instanceof HTMLDetailsElement) target.open = true;
+      const focus = target instanceof HTMLDetailsElement ? target.querySelector("summary") : target;
+      if (focus && !focus.hasAttribute("tabindex")) focus.setAttribute("tabindex", "-1");
+      target.scrollIntoView({ block: "start" });
+      focus?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [roomId, loadedRoom, path.length, account?.loading, composing, hasActive, reviewing, wrenBusy, view]);
 
   useEffect(() => {
     if (!roomId || loadedRoom !== roomId || account?.loading || profileLoadedFor !== actorId || profile && profile.id !== actorId) return;

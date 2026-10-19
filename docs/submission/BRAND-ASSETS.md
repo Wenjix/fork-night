@@ -24,7 +24,7 @@ The marks identify networks and currencies; they do not designate Fork Night as 
 
 ## Additional brand marks fetched October 18, 2026
 
-These marks are stored as downloaded, unmodified files, and the UI shows them unaltered. The badges in `src/lib/brands.ts` use Kimi, MPP and x402 as wide logotypes on their own plate (Kimi and MPP on a light one, x402's wordmark, which has white letters, on a dark one), and Hunyuan, Phantom and MetaMask as square marks. The Kimi file is about 1 MB, so its image loads lazily. `public/brands/squads.svg` is the safety-zone diagram from the Squads brand page rather than the logo, so no badge uses it and Squads keeps a neutral tile until the logo file is added.
+These marks are stored as downloaded, unmodified files, and the UI shows them unaltered. The badges in `src/lib/brands.ts` use Kimi, MPP and x402 as wide logotypes on their own plate (Kimi and MPP on a light one, x402's wordmark, which has white letters, on a dark one), and Hunyuan, Phantom, MetaMask and Squads as square marks. The Kimi file is about 1 MB, so its image loads lazily. Squads v4 uses the official GitHub organization avatar in `public/brands/squads.png`; the safety-zone diagram from the brand page is not used as a logo. The v4 label identifies the protocol used by the recorded Solana devnet guild rehearsals.
 
 | Brand | Runtime asset | Format | Official source file | Linked from | Fetched | Terms / license | Usage notes | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
