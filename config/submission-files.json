@@ -1,6 +1,7 @@
 {
   "version": 1,
   "files": [
+    "src/data/kessler-films.json",
     ".env.example",
     ".gitignore",
     ".vercelignore",
@@ -180,7 +181,23 @@
     "public/film-demo/night-shift-poster.webp",
     "public/film-demo/night-shift-wan6.mp4",
     "src/app/apple-icon.png",
-    "src/app/favicon.ico"
+    "src/app/favicon.ico",
+    "public/film-demo/kessler-lift-shot-1.webp",
+    "public/film-demo/kessler-lift-shot-2.webp",
+    "public/film-demo/kessler-lift-shot-3.webp",
+    "public/film-demo/kessler-lift-shot-4.webp",
+    "public/film-demo/kessler-lift-shot-5.webp",
+    "public/film-demo/kessler-lift-shot-6.webp",
+    "public/film-demo/kessler-lift.mp4",
+    "public/film-demo/kessler-lift.vtt",
+    "public/film-demo/kessler-rooftops-shot-1.webp",
+    "public/film-demo/kessler-rooftops-shot-2.webp",
+    "public/film-demo/kessler-rooftops-shot-3.webp",
+    "public/film-demo/kessler-rooftops-shot-4.webp",
+    "public/film-demo/kessler-rooftops-shot-5.webp",
+    "public/film-demo/kessler-rooftops-shot-6.webp",
+    "public/film-demo/kessler-rooftops.mp4",
+    "public/film-demo/kessler-rooftops.vtt"
   ],
   "directories": [
     {

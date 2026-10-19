@@ -49,6 +49,7 @@ import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-g
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
 import { KesslerRoomGuide } from "./kessler-room-guide";
+import { RoomFilmStudio } from "./room-film-studio";
 import { useKesslerOverview } from "./use-kessler-overview";
 import { kesslerWrenState } from "../lib/kessler-overview";
 import { featuredStoryLinks, proofRoomIds } from "@/lib/featured-stories";
@@ -88,6 +89,7 @@ function KesslerTurnCard() {
 
 export function SharedPilot() {
   const account = usePilotAccount();
+  const [filmOpenRequest, setFilmOpenRequest] = useState(0);
   const [client, setClient] = useState<Client>();
   const [unavailable, setUnavailable] = useState(false);
   const [snapshot, setSnapshot] = useState<RoomSnapshot>();
@@ -1090,9 +1092,15 @@ export function SharedPilot() {
         {roomId === KESSLER_ROOM_ID
           ? <KesslerRoomGuide overview={kessler.overview} unavailable={kessler.unavailable} blocked={composing || hasActive || wrenBusy || reviewing} onNavigate={destination => {
             setView("read");
+            if (destination === "kessler-films") setFilmOpenRequest(value => value + 1);
             requestAnimationFrame(() => { const target = document.getElementById(destination); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
           }} />
           : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
+        {roomId === KESSLER_ROOM_ID && client && path.length > 0 && <div hidden={composing || hasActive || wrenBusy || reviewing}><RoomFilmStudio client={client} moments={moments} currentPath={path} openRequest={filmOpenRequest} onRead={(id, trace) => {
+          select(id, true);
+          setView("read");
+          requestAnimationFrame(() => { const target = document.getElementById(trace ? "kessler-contributions" : "pilot-story-reader"); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
+        }} /></div>}
       </div>
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
         <Disclosure className="pilot-roster" summary={<>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></>}><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</Disclosure>

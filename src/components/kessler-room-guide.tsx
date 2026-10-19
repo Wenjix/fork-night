@@ -1,4 +1,4 @@
-import { BookOpen, GitBranch, Sparkles, ArrowUpRight } from "lucide-react";
+import { BookOpen, GitBranch, Sparkles, ArrowUpRight, Play } from "lucide-react";
 import { kesslerWrenState, type KesslerOverview } from "../lib/kessler-overview";
 import { shortAddress } from "../lib/onchain/journey";
 import { getRecordedGuildFunding } from "../lib/guild-funding";
@@ -7,7 +7,7 @@ import { Disclosure } from "./disclosure";
 import { BrandBadge, BrandStrip } from "./brand-badge";
 
 const tempoExplorer = "https://explore.tempo.xyz";
-export type KesslerDestination = "pilot-story-reader" | "kessler-contributions" | "kessler-wren";
+export type KesslerDestination = "pilot-story-reader" | "kessler-contributions" | "kessler-wren" | "kessler-films";
 
 export function KesslerRoomGuide({ overview, unavailable, blocked, onNavigate }: {
   overview: KesslerOverview | null; unavailable: boolean; blocked: boolean;
@@ -22,6 +22,7 @@ export function KesslerRoomGuide({ overview, unavailable, blocked, onNavigate }:
         : unavailable ? "Room activity is temporarily unavailable" : "Reading room activity…"}</span></div>
       <nav aria-label="Kessler demo path">
         <button type="button" disabled={blocked} onClick={() => onNavigate("pilot-story-reader")}><BookOpen size={16} aria-hidden="true" />Read & branch</button>
+        <button type="button" disabled={blocked} onClick={() => onNavigate("kessler-films")}><Play size={16} aria-hidden="true" />Watch films</button>
         <button type="button" disabled={blocked} onClick={() => onNavigate("kessler-contributions")}><GitBranch size={16} aria-hidden="true" />Contributions</button>
         <button type="button" disabled={blocked} onClick={() => onNavigate("kessler-wren")}><Sparkles size={16} aria-hidden="true" />Meet Wren</button>
       </nav>

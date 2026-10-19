@@ -16,7 +16,7 @@ export function makeFilmPlan(title: string, scenes: FilmScene[]): FilmPlan {
 }
 
 function allowedImage(url: string) {
-  return isApprovedArtUrl(url) || isLocalRasterUrl(url) || /^\/(?:world-demo|creator-demo)\/[a-z0-9-]+\.webp$/.test(url);
+  return isApprovedArtUrl(url) || isLocalRasterUrl(url) || /^\/(?:world-demo|creator-demo|film-demo)\/[a-z0-9-]+\.webp$/.test(url);
 }
 
 async function loadImage(url: string, signal: AbortSignal) {
