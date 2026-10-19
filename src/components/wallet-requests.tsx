@@ -14,9 +14,9 @@ import { denialMessage, requestMessage, signWalletMessage, walletRequestApi, typ
 import { whileVisible } from "../lib/visible-interval.ts";
 import { PilotDialog } from "./pilot-dialog.tsx";
 
-export function WalletReviewDialog({ request, action, config, busy, disabled = false, error, motion, onClose, onConfirm, returnFocus }: {
+export function WalletReviewDialog({ request, action, config, busy, disabled = false, walletReady = true, error, motion, onClose, onConfirm, returnFocus }: {
   request: WalletRequest; action: "approve" | "deny"; config: ReleaseConfig;
-  busy: boolean; disabled?: boolean; error: string; motion: boolean; onClose: () => void; onConfirm: () => void;
+  busy: boolean; disabled?: boolean; walletReady?: boolean; error: string; motion: boolean; onClose: () => void; onConfirm: () => void;
   returnFocus?: () => HTMLElement | null;
 }) {
   const [copied, setCopied] = useState(false);
@@ -34,8 +34,9 @@ export function WalletReviewDialog({ request, action, config, busy, disabled = f
       : "The maker can review their address and send a new request. Denying a request does not revoke an approval already recorded onchain."}</p>
     {error && <p className="pilot-release-error" role="alert">{error}</p>}
     {busy && <p role="status" className="pilot-release-working"><RefreshCw size={16} aria-hidden="true" />Check your wallet to confirm. {action === "approve" ? "Approval uses test MON for gas." : "This signed decision uses no gas."}</p>}
+    {!walletReady && !busy && <p role="status" className="pilot-release-loading">Connect the curator wallet {shortAddress(config.curator)} before confirming. Close this dialog, open Payout wallet, select your browser wallet and click Reconnect wallet. Your storyteller account stays the same.</p>}
     {disabled && !busy && <p role="status" className="pilot-release-loading">Wait for the saved wallet action and recorded path to finish checking.</p>}
-    <footer><button className="button secondary" type="button" disabled={busy} onClick={onClose}>Cancel</button><button className={`button ${action === "approve" ? "primary" : "danger"}`} type="button" disabled={busy || disabled} onClick={onConfirm}>{busy ? "Waiting for confirmation…" : action === "approve" ? "Approve this address" : "Deny this request"}</button></footer>
+    <footer><button className="button secondary" type="button" disabled={busy} onClick={onClose}>Cancel</button><button className={`button ${action === "approve" ? "primary" : "danger"}`} type="button" disabled={busy || disabled || !walletReady} onClick={onConfirm}>{busy ? "Waiting for confirmation…" : action === "approve" ? "Approve this address" : "Deny this request"}</button></footer>
   </PilotDialog>;
 }
 
@@ -127,7 +128,8 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
     setReview({ id: request.id, action, motion });
   }
   async function decide() {
-    if (!selected || !review || !provider || working || blocked || !curator) return;
+    if (!selected || !review || working || blocked || !curator) return;
+    if (!provider) { setError("Connect the curator wallet in Payout wallet, then review this request again."); return; }
     const captured = context.current;
     setWorking(true); setError("");
     try {
@@ -171,6 +173,6 @@ export function WalletRequests({ prepared, snapshot, config, moments, account, m
     {loading && <p role="status" className="pilot-request-empty">Checking wallet requests…</p>}
     {working && !review && <p role="status" className="pilot-release-working">Confirm the wallet request in your wallet. No test MON is spent.</p>}
     {error && !review && <div><p className="pilot-release-error" role="alert">{error}</p><button className="text-button" type="button" disabled={disabled} onClick={() => void refresh()}>Check wallet requests again</button></div>}
-    {curator && selected && review && (review.action === "deny" || reviewIndex >= 0) && <WalletReviewDialog request={selected} action={review.action} config={config} busy={working} disabled={blocked} error={error || sessionError} motion={review.motion} returnFocus={() => heading.current} onClose={() => { if (!working) setReview(undefined); }} onConfirm={() => void decide()} />}
+    {curator && selected && review && (review.action === "deny" || reviewIndex >= 0) && <WalletReviewDialog request={selected} action={review.action} config={config} busy={working} disabled={blocked} walletReady={!!provider} error={error || sessionError} motion={review.motion} returnFocus={() => heading.current} onClose={() => { if (!working) setReview(undefined); }} onConfirm={() => void decide()} />}
   </section>;
 }

@@ -36,6 +36,16 @@ test("reviewing or waiting for a wallet action cannot send a second approval", (
   assert.match(checking, /disabled=""[^>]*>Approve this address/);
   assert.match(checking, /recorded path to finish checking/);
 });
+test("a remembered curator address without a wallet explains reconnection before review can proceed", () => {
+  for (const action of ["approve", "deny"] as const) {
+    const html = renderToStaticMarkup(React.createElement(WalletReviewDialog, { ...review, action, walletReady: false }));
+    assert.match(html, /Connect the curator wallet/);
+    assert.match(html, /open Payout wallet, select your browser wallet and click Reconnect wallet/);
+    assert.match(html, /Your storyteller account stays the same/);
+    assert.match(html, /disabled=""[^>]*>(Approve this address|Deny this request)/);
+    assert.doesNotMatch(html, /disabled=""[^>]*>Cancel/);
+  }
+});
 test("denial explains resubmission without implying revocation or a blockchain transaction", () => {
   const html = renderToStaticMarkup(React.createElement(WalletReviewDialog, { ...review, action: "deny", busy: true }));
   assert.match(html, /send a new request/);
