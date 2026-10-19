@@ -31,6 +31,10 @@ On phones, the downloaded film uses a portrait frame with readable captions and 
 
 ## Shared development pilot
 
+Kessler's **Films from this room** shelf presents three prepared 18-second Wan 3.0 films: **Decision in the Dark** (Burkes and Wren's continuation), **In through the window**, and **Dawn on eighty-one**. Choose a poster or **Watch films** to play one, download its MP4, copy a direct film link, or follow its source scenes and contribution trail. The Wren film condenses a ten-scene path into six reference panels and ends at the maintenance-hatch decision. Film preparation does not register a new release or change creator shares.
+
+**Make a film → choose up to six panels → Review** shows the chosen branch, original bylines, three-second shot timings and cost. A selection matching a prepared cut offers **Watch finished film** immediately. **Create storyboard video** makes a separate, free, silent video from the chosen images and captions in the browser. Download it before leaving or reloading. Changing the selection never relabels a prepared Wan film as a new generation. Public visitors cannot submit paid Wan requests through this flow.
+
 Configure the server credentials and run the development worker as described in the [README](../../README.md). Open `/pilot` in two separate browser profiles or private sessions.
 
 1. Choose one of the three rooms. The shared story table gives the current moment most of the space, with maker credit and a **Story so far** recap. On a phone, page through its panels and expand the recap to read earlier moments. **Map** opens the full upward branching story.

@@ -28,11 +28,11 @@ test("Kessler leads the three recorded integration rooms with a direct entry", (
   for (const [title, focus, roomId, action] of [
     ["The midnight signal", "Monad releases · Privy wallets", "midnight-signal", "View Monad release"],
     ["The Uncharted Star", "Tempo · MPP agent payments", "night-shift", "See Wren’s recorded turn"],
-    ["Paper Moon", "Solana · Squads guild funding", "paper-moon", "View guild funding"],
+    ["Paper Moon", "Solana · Squads v4 guild funding", "paper-moon", "View guild funding"],
     ["Kessler Ward", "Branching stories · Monad contributions · Wren", "kessler-ward", "Enter Kessler Ward"],
   ]) {
     const html = row(title);
-    assert.ok(html.includes(focus));
+    assert.ok((title === "Kessler Ward" ? render() : html).includes(focus));
     assert.ok(html.includes(action));
     assert.equal(new URL(primaryHref(html), "https://fork-night.invalid").searchParams.get("room"), roomId);
   }
@@ -47,9 +47,13 @@ test("each room names its stack with brand badges, and a chain badge carries its
   assert.match(midnight, /aria-label="Monad releases · Privy wallets"/);
   assert.deepEqual(badgeNames(row("The Uncharted Star")), ["Tempo", "MPP", "Tempo receipt"]);
   assert.match(row("The Uncharted Star"), /<span class="fn-net">Moderato testnet<\/span>/);
-  assert.deepEqual(badgeNames(row("Paper Moon")), ["Solana", "Squads", "Solana receipt"]);
+  assert.deepEqual(badgeNames(row("Paper Moon")), ["Solana", "Squads v4", "Solana receipt"]);
   assert.match(row("Paper Moon"), /<span class="fn-net">Devnet<\/span>/);
-  assert.deepEqual(badgeNames(row("Kessler Ward")), ["Branch the story", "Monad contributions", "Wren · checking…"]);
+  assert.deepEqual(badgeNames(row("Kessler Ward")), ["Wan 3.0", "GMI Cloud"]);
+  const featurePlates = render().split('<nav class="fn-kessler-features"')[1]?.split("</nav>")[0];
+  assert.ok(featurePlates);
+  assert.deepEqual(badgeNames(featurePlates), ["Monad", "Tempo", "MPP", "Solana", "Squads v4"]);
+  assert.match(featurePlates, /Checking preview availability/);
 });
 
 test("historical guides retain the recorded amounts and link to their actual path, turn and receipts", () => {
@@ -78,8 +82,8 @@ test("Kessler shows its real story and capabilities without claiming payments or
   const kessler = row("Kessler Ward");
   assert.equal(primaryHref(kessler), "/pilot?room=kessler-ward");
   assert.equal(featuredStoryLinks.kessler, "/pilot?room=kessler-ward");
-  assert.match(kessler, /Two prepared branches/);
-  assert.match(kessler, /Monad contribution trail/);
+  assert.match(kessler, /3 branch films ready/);
+  assert.match(render(), /Contribution tracker/);
   assert.match(kessler, /night-shift-neon\.webp/);
   assert.doesNotMatch(kessler, /Wren enabled|guild funded|people online|paid for/);
   for (const room of featuredRooms) {

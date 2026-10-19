@@ -40,8 +40,7 @@ export const BRANDS = {
   pathusd: { name: "pathUSD", kind: "token", mark: "/brands/networks/tempo.svg", accent: INK },
   x402: { name: "x402", kind: "protocol", mark: "/brands/x402.svg", lockup: { width: 156, height: 48, plate: "dark", word: "x402" }, accent: INK },
   mpp: { name: "MPP", kind: "protocol", mark: "/brands/mpp.svg", lockup: { width: 81.2195, height: 18, plate: "light", word: "MPP" }, accent: INK },
-  // public/brands/squads.svg is the safety-zone diagram from Squads' brand page, not the logo, so Squads keeps a neutral tile.
-  squads: { name: "Squads", kind: "protocol", monogram: "Sq", accent: INK },
+  squads: { name: "Squads v4", kind: "protocol", mark: "/brands/squads.png", fit: "bleed", accent: INK },
   erc8004: { name: "ERC-8004", kind: "protocol", accent: INK },
   privy: { name: "Privy", kind: "auth", mark: "/brands/privy-symbol-black.svg", accent: "#010110" },
   google: { name: "Google", kind: "auth", mark: "/brands/google-g.png", accent: "#4285f4" },

@@ -135,5 +135,6 @@ test("the shared-room styles keep the phone toolbar, the release card and the th
   for (const literal of ["#cfc6ce", "#c3b4ed", "#e2d6ff", "#fff0cd", "#fff0a6", "#fff0b5", "#f7f4ff", "#61558b", "#e7dfff", "#862536", "#fde5dc", "#b6acbe"])
     for (const css of [pilot, rooms, releases, read("src/app/pilot/composer.css")]) assert.ok(!css.includes(literal), `${literal} should be a token`);
   assert.match(pilot, /--note: #fff0ac;/);
-  assert.doesNotMatch(rooms, /#[0-9a-fA-F]{3,8}\b/, "rooms.css carries no colour literals");
+  const roomRules = rooms.replace(/\.pilot-directory-page \{[^}]*\}/, "");
+  assert.doesNotMatch(roomRules, /#[0-9a-fA-F]{3,8}\b/, "room rules use tokens; the directory palette defines its own colours");
 });

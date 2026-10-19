@@ -68,10 +68,12 @@
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
     "@trigger.dev/build": "4.6.4",
+    "@types/jsdom": "27.0.0",
     "@types/node": "24.13.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "hardhat": "3.2.0",
+    "jsdom": "27.0.1",
     "tailwindcss": "4.3.3",
     "trigger.dev": "4.6.4",
     "tsx": "4.21.0",

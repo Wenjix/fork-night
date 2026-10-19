@@ -1,6 +1,7 @@
 {
   "version": 1,
   "files": [
+    "src/data/kessler-films.json",
     ".env.example",
     ".gitignore",
     ".vercelignore",
@@ -59,7 +60,14 @@
     "public/fonts/bricolage-grotesque.woff2",
     "public/fonts/bricolage-OFL.txt",
     "public/brands/google-g.png",
+    "public/brands/hunyuan.png",
+    "public/brands/kimi.svg",
+    "public/brands/metamask-fox.svg",
+    "public/brands/mpp.svg",
+    "public/brands/phantom.svg",
     "public/brands/privy-symbol-black.svg",
+    "public/brands/squads.png",
+    "public/brands/x402.svg",
     "public/brands/networks/solana.svg",
     "public/brands/networks/monad.svg",
     "public/brands/networks/base.svg",
@@ -180,7 +188,23 @@
     "public/film-demo/night-shift-poster.webp",
     "public/film-demo/night-shift-wan6.mp4",
     "src/app/apple-icon.png",
-    "src/app/favicon.ico"
+    "src/app/favicon.ico",
+    "public/film-demo/kessler-lift-shot-1.webp",
+    "public/film-demo/kessler-lift-shot-2.webp",
+    "public/film-demo/kessler-lift-shot-3.webp",
+    "public/film-demo/kessler-lift-shot-4.webp",
+    "public/film-demo/kessler-lift-shot-5.webp",
+    "public/film-demo/kessler-lift-shot-6.webp",
+    "public/film-demo/kessler-lift.mp4",
+    "public/film-demo/kessler-lift.vtt",
+    "public/film-demo/kessler-rooftops-shot-1.webp",
+    "public/film-demo/kessler-rooftops-shot-2.webp",
+    "public/film-demo/kessler-rooftops-shot-3.webp",
+    "public/film-demo/kessler-rooftops-shot-4.webp",
+    "public/film-demo/kessler-rooftops-shot-5.webp",
+    "public/film-demo/kessler-rooftops-shot-6.webp",
+    "public/film-demo/kessler-rooftops.mp4",
+    "public/film-demo/kessler-rooftops.vtt"
   ],
   "directories": [
     {

@@ -1,0 +1,285 @@
+[
+  {
+    "id": "lift",
+    "title": "Decision in the Dark",
+    "description": "Burkes offers a choice. Wren takes the lift—and finds a new way forward.",
+    "tipId": "09d96a8f-62cc-485a-8600-c6270babfe40",
+    "duration": 18,
+    "model": "Wan 3.0",
+    "provider": "GMI Cloud",
+    "preparedOn": "2026-10-19",
+    "video": "/film-demo/kessler-lift.mp4",
+    "poster": "/film-demo/kessler-lift-shot-6.webp",
+    "captions": "/film-demo/kessler-lift.vtt",
+    "shots": [
+      {
+        "id": "15000000-0000-4000-8000-000000000001:0",
+        "sourceId": "15000000-0000-4000-8000-000000000001",
+        "panelIndex": 0,
+        "title": "Lights out in Kessler Ward",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "The grid drops at midnight. Every tower in Kessler Ward goes dark except the red emergency strips, and the trains stop where they stand.",
+          "imageUrl": "/art/night-shift-neon.webp#frame=0"
+        },
+        "image": "/film-demo/kessler-lift-shot-1.webp",
+        "direction": "Wide establishing shot: a city-wide blackout leaves red emergency strips. Mika holds a white medical case, urgently looking up toward the dark tower."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000008:0",
+        "sourceId": "15000000-0000-4000-8000-000000000008",
+        "panelIndex": 0,
+        "title": "Floor forty",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "On the fortieth landing her legs give out. A door opens and Kenji from 40C crouches beside her with a bottle of water. ‘Who's it for?’",
+          "imageUrl": "/art/night-shift-neon-2.webp#frame=3"
+        },
+        "image": "/film-demo/kessler-lift-shot-2.webp",
+        "direction": "Inside the stairwell on floor forty, Mika pauses exhausted. Kenji crouches beside her and offers water. Keep the medical case beside Mika."
+      },
+      {
+        "id": "b0843bf0-f4b9-448d-a12d-401bf4980705:0",
+        "sourceId": "b0843bf0-f4b9-448d-a12d-401bf4980705",
+        "panelIndex": 0,
+        "title": "Kenji offers Mika a charged battery: powering the service lift coul…",
+        "maker": "Burkes",
+        "panel": {
+          "sha256": "28fb5a8d18ae09853046ff34f38e8d0db4e0d837ca6d4e72e2729ff9b37951c7",
+          "caption": "Kenji offers Mika a charged battery: powering the service lift could speed her to Mrs. Ito, but powering the radio might help stranded neighbors.",
+          "imagePath": "9659d161-d415-48aa-966d-bee623d327f7/1.webp"
+        },
+        "image": "/film-demo/kessler-lift-shot-3.webp",
+        "direction": "Kenji offers the charged battery. Mika looks between a service-lift control and her radio, then deliberately takes the battery toward the lift. Show one decisive action."
+      },
+      {
+        "id": "9dbdb1d4-f63a-4d73-8fd6-0bebdefd56fc:0",
+        "sourceId": "9dbdb1d4-f63a-4d73-8fd6-0bebdefd56fc",
+        "panelIndex": 0,
+        "title": "Powering the Service Lift",
+        "maker": "Wren (AI agent)",
+        "panel": {
+          "sha256": "d809488fa18e127060545f1793ecc45a0141a9e53c570de60fd915f340e6957b",
+          "caption": "Mika inserts the charged battery to activate the service lift, the mechanical hum breaking the silence as the lift ascends toward floor eighty-one.",
+          "imagePath": "3cad8a51-099c-4398-a905-15a3372124b5/1.webp"
+        },
+        "image": "/film-demo/kessler-lift-shot-4.webp",
+        "direction": "Mika seats the battery into the service-lift power socket. The panel wakes, the doors close and the lift begins rising. The medical case stays with her."
+      },
+      {
+        "id": "e8086d63-50e1-439e-be08-4af0b50bb8d9:0",
+        "sourceId": "e8086d63-50e1-439e-be08-4af0b50bb8d9",
+        "panelIndex": 0,
+        "title": "Unexpected Obstruction",
+        "maker": "Wren (AI agent)",
+        "panel": {
+          "sha256": "de6f0332c436ef7a913243f5fbe65761ce490f527c324eae6de62539da66d8a0",
+          "caption": "Halfway up, the service lift halts abruptly; an emergency stop triggered by debris blocking the shaft delays Mika's progress awkwardly in near-darkness.",
+          "imagePath": "d05a112f-adac-4799-948a-30a1b2df2ee9/1.webp"
+        },
+        "image": "/film-demo/kessler-lift-shot-5.webp",
+        "direction": "The lift shudders and stops beneath debris in the shaft. Mika braces herself against the wall as the light flickers. The lift remains stopped."
+      },
+      {
+        "id": "09d96a8f-62cc-485a-8600-c6270babfe40:0",
+        "sourceId": "09d96a8f-62cc-485a-8600-c6270babfe40",
+        "panelIndex": 0,
+        "title": "Decision in the Dark",
+        "maker": "Wren (AI agent)",
+        "panel": {
+          "sha256": "70e57abcedbf30278edd9cf4a73eb67f0ef24a1ef65e6bdac2819ba4a1f43c0d",
+          "caption": "Mika peers through the lift's small window and spots a shadowy maintenance hatch; she contemplates exiting the stalled lift to climb the last floors on foot or conserve battery for communication aid.",
+          "imagePath": "15725f1b-bef7-4d45-ab6a-c7339c2d59af/1.webp"
+        },
+        "image": "/film-demo/kessler-lift-shot-6.webp",
+        "direction": "Mika peers through the small lift window and notices a maintenance hatch above and to the side. Her gaze moves from the hatch to the battery indicator. End on the unresolved choice; she has not escaped or reached Mrs. Ito."
+      }
+    ]
+  },
+  {
+    "id": "rooftops",
+    "title": "In through the window",
+    "description": "A bird of light, a cable bridge and a city that helps Mika cross.",
+    "tipId": "15000000-0000-4000-8000-000000000006",
+    "duration": 18,
+    "model": "Wan 3.0",
+    "provider": "GMI Cloud",
+    "preparedOn": "2026-10-19",
+    "video": "/film-demo/kessler-rooftops.mp4",
+    "poster": "/film-demo/kessler-rooftops-shot-6.webp",
+    "captions": "/film-demo/kessler-rooftops.vtt",
+    "shots": [
+      {
+        "id": "15000000-0000-4000-8000-000000000001:0",
+        "sourceId": "15000000-0000-4000-8000-000000000001",
+        "panelIndex": 0,
+        "title": "Lights out in Kessler Ward",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "The grid drops at midnight. Every tower in Kessler Ward goes dark except the red emergency strips, and the trains stop where they stand.",
+          "imageUrl": "/art/night-shift-neon.webp#frame=0"
+        },
+        "image": "/film-demo/kessler-rooftops-shot-1.webp",
+        "direction": "Wide establishing shot: the megablock towers lose power, leaving red emergency strips. Mika grips her white medical case and looks toward floor eighty-one."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000002:0",
+        "sourceId": "15000000-0000-4000-8000-000000000002",
+        "panelIndex": 0,
+        "title": "The billboard blinks back",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "A dead billboard flickers awake for one breath. A small bird of cyan light traces a path across the rooftops, along the one cable line that still carries power.",
+          "imageUrl": "/art/night-shift-neon.webp#frame=2"
+        },
+        "image": "/film-demo/kessler-rooftops-shot-2.webp",
+        "direction": "A broken billboard flashes awake. A tiny cyan bird of light arcs away across rooftop cables; Mika turns and follows its direction."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000003:0",
+        "sourceId": "15000000-0000-4000-8000-000000000003",
+        "panelIndex": 0,
+        "title": "Rei on the dish",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "The bird's path ends at a cable bridge. Rei waves from the satellite dish on the far tower, headphones on, calling out every loose rung over the radio.",
+          "imageUrl": "/art/night-shift-neon.webp#frame=3"
+        },
+        "image": "/film-demo/kessler-rooftops-shot-3.webp",
+        "direction": "Across a suspended cable bridge, Rei stands beside a satellite dish wearing headphones and gestures toward the safe rungs. Mika steps carefully onto the bridge."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000004:0",
+        "sourceId": "15000000-0000-4000-8000-000000000004",
+        "panelIndex": 0,
+        "title": "The bridge goes dark",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "Halfway across, the billboard's power fails. The bird flares once and breaks into sparks, and Mika is left holding the chain in the dark and the wind.",
+          "imageUrl": "/art/night-shift-neon-2.webp#frame=0"
+        },
+        "image": "/film-demo/kessler-rooftops-shot-4.webp",
+        "direction": "The guiding cyan bird bursts into sparks and goes out. The bridge sways in the wind; Mika grips its chain, keeping the medicine case close."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000005:0",
+        "sourceId": "15000000-0000-4000-8000-000000000005",
+        "panelIndex": 0,
+        "title": "A tower full of lights",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "Rei gets on every channel in the next tower. Window by window, people hold up their phones until the whole tower shines, and Mika can see every rung.",
+          "imageUrl": "/art/night-shift-neon-2.webp#frame=1"
+        },
+        "image": "/film-demo/kessler-rooftops-shot-5.webp",
+        "direction": "Window after window in the far tower lights with neighbours holding phones. Mika can see the rungs again and advances across the bridge."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000006:0",
+        "sourceId": "15000000-0000-4000-8000-000000000006",
+        "panelIndex": 0,
+        "title": "In through the window",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "At first light Mika swings in through Mrs. Ito's kitchen window on floor eighty-one. Mrs. Ito takes the case in both hands. ‘You came the long way.’",
+          "imageUrl": "/art/night-shift-neon-2.webp#frame=2"
+        },
+        "image": "/film-demo/kessler-rooftops-shot-6.webp",
+        "direction": "At dawn Mika climbs through Mrs. Ito’s kitchen window and hands her the medical case. Mrs. Ito receives it with both hands. Hold on the quiet relief."
+      }
+    ]
+  },
+  {
+    "id": "neighbors",
+    "title": "Dawn on eighty-one",
+    "description": "One neighbour calls the next. The whole tower carries the medicine home.",
+    "tipId": "15000000-0000-4000-8000-000000000011",
+    "duration": 18,
+    "model": "Wan 3.0",
+    "provider": "GMI Cloud",
+    "preparedOn": "2026-10-14",
+    "video": "/film-demo/night-shift-wan6.mp4",
+    "poster": "/film-demo/night-shift-poster.webp",
+    "captions": "/film-demo/night-shift-captions.vtt",
+    "shots": [
+      {
+        "id": "15000000-0000-4000-8000-000000000001:0",
+        "sourceId": "15000000-0000-4000-8000-000000000001",
+        "panelIndex": 0,
+        "title": "Lights out in Kessler Ward",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "The grid drops at midnight. Every tower in Kessler Ward goes dark except the red emergency strips, and the trains stop where they stand.",
+          "imageUrl": "/art/night-shift-neon.webp#frame=0"
+        },
+        "image": "/film-demo/night-shift-image-0.webp",
+        "direction": "The towers go dark. Mika looks up, holding the medical case."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000007:0",
+        "sourceId": "15000000-0000-4000-8000-000000000007",
+        "panelIndex": 0,
+        "title": "Eighty-one floors",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "No lift, no light. Mika takes the stairwell two steps at a time, her flashlight the only thing moving in the tower.",
+          "imageUrl": "/art/night-shift-neon.webp#frame=4"
+        },
+        "image": "/film-demo/night-shift-image-1.webp",
+        "direction": "Mika races up the stairwell, her flashlight sweeping the steps."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000008:0",
+        "sourceId": "15000000-0000-4000-8000-000000000008",
+        "panelIndex": 0,
+        "title": "Floor forty",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "On the fortieth landing her legs give out. A door opens and Kenji from 40C crouches beside her with a bottle of water. ‘Who's it for?’",
+          "imageUrl": "/art/night-shift-neon-2.webp#frame=3"
+        },
+        "image": "/film-demo/night-shift-image-2.webp",
+        "direction": "Kenji crouches beside an exhausted Mika and offers water."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000009:0",
+        "sourceId": "15000000-0000-4000-8000-000000000009",
+        "panelIndex": 0,
+        "title": "Every door left open",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "Kenji knocks on the next door, and that neighbor knocks on the next. Doors open on every landing, phones light the stairs, and a bird of light flies ahead to show the way.",
+          "imageUrl": "/art/night-shift-neon.webp#frame=5"
+        },
+        "image": "/film-demo/night-shift-image-3.webp",
+        "direction": "Neighbours open their doors and light the stairs with their phones."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000010:0",
+        "sourceId": "15000000-0000-4000-8000-000000000010",
+        "panelIndex": 0,
+        "title": "Hand to hand",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "The neighbors form a chain, one person to a step. The case goes up hand to hand, floor after floor, while Mika gets her breath back and follows.",
+          "imageUrl": "/art/night-shift-neon-2.webp#frame=4"
+        },
+        "image": "/film-demo/night-shift-image-4.webp",
+        "direction": "The medicine case passes from hand to hand up the tower."
+      },
+      {
+        "id": "15000000-0000-4000-8000-000000000011:0",
+        "sourceId": "15000000-0000-4000-8000-000000000011",
+        "panelIndex": 0,
+        "title": "Dawn on eighty-one",
+        "maker": "Prepared story",
+        "panel": {
+          "caption": "The case reaches Mrs. Ito as the sun comes up and the city's lights blink back on. The bird of light settles on her windowsill, then fades into the morning.",
+          "imageUrl": "/art/night-shift-neon-2.webp#frame=5"
+        },
+        "image": "/film-demo/night-shift-image-5.webp",
+        "direction": "Mrs. Ito receives the case as sunlight enters her apartment."
+      }
+    ]
+  }
+]

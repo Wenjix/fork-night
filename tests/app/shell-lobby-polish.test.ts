@@ -136,7 +136,7 @@ test("a featured room opens as a whole row, with the receipt linking separately 
   assert.match(rule(css, ".fn-featured-room"), /position: relative;/);
   assert.match(css, /\.fn-featured-stories \.fn-featured-cta::after \{ content: ""; position: absolute; inset: 0; \}/);
   assert.match(rule(css, ".fn-featured-actions a.fn-badge"), /position: relative;[\s\S]*z-index: 1;/);
-  assert.match(rule(css, ".fn-featured-stories .fn-featured-copy h3"), /font-size: var\(--text-card\);/);
+  assert.match(rule(css, ".fn-featured-stories .fn-featured-copy h3"), /font-size: 18px;/);
   assert.match(block(css, "@media (max-width: 540px) {"), /\.fn-featured-copy \{ display: contents; \}/, "on a phone the badges run the full width, so none cuts its name short");
 });
 

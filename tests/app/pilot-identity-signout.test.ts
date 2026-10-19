@@ -308,7 +308,7 @@ test("after sign-out, focus goes to the account entry's wallet sign-in, or to th
   const walletButton = (html: string) => html.match(/<div class="pilot-account-entry"><div class="pilot-wallet-signin"><button([^>]*)>/)?.[1];
   assert.doesNotMatch(walletButton(entrance(false)) ?? "missing", /disabled/);
   assert.match(walletButton(entrance(true)) ?? "", /disabled=""/);
-  assert.deepEqual(entrance(true).match(/<main\b[^>]*\btabindex="[^"]*"/g), ['<main class="pilot-shell pilot-entrance" id="shared-stories" tabindex="-1"']);
+  assert.deepEqual(entrance(true).match(/<main\b[^>]*\btabindex="[^"]*"/g), ['<main class="pilot-shell pilot-entrance pilot-entrance-directory" id="shared-stories" tabindex="-1"']);
   // In a room it is main#shared-story, the only main there with a tabIndex.
   const room = findAll(await tsx("src/components/shared-pilot.tsx"), element("main")).filter(node => attr(node, "tabIndex"));
   assert.deepEqual(room.map(node => [attr(node, "id")?.getText(), attr(node, "tabIndex")?.getText()]), [['"shared-story"', "{-1}"]]);

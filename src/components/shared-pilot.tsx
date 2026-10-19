@@ -49,6 +49,7 @@ import type { GenerationOperation, PilotCredits as Credits } from "@/lib/pilot-g
 import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
 import { KesslerRoomGuide } from "./kessler-room-guide";
+import { RoomFilmStudio } from "./room-film-studio";
 import { useKesslerOverview } from "./use-kessler-overview";
 import { kesslerWrenState } from "../lib/kessler-overview";
 import { featuredStoryLinks, proofRoomIds } from "@/lib/featured-stories";
@@ -88,6 +89,8 @@ function KesslerTurnCard() {
 
 export function SharedPilot() {
   const account = usePilotAccount();
+  const [filmOpenRequest, setFilmOpenRequest] = useState(0);
+  const [filmBusy, setFilmBusy] = useState(false);
   const [client, setClient] = useState<Client>();
   const [unavailable, setUnavailable] = useState(false);
   const [snapshot, setSnapshot] = useState<RoomSnapshot>();
@@ -461,6 +464,25 @@ export function SharedPilot() {
   const updates = pathUpdates(path, baseline);
   const reviewing = operation?.status === "delivered";
   const signOutBlock = roomSignOutBlock({ generating: hasActive || wrenBusy || !!wrenPreviewId, drafting: !!draft, walletBusy: releaseBusy, checking: !!account?.loading, busy });
+  const entranceDestinationHandled = useRef(false);
+
+  useEffect(() => {
+    if (entranceDestinationHandled.current || roomId !== KESSLER_ROOM_ID || loadedRoom !== roomId || !path.length || account?.loading || composing || hasActive || reviewing || wrenBusy) return;
+    const destination = window.location.hash.slice(1);
+    if (!["kessler-contributions", "kessler-wren", "kessler-backing"].includes(destination)) return;
+    if (view !== "read") { setView("read"); return; }
+    const target = document.getElementById(destination);
+    if (!target) return;
+    const frame = requestAnimationFrame(() => {
+      entranceDestinationHandled.current = true;
+      if (target instanceof HTMLDetailsElement) target.open = true;
+      const focus = target instanceof HTMLDetailsElement ? target.querySelector("summary") : target;
+      if (focus && !focus.hasAttribute("tabindex")) focus.setAttribute("tabindex", "-1");
+      target.scrollIntoView({ block: "start" });
+      focus?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [roomId, loadedRoom, path.length, account?.loading, composing, hasActive, reviewing, wrenBusy, view]);
 
   useEffect(() => {
     if (!roomId || loadedRoom !== roomId || account?.loading || profileLoadedFor !== actorId || profile && profile.id !== actorId) return;
@@ -1088,11 +1110,17 @@ export function SharedPilot() {
       <div className="pilot-context">
         {roomId === "midnight-signal" && !composing && !hasActive && !wrenBusy && !reviewing && releasePanel}
         {roomId === KESSLER_ROOM_ID
-          ? <KesslerRoomGuide overview={kessler.overview} unavailable={kessler.unavailable} blocked={composing || hasActive || wrenBusy || reviewing} onNavigate={destination => {
+          ? <KesslerRoomGuide overview={kessler.overview} unavailable={kessler.unavailable} blocked={composing || hasActive || wrenBusy || reviewing || filmBusy} onNavigate={destination => {
             setView("read");
+            if (destination === "kessler-films") setFilmOpenRequest(value => value + 1);
             requestAnimationFrame(() => { const target = document.getElementById(destination); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
           }} />
           : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
+        {roomId === KESSLER_ROOM_ID && client && path.length > 0 && <div hidden={composing || hasActive || wrenBusy || reviewing}><RoomFilmStudio client={client} moments={moments} currentPath={path} openRequest={filmOpenRequest} onBusyChange={setFilmBusy} onRead={(id, trace) => {
+          select(id, true);
+          setView("read");
+          requestAnimationFrame(() => { const target = document.getElementById(trace ? "kessler-contributions" : "pilot-story-reader"); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
+        }} /></div>}
       </div>
       {room && <section className="pilot-room-sign" aria-label="Storytellers and invitation">
         <Disclosure className="pilot-roster" summary={<>Joined storytellers · {snapshot?.participants.length ?? 0}<span className="pilot-roster-preview">{snapshot?.participants.slice(0, 3).map(person => person.name).join(", ")}</span></>}><ul>{snapshot?.participants.map(person => <li key={person.id}>{person.name}</li>)}</ul>{!snapshot?.participants.length && <p>Be the first to join this story.</p>}</Disclosure>

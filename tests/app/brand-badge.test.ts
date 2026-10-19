@@ -13,11 +13,15 @@ const html = (element: unknown) => renderToStaticMarkup(element as never).replac
 
 test("every brand has a name and either an official mark that ships in public/ or a short monogram", () => {
   const names = new Set<string>();
+  const submission = JSON.parse(readFileSync(new URL("../../config/submission-files.json", import.meta.url), "utf8"));
   for (const [id, brand] of Object.entries(BRANDS) as [string, { name: string; mark?: string; monogram?: string; kind: string; net?: string }][]) {
     assert.ok(brand.name.trim(), `${id} needs a name`);
     assert.ok(!names.has(brand.name), `${brand.name} is listed twice`);
     names.add(brand.name);
-    if (brand.mark) assert.ok(existsSync(new URL(`../../public${brand.mark}`, import.meta.url)), `${id}: ${brand.mark} is missing from public/`);
+    if (brand.mark) {
+      assert.ok(existsSync(new URL(`../../public${brand.mark}`, import.meta.url)), `${id}: ${brand.mark} is missing from public/`);
+      assert.ok(submission.files.includes(`public${brand.mark}`), `${id}: ${brand.mark} is missing from the submission export`);
+    }
     if (brand.monogram) assert.ok([...brand.monogram].length <= 2, `${id}: a monogram is one or two characters`);
     if (brand.kind === "chain") assert.ok(brand.net, `${id}: a chain must say which network it is (Testnet, Devnet...)`);
   }
@@ -110,8 +114,8 @@ test("official marks from public/brands are wired: square marks fill the tile, w
 
 test("only the brands with no usable official file keep a monogram or a glyph", () => {
   const plain = Object.entries(BRANDS as Record<string, { mark?: string; monogram?: string }>).filter(([, brand]) => !brand.mark).map(([id]) => id).sort();
-  // Squads: public/brands/squads.svg is the safety-zone diagram from the Squads brand page, not the logo. ERC-8004: no official mark exists.
-  assert.deepEqual(plain, ["erc8004", "gmi", "squads", "tokenrouter", "wan"]);
+  // ERC-8004 has no official mark.
+  assert.deepEqual(plain, ["erc8004", "gmi", "tokenrouter", "wan"]);
 });
 
 test("a logotype never leaves its plate empty: the plate spells the name until the image has loaded, and the image stays mounted", () => {

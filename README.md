@@ -184,7 +184,7 @@ The founder controlled the test keys. These demonstrations used testnet tokens. 
 
 **Keep a branch recognizable as it grows.** Hunyuan through GMI Cloud supplied four images for a prepared Blade Runner story path. Those images became the references for a **12-second Wan 3.0 film**. Hy-Image 3.5 preview also restyled three scenes in anime, using each original image as a reference. Captions and maker credits stayed unchanged.
 
-A separate [Kessler example](public/film-demo/night-shift-wan6.mp4) turns six illustrated scenes into an **18-second Wan film**. The local workspace can also create a storyboard video from a selected path's images, captions and credits.
+Kessler's film shelf contains three **18-second Wan films**: [Dawn on eighty-one](public/film-demo/night-shift-wan6.mp4), [In through the window](public/film-demo/kessler-rooftops.mp4), and [Decision in the Dark](public/film-demo/kessler-lift.mp4), which follows Burkes and Wren's continuation. Each film links to its source scenes and contribution trail. **Make a film** selects up to six panels, reviews their timing and credits, then opens a matching finished cut or creates a free browser storyboard. These prepared motion films remain fixed; the room does not submit new paid Wan jobs. [Film walkthrough](docs/submission/DEMO.md#shared-development-pilot).
 
 These examples play saved results. Viewing them makes no model request. The prepared fan stories are unofficial. Their sample collaborators are fictional.
 
