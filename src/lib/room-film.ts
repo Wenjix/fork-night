@@ -15,7 +15,7 @@ export type RoomFilm = {
 };
 export const KESSLER_FILMS: readonly RoomFilm[] = catalog;
 
-export function roomFilmHref(href: string, film: RoomFilm): string {
+export function roomFilmShareHref(href: string, film: RoomFilm): string {
   const url = new URL(href);
   url.search = new URLSearchParams({ room: "kessler-ward", moment: film.tipId, film: film.id }).toString();
   url.hash = "";

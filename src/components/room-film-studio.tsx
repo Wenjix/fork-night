@@ -7,7 +7,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { pilotPath, type PilotMoment } from "@/lib/pilot";
 import { storyboardImage } from "@/lib/room-film-image";
 import { renderStoryFilm } from "@/lib/story-film";
-import { FILM_SHOT_SECONDS, KESSLER_FILMS, MAX_FILM_SHOTS, filmSceneCount, matchingRoomFilm, roomFilmHref, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots, type RoomFilm, type RoomFilmShot } from "@/lib/room-film";
+import { FILM_SHOT_SECONDS, KESSLER_FILMS, MAX_FILM_SHOTS, filmSceneCount, matchingRoomFilm, roomFilmShareHref, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots, type RoomFilm, type RoomFilmShot } from "@/lib/room-film";
 import { PilotImage } from "./pilot-panels";
 import { BrandBadge, BrandStrip } from "./brand-badge";
 
@@ -35,7 +35,7 @@ function FilmPlayer({ film, onRead }: { film: RoomFilm; onRead: (id: string, tra
     catch { setError("Playback didn’t start. Try Play again or download the film below."); }
   }
   async function share() {
-    const href = roomFilmHref(window.location.href, film);
+    const href = roomFilmShareHref(window.location.href, film);
     try { await navigator.clipboard.writeText(href); setCopied(true); }
     catch { setShareUrl(href); }
   }
@@ -102,7 +102,10 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
     if (job.current) return;
     const next = KESSLER_FILMS.find(item => item.id === id);
     if (!next) return;
-    window.history.replaceState(window.history.state, "", roomFilmHref(window.location.href, next));
+    // Watching a film leaves the reader and any pending invitation in place.
+    const url = new URL(window.location.href);
+    url.searchParams.set("film", next.id);
+    window.history.replaceState(window.history.state, "", url);
     setFilmId(id); setView("watch"); setError(""); focusWorkspace();
   }
   function choose(tipId = currentPath.at(-1)?.id) {
@@ -112,8 +115,6 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
       const shots = roomFilmShots(path);
       const url = new URL(window.location.href);
       url.searchParams.delete("film");
-      url.searchParams.set("moment", tipId);
-      url.hash = "";
       window.history.replaceState(window.history.state, "", url);
       setEdit({ tipId, title: path.at(-1)!.title, sceneCount: path.length, shots, selected: suggestedFilmShots(shots, tipId) });
       setView("choose"); setError(""); focusWorkspace();
@@ -122,7 +123,7 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
   function close() {
     setView("closed");
     const url = new URL(window.location.href);
-    if (url.searchParams.has("film")) { url.searchParams.delete("film"); window.history.replaceState(null, "", url); }
+    if (url.searchParams.has("film")) { url.searchParams.delete("film"); window.history.replaceState(window.history.state, "", url); }
     document.getElementById("room-films-title")?.focus({ preventScroll: true });
   }
   function readSource(id: string, trace?: boolean) {
@@ -130,7 +131,7 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
     const url = new URL(window.location.href);
     url.searchParams.delete("film");
     url.searchParams.set("moment", id);
-    window.history.replaceState(null, "", url);
+    window.history.replaceState(window.history.state, "", url);
     onRead(id, trace);
   }
   useEffect(() => { alive.current = true; return () => { alive.current = false; job.current?.abort(); onBusyChange(false); }; }, [onBusyChange]);

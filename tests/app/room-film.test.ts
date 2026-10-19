@@ -2,15 +2,17 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { kesslerSeedMoments, KESSLER_BEAT_IDS, KESSLER_ROOM_ID } from "../../src/lib/kessler-room.ts";
 import { pilotPath } from "../../src/lib/pilot.ts";
-import { KESSLER_FILMS, filmSceneCount, matchingRoomFilm, roomFilmHref, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots } from "../../src/lib/room-film.ts";
+import { KESSLER_FILMS, filmSceneCount, matchingRoomFilm, roomFilmShareHref, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots } from "../../src/lib/room-film.ts";
 
-test("switching films replaces both the film and source branch in a shareable URL", () => {
-  const previous = "https://fork-night.vercel.app/pilot?room=kessler-ward&film=rooftops&moment=old-tip#kessler-films";
+test("sharing a film links its source branch without carrying the viewer's invitation", () => {
+  const previous = "https://fork-night.vercel.app/pilot?room=kessler-ward&film=rooftops&moment=old-tip&firstNight=1&starter=rooftops#kessler-films";
   for (const film of KESSLER_FILMS) {
-    const next = new URL(roomFilmHref(previous, film));
+    const next = new URL(roomFilmShareHref(previous, film));
     assert.equal(next.searchParams.get("film"), film.id);
     assert.equal(next.searchParams.get("moment"), film.tipId);
     assert.equal(next.searchParams.get("room"), KESSLER_ROOM_ID);
+    assert.equal(next.searchParams.has("firstNight"), false);
+    assert.equal(next.searchParams.has("starter"), false);
     assert.equal(next.hash, "");
   }
 });
