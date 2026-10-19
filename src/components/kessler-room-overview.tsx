@@ -21,15 +21,18 @@ export function KesslerRoomOverview({ client, moments, resume, blocked, onRead, 
   const [scope, setScope] = useState(KESSLER_OPENING_ID);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [mapPage, setMapPage] = useState(0);
   const [selected, setSelected] = useState("");
   const [followed, setFollowed] = useState<string[]>([]);
   const [storageNotice, setStorageNotice] = useState("");
   const listHeading = useRef<HTMLHeadingElement>(null);
   const mapHeading = useRef<HTMLHeadingElement>(null);
-  const nodes = useMemo(() => overviewMap(paths, scope), [paths, scope]);
+  const map = useMemo(() => overviewMap(paths, scope, mapPage), [paths, scope, mapPage]);
+  const { nodes } = map;
   const terminals = nodes.filter(node => node.terminal);
-  const allInScope = paths.filter(path => path.scenes.some(scene => scene.id === scope));
-  const source = filter === "featured" ? featuredPaths(allInScope) : filter === "following" ? allInScope.filter(path => followsPath(followed, path)) : allInScope;
+  const recentInScope = paths.filter(path => path.scenes.some(scene => scene.id === scope));
+  const allInScope = [...recentInScope].sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base", numeric: true }) || a.id.localeCompare(b.id));
+  const source = filter === "featured" ? featuredPaths(recentInScope) : filter === "following" ? allInScope.filter(path => followsPath(followed, path)) : filter === "recent" ? recentInScope : allInScope;
   const matches = source.filter(path => `${path.title} ${path.makers} ${path.description}`.toLowerCase().includes(query.trim().toLowerCase()));
   const currentPage = Math.min(page, Math.max(0, Math.ceil(matches.length / 3) - 1));
   const visible = matches.slice(currentPage * 3, currentPage * 3 + 3);
@@ -39,7 +42,7 @@ export function KesslerRoomOverview({ client, moments, resume, blocked, onRead, 
 
   useEffect(() => { try { setFollowed(parseFollowedPaths(localStorage.getItem(followedPathsKey))); } catch { setStorageNotice("Following is available for this visit; browser storage is unavailable."); } }, []);
 
-  function browse() { setScope(KESSLER_OPENING_ID); setFilter("all"); setQuery(""); setPage(0); }
+  function browse() { setScope(KESSLER_OPENING_ID); setMapPage(0); setFilter("all"); setQuery(""); setPage(0); }
   function focusList() { requestAnimationFrame(() => { listHeading.current?.focus({ preventScroll: true }); listHeading.current?.scrollIntoView({ block: "nearest" }); }); }
   function follow(id: string) {
     const path = paths.find(item => item.id === id)!;
@@ -57,7 +60,7 @@ export function KesslerRoomOverview({ client, moments, resume, blocked, onRead, 
       setPage(Math.floor(allInScope.findIndex(path => path.id === node.paths[0].id) / 3));
       focusList();
     } else if (id === scope) focusList();
-    else { setScope(id); setSelected(""); requestAnimationFrame(() => mapHeading.current?.focus({ preventScroll: true })); }
+    else { setScope(id); setMapPage(0); setSelected(""); requestAnimationFrame(() => mapHeading.current?.focus({ preventScroll: true })); }
   }
 
   return <section className="kessler-overview" aria-labelledby="kessler-overview-title">
@@ -67,7 +70,7 @@ export function KesslerRoomOverview({ client, moments, resume, blocked, onRead, 
     </header>
     <div className="kessler-overview-explorer">
       <section className="kessler-overview-map" aria-labelledby="kessler-map-title">
-        <header className="kessler-overview-heading"><div><h2 id="kessler-map-title" ref={mapHeading} tabIndex={-1}>{scope === KESSLER_OPENING_ID ? "One beginning. More possibilities." : scopeMoment?.title}</h2><p>Choose a path to see its preview.</p></div>{scope !== KESSLER_OPENING_ID && <button className="text-button" onClick={() => { setScope(KESSLER_OPENING_ID); setPage(0); setSelected(""); }}><ArrowLeft size={15} aria-hidden="true" />Whole story</button>}</header>
+        <header className="kessler-overview-heading"><div><h2 id="kessler-map-title" ref={mapHeading} tabIndex={-1}>{scope === KESSLER_OPENING_ID ? "One beginning. More possibilities." : scopeMoment?.title}</h2><p>Choose a path to see its preview.</p></div>{scope !== KESSLER_OPENING_ID && <button className="text-button" onClick={() => { setScope(KESSLER_OPENING_ID); setMapPage(0); setPage(0); setSelected(""); }}><ArrowLeft size={15} aria-hidden="true" />Whole story</button>}</header>
         <div className={`kessler-overview-canvas${scope !== KESSLER_OPENING_ID ? " is-expanded" : ""}`} data-leaves={terminals.length} aria-label="Story map, from the shared beginning upward">
           <svg className="kessler-overview-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">{nodes.filter(node => node.parent).map(node => {
             const parent = nodes.find(item => item.id === node.parent)!;
@@ -86,12 +89,13 @@ export function KesslerRoomOverview({ client, moments, resume, blocked, onRead, 
             </button>;
           })}
         </div>
+        {map.pageCount > 1 && <div className="kessler-overview-pagination kessler-overview-map-pagination"><span role="status">Branches {map.page * map.pageSize + 1}–{Math.min((map.page + 1) * map.pageSize, map.branchCount)} of {map.branchCount}</span><nav aria-label="Map branch pages"><button aria-label="Previous branches" disabled={blocked || map.page === 0} onClick={() => { setMapPage(map.page - 1); setSelected(""); }}><ArrowLeft size={17} aria-hidden="true" /></button><button aria-label="Next branches" disabled={blocked || map.page + 1 >= map.pageCount} onClick={() => { setMapPage(map.page + 1); setSelected(""); }}><ArrowRight size={17} aria-hidden="true" /></button></nav></div>}
         <footer className="kessler-overview-map-note"><span><GitBranch size={15} aria-hidden="true" />Shared scenes stay together. Open a group to explore.</span><button className="text-button" disabled={blocked} onClick={onMap}><MapIcon size={15} aria-hidden="true" />Full scene map</button></footer>
       </section>
       <section className="kessler-overview-paths" aria-labelledby="kessler-paths-title">
-        <header className="kessler-overview-heading"><div><h2 id="kessler-paths-title" ref={listHeading} tabIndex={-1}>Find your next path</h2><p>{scope !== KESSLER_OPENING_ID ? `${allInScope.length} paths from this part of the story` : filter === "featured" ? "Room picks, with every path still in reach." : filter === "following" ? "Follow as many paths as you like. Saved in this browser." : filter === "recent" ? "The latest additions first." : "Every path, including the quieter ones."}</p></div>{scope !== KESSLER_OPENING_ID && <button className="text-button" onClick={browse}>All paths</button>}</header>
+        <header className="kessler-overview-heading"><div><h2 id="kessler-paths-title" ref={listHeading} tabIndex={-1}>Find your next path</h2><p>{filter === "recent" ? "The latest additions first." : filter === "all" ? "Every path in this view, ordered by title." : scope !== KESSLER_OPENING_ID ? `${allInScope.length} paths from this part of the story` : filter === "featured" ? "Room picks, with every path still in reach." : "Follow as many paths as you like. Saved in this browser."}</p></div>{scope !== KESSLER_OPENING_ID && <button className="text-button" onClick={browse}>All paths</button>}</header>
         <div className="kessler-overview-filters" role="group" aria-label="Choose paths to show">{(["featured", "recent", "following", "all"] as const).map(value => <button type="button" key={value} aria-pressed={filter === value} onClick={() => { setFilter(value); setQuery(""); setPage(0); }}>{value === "featured" ? "Featured" : value === "recent" ? "Recent" : value === "following" ? `Following ${followedCount}` : "All paths"}</button>)}</div>
-        <label className="kessler-overview-search"><Search size={17} aria-hidden="true" /><span className="sr-only">Search all paths and storytellers</span><input type="search" placeholder="Find a path or storyteller" value={query} onChange={event => { setQuery(event.target.value); setFilter("all"); setScope(KESSLER_OPENING_ID); setPage(0); }} /></label>
+        <label className="kessler-overview-search"><Search size={17} aria-hidden="true" /><span className="sr-only">Search all paths and storytellers</span><input type="search" placeholder="Find a path or storyteller" value={query} onChange={event => { setQuery(event.target.value); setFilter("all"); setScope(KESSLER_OPENING_ID); setMapPage(0); setPage(0); }} /></label>
         <div className="kessler-overview-results" aria-live="polite" aria-atomic="false">
           {visible.map(path => <article key={path.id} className={`kessler-path-preview${selected === path.id ? " is-selected" : ""}`}>
             <div className="kessler-path-art" aria-hidden="true">{pilotPanels(path.image.panels)[0] && <PilotImage client={client} panel={pilotPanels(path.image.panels)[0]} allowRetry={false} />}</div>

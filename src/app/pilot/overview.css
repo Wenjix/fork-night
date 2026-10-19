@@ -75,6 +75,7 @@
 .kessler-overview-pagination .text-button { font-size: 12px; }
 .kessler-overview-pagination nav { display: flex; gap: 8px; align-items: center; }
 .kessler-overview-pagination nav button { display: grid; place-items: center; width: 44px; height: 44px; background: none; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: pointer; }
+.kessler-overview-map-pagination { gap: 12px; flex-wrap: wrap; padding-bottom: 8px; font-size: 12px; }
 .kessler-overview-empty { padding: 32px 16px; text-align: center; border-bottom: 1px solid var(--line); }
 .kessler-overview-empty > svg { color: var(--yellow); }
 .kessler-overview-empty h3 { font-size: 22px; margin: 12px 0 8px; }

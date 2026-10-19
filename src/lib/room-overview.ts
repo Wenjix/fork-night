@@ -42,13 +42,15 @@ export function featuredPaths(paths: OverviewPath[]) {
 }
 
 export type OverviewNode = { id: string; moment: PilotMoment; parent: string | null; paths: OverviewPath[]; terminal: boolean; x: number; y: number; label: string; route: string };
+export type OverviewMap = { nodes: OverviewNode[]; page: number; pageCount: number; branchCount: number; pageSize: number };
 
 /** Collapse linear stretches, then expand actual forks within a small visible-path budget. */
-export function overviewMap(paths: OverviewPath[], scope = KESSLER_OPENING_ID): OverviewNode[] {
+export function overviewMap(paths: OverviewPath[], scope = KESSLER_OPENING_ID, requestedPage = 0): OverviewMap {
   const scoped = paths.filter(path => path.scenes.some(scene => scene.id === scope));
   const scenes = new Map(scoped.flatMap(path => path.scenes.map(scene => [scene.id, scene] as const)));
   const root = scenes.get(scope);
-  if (!root) return [];
+  const budget = scope === KESSLER_OPENING_ID ? 3 : 4;
+  if (!root) return { nodes: [], page: 0, pageCount: 1, branchCount: 0, pageSize: budget };
   const rank = (id: string) => Math.min(...scoped.filter(path => path.scenes.some(scene => scene.id === id)).map(path => {
     const index = routes.findIndex(route => route.id === path.route);
     return index < 0 ? routes.length : index;
@@ -65,18 +67,20 @@ export function overviewMap(paths: OverviewPath[], scope = KESSLER_OPENING_ID): 
     const descendants = scoped.filter(path => path.scenes.some(scene => scene.id === moment.id));
     const route = routes.find(item => descendants.every(path => path.route === item.id));
     const node: OverviewNode = { id: moment.id, moment, parent, paths: descendants, terminal: true, x: 50, y: 5,
-      label: moment.id === KESSLER_OPENING_ID ? "Lights out" : route?.title ?? moment.title, route: route?.id ?? "other" };
+      label: moment.id === KESSLER_OPENING_ID ? "Lights out" : descendants.length === 1 ? descendants[0].title : route?.title ?? moment.title, route: route?.id ?? "other" };
     nodes.push(node);
     depths.set(node.id, parent ? depths.get(parent)! + 1 : 0);
     return node;
   }
   add(root, null);
-  const budget = scope === KESSLER_OPENING_ID ? 3 : 4;
+  const branches = children(root.id).map(nextFork);
+  const pageCount = Math.max(1, Math.ceil(branches.length / budget));
+  const page = Math.max(0, Math.min(pageCount - 1, Number.isFinite(requestedPage) ? Math.floor(requestedPage) : 0));
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     // Keep deeper forks grouped above the two internal ranks; opening a group re-roots the map.
     if (depths.get(node.id)! >= 2) continue;
-    const next = children(node.id).map(nextFork);
+    const next = node.id === root.id ? branches.slice(page * budget, (page + 1) * budget) : children(node.id).map(nextFork);
     if (!next.length || nodes.filter(item => item.terminal).length - 1 + next.length > budget) continue;
     node.terminal = false;
     node.label = node.moment.id === KESSLER_OPENING_ID ? "Lights out" : node.moment.title;
@@ -95,7 +99,7 @@ export function overviewMap(paths: OverviewPath[], scope = KESSLER_OPENING_ID): 
     return node.x;
   }
   position(root.id, 0);
-  return nodes;
+  return { nodes, page, pageCount, branchCount: branches.length, pageSize: budget };
 }
 
 export const followedPathsKey = `fork-night-followed-paths:${KESSLER_ROOM_ID}`;

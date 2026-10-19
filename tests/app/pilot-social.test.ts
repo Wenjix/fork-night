@@ -52,6 +52,14 @@ test("new siblings do not inflate the selected path count", () => {
     0,
   );
 });
+test("visit records retain a branch endpoint without invalidating legacy progress", () => {
+  const legacy = visitSnapshot(moments, moments[3].id);
+  assert.deepEqual(parsePilotVisit(JSON.stringify(legacy)), legacy);
+  const saved = visitSnapshot(moments, moments[3].id, moments[8].id);
+  assert.equal(parsePilotVisit(JSON.stringify(saved))?.lastTipId, moments[8].id);
+  assert.deepEqual(parsePilotVisit(JSON.stringify({ ...legacy, lastTipId: "invalid" })), legacy);
+  assert.equal(visitSnapshot(moments, moments[3].id, "missing").lastTipId, undefined);
+});
 test("ancestor inspection retains later context; another branch establishes its own path", () => {
   assert.equal(
     readingPath(moments, "room", moments[5].id, moments[1].id).length,

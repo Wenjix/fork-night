@@ -116,7 +116,7 @@ export function SharedPilot() {
   const [moments, setMoments] = useState<PilotMoment[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [tipId, setTipId] = useState("");
-  const [resumeId, setResumeId] = useState("");
+  const [resume, setResume] = useState<{ momentId: string; tipId?: string }>();
   const [baseline, setBaseline] = useState<PilotVisit | null>(null);
   const visit = useRef<{ roomId: string; baseline: PilotVisit } | null>(null);
   const selectionRoom = useRef("");
@@ -280,8 +280,8 @@ export function SharedPilot() {
       selectionRoom.current = roomId;
       try {
         const saved = sessionStorage.getItem(`pilot-selected:${roomId}`);
-        if (isUuid(saved)) { setSelectedId(saved); setResumeId(saved); }
         const savedTip = sessionStorage.getItem(`pilot-tip:${roomId}`);
+        if (isUuid(saved)) { setSelectedId(saved); setResume({ momentId: saved, tipId: isUuid(savedTip) ? savedTip : undefined }); }
         if (isUuid(savedTip)) setTipId(savedTip);
       } catch {
         /* Reading does not require selection storage. */
@@ -356,7 +356,7 @@ export function SharedPilot() {
           const initialVisit = prior ?? visitSnapshot(story.data, "");
           visit.current = { roomId, baseline: initialVisit };
           setBaseline(initialVisit);
-          if (prior?.lastMomentId) setResumeId(current => current || prior.lastMomentId!);
+          if (prior?.lastMomentId) setResume(current => current ?? { momentId: prior.lastMomentId!, tipId: prior.lastTipId });
         }
         const target =
           sharedTarget.current?.room === roomId
@@ -515,15 +515,21 @@ export function SharedPilot() {
   useEffect(() => {
     if (view !== "read" || !selected || loadedRoom !== roomId || visit.current?.roomId !== roomId)
       return;
+    const readingTip = path.at(-1)?.id ?? selected.id;
+    setResume({ momentId: selected.id, tipId: readingTip });
+    try {
+      sessionStorage.setItem(`pilot-selected:${roomId}`, selected.id);
+      sessionStorage.setItem(`pilot-tip:${roomId}`, readingTip);
+    } catch { /* Reading works without session storage. */ }
     try {
       localStorage.setItem(
         visitKey(roomId),
-        JSON.stringify(visitSnapshot(moments, selected.id)),
+        JSON.stringify(visitSnapshot(moments, selected.id, readingTip)),
       );
     } catch {
       /* Reading works without visit storage. */
     }
-  }, [moments, selectedId, roomId, loadedRoom, view]);
+  }, [moments, selectedId, tipId, roomId, loadedRoom, view]);
 
   useEffect(() => {
     setShareUrl("");
@@ -725,7 +731,6 @@ export function SharedPilot() {
     setPublications(items => items.filter(item => item.id !== id));
     if (changePath || pathTip) setTipId(nextTip);
     setSelectedId(id);
-    setResumeId(id);
     setShareUrl("");
     setInspectingSource(true);
     setView("read");
@@ -736,16 +741,12 @@ export function SharedPilot() {
       if (url.searchParams.get("view") !== "read") url.searchParams.delete("view");
       window.history.replaceState(window.history.state, "", url);
     }
-    try {
-      sessionStorage.setItem(`pilot-selected:${roomId}`, id);
-      sessionStorage.setItem(
-        `pilot-tip:${roomId}`,
-        nextTip,
-      );
-    } catch {
-      /* Reading does not require local storage. */
-    }
     if (!hasActive && !draft) setComposing(false);
+  }
+  function resumeReading() {
+    if (!resume) return;
+    select(resume.momentId, false, sharedReadingTip(moments, roomId, resume.momentId, resume.tipId));
+    requestAnimationFrame(() => { const reader = document.getElementById("pilot-story-reader"); reader?.focus({ preventScroll: true }); reader?.scrollIntoView({ block: "start" }); });
   }
   function showRoomOverview() {
     if (busy || releaseBusy || filmBusy || composing || hasActive || wrenBusy || wrenPreviewId) return;
@@ -1111,7 +1112,7 @@ export function SharedPilot() {
               setRoomId(event.target.value);
               setSelectedId("");
               setTipId("");
-              setResumeId("");
+              setResume(undefined);
               setComposing(false);
               setNotice("");
               setShareUrl("");
@@ -1149,8 +1150,8 @@ export function SharedPilot() {
         {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">Two prepared branches start the story. Every scene you add keeps your byline, with Wren credited separately when it helps.</p>}
       </div>
       {overviewVisible && client && loadedRoom === roomId && moments.length > 0 && <KesslerRoomOverview
-        client={client} moments={moments} resume={moments.find(moment => moment.id === resumeId)} blocked={busy || releaseBusy || filmBusy || wrenBusy}
-        onRead={readOverviewPath} onResume={() => { select(resumeId); requestAnimationFrame(() => { const reader = document.getElementById("pilot-story-reader"); reader?.focus({ preventScroll: true }); reader?.scrollIntoView({ block: "start" }); }); }}
+        client={client} moments={moments} resume={moments.find(moment => moment.id === resume?.momentId)} blocked={busy || releaseBusy || filmBusy || wrenBusy}
+        onRead={readOverviewPath} onResume={resumeReading}
         onMap={showSceneMap}
         onWatch={id => { setRequestedFilmId(id); setFilmOpenRequest(value => value + 1); }}
       />}

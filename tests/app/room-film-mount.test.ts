@@ -67,10 +67,10 @@ function gate() {
   return { promise, release };
 }
 
-async function mountOverview(t: TestContext, query: string, options: { saved?: boolean; draft?: boolean } = {}) {
+async function mountOverview(t: TestContext, query: string, options: { saved?: boolean; draft?: boolean; story?: ReturnType<typeof kesslerSeedMoments>; visit?: { scene: string; tip?: string } } = {}) {
   const room = { id: FIRST_NIGHT_ROOM_ID, title: "Kessler Ward", description: KESSLER_DESCRIPTION, is_open: true, is_listed: true };
   const maker = "35000000-0000-4000-8000-000000000001";
-  const story = kesslerSeedMoments();
+  const story = options.story ?? kesslerSeedMoments();
   const unexpected: string[] = [];
   respond = async (input, init) => {
     const href = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -96,6 +96,7 @@ async function mountOverview(t: TestContext, query: string, options: { saved?: b
     dom.window.sessionStorage.setItem(`pilot-tip:${room.id}`, KESSLER_BEAT_IDS["dawn-81"]);
     dom.window.localStorage.setItem(visitKey(room.id), JSON.stringify(visitSnapshot(story, KESSLER_BEAT_IDS["dawn-81"])));
   }
+  if (options.visit) dom.window.localStorage.setItem(visitKey(room.id), JSON.stringify({ ...visitSnapshot(story, options.visit.scene), ...(options.visit.tip ? { lastTipId: options.visit.tip } : {}) }));
   if (options.draft) dom.window.localStorage.setItem(`fork-night-pilot-draft:${maker}:${room.id}`, JSON.stringify({ requestId: "35000000-0000-4000-8000-000000000002", roomId: room.id, parentId: FIRST_NIGHT_MOMENT_ID, captions: ["", ""], thought: "Find another way upstairs", stage: "idea" }));
   const account: PilotAccount = { loading: false, enabled: false, error: "", authenticatingWallet: false,
     wallet: { owner: "", address: "", loading: false, error: "" }, walletMode: "external", signIn: async () => {}, signInWallet: async () => {}, signOut: async () => {}, chooseWallet() {},
@@ -132,6 +133,79 @@ test("bare Kessler entry offers saved reading without opening or overwriting it"
   assert.ok(dom.window.document.getElementById("kessler-overview-title"));
   assert.equal(new URL(dom.window.location.href).searchParams.has("moment"), false);
   assert.equal(new URL(dom.window.location.href).searchParams.has("tip"), false);
+});
+
+test("Continue reading retains a middle scene and its full branch after session storage is cleared", async t => {
+  const mounted = await mountOverview(t, "");
+  const neighbors = [...dom.window.document.querySelectorAll(".kessler-path-preview")].find(article => article.querySelector("h3")?.textContent === "The neighbors")!;
+  await act(async () => roomButton("Read path", neighbors).click());
+  const floor = [...dom.window.document.querySelectorAll<HTMLButtonElement>(".pilot-recap-row")].find(button => button.textContent?.includes("Floor forty"))!;
+  await act(async () => floor.click());
+  assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 6);
+  await act(async () => roomButton("Room overview").click());
+  await act(async () => dom.window.document.querySelector<HTMLButtonElement>(".kessler-overview-resume")!.click());
+  assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 6, "same-tab resume retains the branch");
+  await act(async () => roomButton("Room overview").click());
+  dom.window.sessionStorage.clear();
+  await mounted.reload();
+  await act(async () => dom.window.document.querySelector<HTMLButtonElement>(".kessler-overview-resume")!.click());
+  assert.equal(dom.window.document.querySelector("#pilot-story-reader h2")?.textContent, "Floor forty");
+  assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 6, "new-session resume retains later scenes");
+  assert.equal(new URL(dom.window.location.href).searchParams.get("tip"), KESSLER_BEAT_IDS["dawn-81"]);
+  await mounted.reload();
+  assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 6, "the resumed URL retains its branch on reload");
+});
+
+for (const [kind, tip] of [["legacy", undefined], ["missing", "25000000-0000-4000-8000-000000000099"], ["unrelated", KESSLER_BEAT_IDS["window-81"]]] as const) {
+  test(`a ${kind} saved tip resumes the known scene without guessing another branch`, async t => {
+    await mountOverview(t, "", { visit: { scene: KESSLER_BEAT_IDS["floor-forty"], tip } });
+    await act(async () => dom.window.document.querySelector<HTMLButtonElement>(".kessler-overview-resume")!.click());
+    assert.equal(dom.window.document.querySelector("#pilot-story-reader h2")?.textContent, "Floor forty");
+    assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 3);
+    assert.equal(new URL(dom.window.location.href).searchParams.has("tip"), false, "an incompatible tip is not written into a shareable URL");
+  });
+}
+
+function wideStory() {
+  const story = kesslerSeedMoments();
+  const roof = story.find(scene => scene.id === KESSLER_BEAT_IDS["window-81"])!;
+  for (let i = 1; i <= 5; i++) story.push({ ...roof, id: `27000000-0000-4000-8000-${String(i).padStart(12, "0")}`, parent_id: roof.id, title: `Path ${i}`, created_at: `2026-10-19T11:0${i}:00Z` });
+  return story;
+}
+
+test("a five-way fork can page through its map and select the corresponding alphabetic preview", async t => {
+  await mountOverview(t, "", { story: wideStory() });
+  await act(async () => dom.window.document.querySelector<HTMLButtonElement>('[aria-label="Explore The rooftops, 5 paths"]')!.click());
+  assert.equal(dom.window.document.querySelectorAll(".kessler-overview-node.is-path").length, 4);
+  const next = dom.window.document.querySelector<HTMLButtonElement>('[aria-label="Next branches"]');
+  assert.ok(next);
+  await act(async () => next.click());
+  const last = dom.window.document.querySelector<HTMLButtonElement>(".kessler-overview-node.is-path")!;
+  assert.match(last.textContent ?? "", /Path 5/);
+  await act(async () => last.click());
+  assert.equal(dom.window.document.querySelector(".kessler-path-preview.is-selected h3")?.textContent, "Path 5");
+  await act(async () => dom.window.document.querySelector<HTMLButtonElement>('[aria-label="Previous branches"]')!.click());
+  assert.equal(dom.window.document.querySelectorAll(".kessler-overview-node.is-path").length, 4);
+  await act(async () => roomButton("Whole story").click());
+  await act(async () => dom.window.document.querySelector<HTMLButtonElement>('[aria-label="Explore The rooftops, 5 paths"]')!.click());
+  assert.equal(dom.window.document.querySelectorAll(".kessler-overview-node.is-path").length, 4, "entering a group resets its map page");
+});
+
+test("Recent shows newest paths while All and search use a stable alphabetic directory", async t => {
+  await mountOverview(t, "", { story: wideStory() });
+  const titles = () => [...dom.window.document.querySelectorAll(".kessler-path-title h3")].map(node => node.textContent);
+  await act(async () => roomButton("Recent").click());
+  assert.deepEqual(titles(), ["Path 5", "Path 4", "Path 3"]);
+  await act(async () => roomButton("All paths").click());
+  assert.deepEqual(titles(), ["Path 1", "Path 2", "Path 3"]);
+  await act(async () => dom.window.document.querySelector<HTMLButtonElement>('[aria-label="Next three paths"]')!.click());
+  assert.deepEqual(titles(), ["Path 4", "Path 5", "The neighbors"]);
+  const search = dom.window.document.querySelector<HTMLInputElement>('input[type="search"]')!;
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, "value")!.set!.call(search, "Path");
+    search.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+  });
+  assert.deepEqual(titles(), ["Path 1", "Path 2", "Path 3"], "search resets paging and preserves directory order");
 });
 
 test("watching from the overview opens the chosen film and returns to the same room entrance", async t => {

@@ -22,7 +22,7 @@ function extra(moment: PilotMoment, index: number): PilotMoment {
 test("the Kessler overview summarizes actual leaf paths and preserves both forks", () => {
   const paths = overviewPaths(liftStory());
   assert.deepEqual(featuredPaths(paths).map(path => path.title), ["The rooftops", "The neighbors", "The service lift"]);
-  const map = overviewMap(paths);
+  const { nodes: map } = overviewMap(paths);
   const floor = map.find(node => node.id === KESSLER_BEAT_IDS["floor-forty"])!;
   assert.equal(floor.parent, KESSLER_OPENING_ID);
   assert.equal(floor.terminal, false);
@@ -38,12 +38,12 @@ test("twelve real leaves remain discoverable behind three grouped previews", () 
   const paths = overviewPaths(moments);
   assert.equal(paths.length, 12);
   assert.equal(featuredPaths(paths).length, 3);
-  const map = overviewMap(paths);
+  const { nodes: map } = overviewMap(paths);
   const groups = map.filter(node => node.terminal);
   assert.equal(groups.length, 3);
   assert.deepEqual(groups.map(node => node.paths.length), [4, 4, 4]);
   assert.equal(new Set(groups.flatMap(node => node.paths.map(path => path.id))).size, 12);
-  for (const group of groups) assert.equal(overviewMap(paths, group.id).filter(node => node.terminal).length, 4);
+  for (const group of groups) assert.equal(overviewMap(paths, group.id).nodes.filter(node => node.terminal).length, 4);
 });
 
 test("nested forks stay clear of previews and remain reachable by opening their group", () => {
@@ -53,7 +53,7 @@ test("nested forks stay clear of previews and remain reachable by opening their 
   const c = extra(b, 3), d = extra(b, 4);
   const e = extra(d, 5), f = extra(d, 6);
   const paths = overviewPaths([...moments, a, b, c, d, e, f]);
-  const map = overviewMap(paths, root.id);
+  const { nodes: map } = overviewMap(paths, root.id);
   const terminals = map.filter(node => node.terminal);
   assert.equal(new Set(terminals.flatMap(node => node.paths.map(path => path.id))).size, 4);
   assert.ok(terminals.length <= 4);
@@ -63,7 +63,29 @@ test("nested forks stay clear of previews and remain reachable by opening their 
   const group = terminals.find(node => node.id === d.id)!;
   assert.deepEqual(group.paths.map(path => path.id).sort(), [e.id, f.id].sort());
   assert.equal(group.parent, b.id, "Grouping preserves the actual fork ancestry");
-  assert.deepEqual(overviewMap(paths, group.id).filter(node => node.terminal).map(node => node.id).sort(), [e.id, f.id].sort());
+  assert.deepEqual(overviewMap(paths, group.id).nodes.filter(node => node.terminal).map(node => node.id).sort(), [e.id, f.id].sort());
+});
+
+test("wide forks page through every actual branch at both root and expanded scopes", () => {
+  for (const scopeId of [KESSLER_OPENING_ID, KESSLER_BEAT_IDS["window-81"]]) {
+    const story = liftStory();
+    const root = story.find(scene => scene.id === scopeId)!;
+    const children = Array.from({ length: 9 }, (_, index) => extra(root, index + 1));
+    const paths = overviewPaths([...(scopeId === KESSLER_OPENING_ID ? [root] : story), ...children]);
+    const first = overviewMap(paths, scopeId);
+    assert.equal(first.pageCount, 3);
+    const seen: string[] = [];
+    for (let page = 0; page < first.pageCount; page++) {
+      const view = overviewMap(paths, scopeId, page);
+      const leaves = view.nodes.filter(node => node.terminal);
+      assert.ok(leaves.length <= view.pageSize);
+      assert.ok(leaves.every(node => node.parent === scopeId));
+      seen.push(...leaves.map(node => node.id));
+    }
+    assert.deepEqual(seen, children.map(scene => scene.id), "paging reveals all children once, in stable order");
+    assert.equal(overviewMap(paths, scopeId, 999).page, first.pageCount - 1);
+    assert.equal(overviewMap(paths, scopeId, -1).page, 0);
+  }
 });
 
 test("following survives continuations and unfollowing one fork keeps its siblings", () => {
