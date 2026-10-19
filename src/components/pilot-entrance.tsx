@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, Feather, Plus, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Users } from "lucide-react";
 import { pilotBrowserClient } from "../lib/supabase/pilot-client";
 import type { Tables } from "../lib/supabase/database.types";
 import { joinPilotAsGuest } from "../lib/supabase/guest";
@@ -11,6 +11,7 @@ import { PilotIdentity } from "./pilot-identity";
 import { AppHeader } from "./app-header";
 import { FirstNightGuide } from "./first-night-guide";
 import { FeaturedStories } from "./featured-stories";
+import { PilotRoomHome } from "./pilot-room-home";
 import { SectionPlate } from "./visual-plates";
 import { PilotImage } from "./pilot-panels";
 import { StoryArt } from "./story-art";
@@ -182,25 +183,18 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
         <button className="button primary" disabled={busy || !profile || !client || !!account?.loading || (!pending && !available)}>{busy ? "Checking your room…" : pending ? "Check room" : "Create room"}<ArrowRight size={16} aria-hidden="true" /></button>
         {pending && !busy && <p>Your room request is saved. Check it to confirm the same room.</p>}
       </form>
-    </> : <>
-      <FeaturedStories />
-      <div className="fn-first-hosting"><p>Have a world of your own?</p><a className="text-button" href="/pilot?create=1"><Plus size={16} aria-hidden="true" />Create a room</a><a className="text-button" href="#shared-directory">Browse shared stories <ArrowRight size={16} aria-hidden="true" /></a></div>
-    </>}
+    </> : <FeaturedStories />}
     {error && <div className="pilot-notice" role="alert"><p>{error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
     {account?.notice && <div className="pilot-notice" role="alert"><p>{account.notice}</p><button type="button" className="text-button" onClick={account.dismissNotice}>Dismiss</button></div>}
-    {!!joined.length && <section className="pilot-directory-section" aria-label="Your joined rooms"><SectionPlate icon={Users} title="Your joined stories" description="Pick up a thread with the same storyteller account." tone={creating ? "lavender" : "night"} />{cards(joined)}</section>}
+    {!creating ? <PilotRoomHome key={account?.user?.id ?? "visitor"} client={client ?? null} rooms={rooms} joined={account?.user?.id === profile?.id ? joined : []} templates={templates} loading={!policy && !error} unavailable={!!error} /> : <>
+    {!!joined.length && <section className="pilot-directory-section" aria-label="Your joined rooms"><SectionPlate icon={Users} title="Your joined stories" description="Pick up a thread with the same storyteller account." tone="lavender" />{cards(joined)}</section>}
     <section className="pilot-directory-section" id="shared-directory" aria-label="Open shared stories" aria-busy={!policy && !error}>
-      <SectionPlate icon={BookOpen} title="Stories to pick up" description="Read first. Join when you have an idea for the next moment." tone={creating ? "paper" : "night"} />
+      <SectionPlate icon={BookOpen} title="Stories to pick up" description="Read first. Join when you have an idea for the next moment." tone="paper" />
       {rooms.length ? cards(rooms) : <div className="pilot-directory-empty" role="status">
         {!policy && !error ? <><BookOpen size={24} aria-hidden="true" /><p>Opening the shared stories…</p></> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <><h3>No stories in the directory yet.</h3><p>If someone invited you, open their room link. Share-link rooms do not appear in this directory.</p><a className="text-button" href="/pilot?create=1">Start your own room <ArrowRight size={16} aria-hidden="true" /></a></>}
       </div>}
     </section>
-    <section className="pilot-explore-more" aria-labelledby="pilot-explore-title">
-      <h2 id="pilot-explore-title">More ways to make.</h2>
-      <div><a href="/"><BookOpen size={20} aria-hidden="true" /><span><strong>Explore the lobby</strong><small>Prepared stories and guilds · local preview</small></span><ArrowRight size={16} aria-hidden="true" /></a>
-        <a href="/agents"><Feather size={20} aria-hidden="true" /><span><strong>Make with agents</strong><small>Wren’s room, Night Watch and creator review</small></span><ArrowRight size={16} aria-hidden="true" /></a>
-        <a href="/world-demo"><Users size={20} aria-hidden="true" /><span><strong>Night City After Hours</strong><small>Shared-world concept · fictional participation</small></span><ArrowRight size={16} aria-hidden="true" /></a></div>
-    </section>
+    </>}
     </main>
   </div>;
 }

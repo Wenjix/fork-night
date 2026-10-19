@@ -47,7 +47,6 @@
 .fn-kessler-film > svg { flex-shrink: 0; color: var(--night-yellow); }
 .fn-kessler-film:hover strong { text-decoration: underline; text-underline-offset: 4px; color: var(--night-yellow); }
 .fn-kessler-film:active { opacity: .8; }
-.fn-kessler-film-tools { margin: 10px 0 0; }
 
 .fn-kessler-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--night-line); padding: 18px 0; }
 .fn-kessler-feature { display: flex; flex-direction: column; gap: 8px; padding: 0 24px; min-width: 0; }

@@ -4,6 +4,7 @@ export type PilotVisit = {
   version: 1;
   knownIds: string[];
   lastMomentId: string | null;
+  lastTipId?: string;
 };
 export const visitKey = (roomId: string) => `fork-night-pilot-visit:${roomId}`;
 
@@ -23,6 +24,7 @@ export function parsePilotVisit(raw: string | null): PilotVisit | null {
       version: 1,
       knownIds: [...new Set<string>(value.knownIds)],
       lastMomentId: value.lastMomentId,
+      ...(isUuid(value.lastTipId) ? { lastTipId: value.lastTipId } : {}),
     };
   } catch {
     return null;
@@ -32,11 +34,13 @@ export function parsePilotVisit(raw: string | null): PilotVisit | null {
 export function visitSnapshot(
   moments: PilotMoment[],
   selectedId: string,
+  tipId?: string,
 ): PilotVisit {
   return {
     version: 1,
     knownIds: moments.map((m) => m.id).slice(0, 500),
     lastMomentId: moments.some((m) => m.id === selectedId) ? selectedId : null,
+    ...(tipId && moments.some((m) => m.id === tipId) ? { lastTipId: tipId } : {}),
   };
 }
 

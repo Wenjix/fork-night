@@ -42,7 +42,6 @@ export function FeaturedStories() {
             <span className="fn-kessler-film-copy"><strong>{film.title}</strong><span>{film.id === "lift" ? "Burkes + Wren’s continuation" : film.id === "rooftops" ? "The rooftop branch" : "The neighbors’ branch"}</span></span>
             <ArrowRight size={16} aria-hidden="true" />
           </a></li>)}</ol>
-          <BrandStrip label="Film generation tools" className="fn-kessler-film-tools"><BrandBadge brand="wan" label="Wan 3.0" /><BrandBadge brand="gmi" /></BrandStrip>
         </aside>
       </article>
       <nav className="fn-kessler-features" aria-label={kessler.focus}>

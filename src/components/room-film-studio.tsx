@@ -68,8 +68,9 @@ function FilmPlayer({ film, onRead }: { film: RoomFilm; onRead: (id: string, tra
   </div>;
 }
 
-export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRead, onBusyChange }: {
+export function RoomFilmStudio({ client, moments, currentPath, openRequest, requestedFilmId, compact = false, onRead, onBusyChange }: {
   client: Client; moments: PilotMoment[]; currentPath: PilotMoment[]; openRequest: number;
+  requestedFilmId?: string; compact?: boolean;
   onRead: (id: string, trace?: boolean) => void;
   onBusyChange: (busy: boolean) => void;
 }) {
@@ -124,7 +125,9 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
     setView("closed");
     const url = new URL(window.location.href);
     if (url.searchParams.has("film")) { url.searchParams.delete("film"); window.history.replaceState(window.history.state, "", url); }
-    document.getElementById("room-films-title")?.focus({ preventScroll: true });
+    const target = document.getElementById(compact ? "kessler-overview-title" : "room-films-title");
+    target?.focus({ preventScroll: true });
+    if (compact) target?.scrollIntoView({ block: "start" });
   }
   function readSource(id: string, trace?: boolean) {
     setView("closed");
@@ -140,7 +143,8 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
     const id = new URLSearchParams(window.location.search).get("film");
     if (id && KESSLER_FILMS.some(item => item.id === id)) watch(id);
   }, []);
-  useEffect(() => { if (openRequest) watch(filmId); }, [openRequest]);
+  useEffect(() => { if (compact && !job.current) setView("closed"); }, [compact]);
+  useEffect(() => { if (openRequest) watch(requestedFilmId ?? filmId); }, [openRequest]);
 
   async function createStoryboard() {
     if (!edit || !selected.length || job.current) return;
@@ -158,7 +162,7 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
     } finally { job.current = null; if (alive.current) { setProgress(null); onBusyChange(false); } }
   }
   const step = view === "choose" ? 1 : view === "review" ? 2 : 3;
-  return <section id="kessler-films" className="room-films" aria-labelledby="room-films-title">
+  return <section id="kessler-films" className="room-films" hidden={compact && view === "closed" && !result} aria-labelledby="room-films-title">
     <header className="room-films-heading"><div><h2 id="room-films-title" tabIndex={-1}><Film size={19} aria-hidden="true" />Films from this room</h2><p>{readyCount === 3 ? "Three branches, three short films. Pick an ending to watch." : `${readyCount} finished film · two more branches being prepared.`}</p></div><button type="button" className="button secondary" onClick={() => choose()} disabled={busy || !currentPath.length}><Clapperboard size={17} aria-hidden="true" />Make a film</button></header>
     <div className="room-film-shelf" aria-label="Kessler branch films">{KESSLER_FILMS.map(item => <button type="button" key={item.id} className="room-film-ticket" aria-pressed={view === "watch" && filmId === item.id} onClick={() => watch(item.id)} disabled={busy}>
       <span className="room-film-poster"><img src={item.poster} alt="" width={128} height={128} loading="lazy" /><Play size={20} aria-hidden="true" /></span>

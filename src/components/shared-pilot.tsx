@@ -50,6 +50,8 @@ import { TestnetRelease } from "./testnet-release";
 import { WrenAssistant } from "./wren-assistant";
 import { KesslerRoomGuide } from "./kessler-room-guide";
 import { RoomFilmStudio } from "./room-film-studio";
+import { KesslerRoomOverview } from "./kessler-room-overview";
+import { kesslerEntryView, sharedReadingTip } from "../lib/room-overview";
 import { useKesslerOverview } from "./use-kessler-overview";
 import { kesslerWrenState } from "../lib/kessler-overview";
 import { featuredStoryLinks, proofRoomIds } from "@/lib/featured-stories";
@@ -90,6 +92,7 @@ function KesslerTurnCard() {
 export function SharedPilot() {
   const account = usePilotAccount();
   const [filmOpenRequest, setFilmOpenRequest] = useState(0);
+  const [requestedFilmId, setRequestedFilmId] = useState<string>();
   const [filmBusy, setFilmBusy] = useState(false);
   const [client, setClient] = useState<Client>();
   const [unavailable, setUnavailable] = useState(false);
@@ -113,10 +116,11 @@ export function SharedPilot() {
   const [moments, setMoments] = useState<PilotMoment[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [tipId, setTipId] = useState("");
+  const [resume, setResume] = useState<{ momentId: string; tipId?: string }>();
   const [baseline, setBaseline] = useState<PilotVisit | null>(null);
   const visit = useRef<{ roomId: string; baseline: PilotVisit } | null>(null);
   const selectionRoom = useRef("");
-  const sharedTarget = useRef<{ room: string; moment: string } | null>(null);
+  const sharedTarget = useRef<{ room: string; moment: string; tip?: string } | null>(null);
   const [notice, setNotice] = useState("");
   const [shareUrl, setShareUrl] = useState("");
   const [profile, setProfile] = useState<Tables<"pilot_profiles">>();
@@ -136,7 +140,7 @@ export function SharedPilot() {
   const [wrenMoments, setWrenMoments] = useState<Set<string>>(new Set());
   const wrenScope = useRef<{ roomId: string; actorId: string | undefined } | null>(null);
   const currentDraft = useRef(draft);
-  const [view, setView] = useState<"map" | "read">("read");
+  const [view, setView] = useState<"overview" | "map" | "read">("read");
   const [composing, setComposing] = useState(false);
   const [inspectingSource, setInspectingSource] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -191,6 +195,7 @@ export function SharedPilot() {
       if (!exact.data) { setUnavailable(true); return; }
       setRooms([...(directory.data ?? []).filter(item => item.id !== requestedRoom), exact.data]);
       setRoomId(requestedRoom);
+      setView(requestedRoom === KESSLER_ROOM_ID ? kesslerEntryView(window.location.search, window.location.hash) : "read");
       if (query.get("created") === "1") {
         setNotice("Your room is ready. Invite your storytellers to join.");
         // A link copied from the creator's address bar must not greet others as the creator.
@@ -199,7 +204,7 @@ export function SharedPilot() {
         window.history.replaceState(null, "", url.href);
       }
       const requestedMoment = query.get("moment");
-      if (requestedMoment && isUuid(requestedMoment)) sharedTarget.current = { room: requestedRoom, moment: requestedMoment };
+      if (requestedMoment && isUuid(requestedMoment)) sharedTarget.current = { room: requestedRoom, moment: requestedMoment, tip: query.get("tip") ?? undefined };
       else if (requestedMoment) setError("That shared moment link is incomplete. Choose a moment below.");
     })().catch((reason) => {
       if (active) setError(message(reason));
@@ -233,6 +238,7 @@ export function SharedPilot() {
           const url = new URL(window.location.href);
           if (url.searchParams.has("onboarding")) {
             setComposing(true);
+            setView("read");
             url.searchParams.delete("onboarding");
             window.history.replaceState(null, "", url.href);
           }
@@ -274,8 +280,8 @@ export function SharedPilot() {
       selectionRoom.current = roomId;
       try {
         const saved = sessionStorage.getItem(`pilot-selected:${roomId}`);
-        if (isUuid(saved)) setSelectedId(saved);
         const savedTip = sessionStorage.getItem(`pilot-tip:${roomId}`);
+        if (isUuid(saved)) { setSelectedId(saved); setResume({ momentId: saved, tipId: isUuid(savedTip) ? savedTip : undefined }); }
         if (isUuid(savedTip)) setTipId(savedTip);
       } catch {
         /* Reading does not require selection storage. */
@@ -295,6 +301,7 @@ export function SharedPilot() {
           setDraft(saved);
           setDraftRecovery(!alreadyOpen);
           setComposing(true);
+          setView("read");
         }
       } catch {
         setError(
@@ -349,11 +356,13 @@ export function SharedPilot() {
           const initialVisit = prior ?? visitSnapshot(story.data, "");
           visit.current = { roomId, baseline: initialVisit };
           setBaseline(initialVisit);
+          if (prior?.lastMomentId) setResume(current => current ?? { momentId: prior.lastMomentId!, tipId: prior.lastTipId });
         }
         const target =
           sharedTarget.current?.room === roomId
             ? sharedTarget.current.moment
             : null;
+        const targetTip = sharedTarget.current?.tip;
         if (target && !story.data.some((item) => item.id === target))
           setError(
             "That shared moment is unavailable. Showing a saved moment from this room.",
@@ -369,12 +378,13 @@ export function SharedPilot() {
         );
         setTipId((current) =>
           target && story.data.some((item) => item.id === target)
-            ? target
+            ? sharedReadingTip(story.data, roomId, target, targetTip)
             : story.data.some((item) => item.id === current)
               ? current
               : initial ? entryId : current,
         );
         if (target) sharedTarget.current = null;
+        if (initial && own.data?.some(item => ["queued", "dispatching", "uncertain", "delivered", "draft"].includes(item.status))) setView("read");
         first = false;
         setOperation((current) =>
           current
@@ -503,17 +513,23 @@ export function SharedPilot() {
   }, [focusNameEntry, profile, view, composing, draft, operation]);
 
   useEffect(() => {
-    if (!selected || loadedRoom !== roomId || visit.current?.roomId !== roomId)
+    if (view !== "read" || !selected || loadedRoom !== roomId || visit.current?.roomId !== roomId)
       return;
+    const readingTip = path.at(-1)?.id ?? selected.id;
+    setResume({ momentId: selected.id, tipId: readingTip });
+    try {
+      sessionStorage.setItem(`pilot-selected:${roomId}`, selected.id);
+      sessionStorage.setItem(`pilot-tip:${roomId}`, readingTip);
+    } catch { /* Reading works without session storage. */ }
     try {
       localStorage.setItem(
         visitKey(roomId),
-        JSON.stringify(visitSnapshot(moments, selected.id)),
+        JSON.stringify(visitSnapshot(moments, selected.id, readingTip)),
       );
     } catch {
       /* Reading works without visit storage. */
     }
-  }, [moments, selectedId, roomId, loadedRoom]);
+  }, [moments, selectedId, tipId, roomId, loadedRoom, view]);
 
   useEffect(() => {
     setShareUrl("");
@@ -710,23 +726,47 @@ export function SharedPilot() {
     }
   }
 
-  function select(id: string, changePath = false) {
+  function select(id: string, changePath = false, pathTip?: string) {
+    const nextTip = pathTip ?? (changePath ? id : tipId || id);
     setPublications(items => items.filter(item => item.id !== id));
-    if (changePath) setTipId(id);
+    if (changePath || pathTip) setTipId(nextTip);
     setSelectedId(id);
     setShareUrl("");
     setInspectingSource(true);
     setView("read");
-    try {
-      sessionStorage.setItem(`pilot-selected:${roomId}`, id);
-      sessionStorage.setItem(
-        `pilot-tip:${roomId}`,
-        changePath ? id : tipId || id,
-      );
-    } catch {
-      /* Reading does not require local storage. */
+    if (roomId === KESSLER_ROOM_ID) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("moment", id);
+      if (nextTip !== id) url.searchParams.set("tip", nextTip); else url.searchParams.delete("tip");
+      if (url.searchParams.get("view") !== "read") url.searchParams.delete("view");
+      window.history.replaceState(window.history.state, "", url);
     }
     if (!hasActive && !draft) setComposing(false);
+  }
+  function resumeReading() {
+    if (!resume) return;
+    select(resume.momentId, false, sharedReadingTip(moments, roomId, resume.momentId, resume.tipId));
+    requestAnimationFrame(() => { const reader = document.getElementById("pilot-story-reader"); reader?.focus({ preventScroll: true }); reader?.scrollIntoView({ block: "start" }); });
+  }
+  function showRoomOverview() {
+    if (busy || releaseBusy || filmBusy || composing || hasActive || wrenBusy || wrenPreviewId) return;
+    const url = new URL(window.location.href);
+    for (const key of ["moment", "tip", "film", "view"]) url.searchParams.delete(key);
+    url.hash = "";
+    window.history.replaceState(window.history.state, "", url);
+    setView("overview");
+    requestAnimationFrame(() => { const heading = document.getElementById("kessler-overview-title"); heading?.focus({ preventScroll: true }); heading?.scrollIntoView({ block: "start" }); });
+  }
+  function readOverviewPath(id: string, fromBeginning: boolean) {
+    try {
+      const branch = pilotPath(moments, roomId, id);
+      select(fromBeginning ? branch[0].id : id, false, id);
+      requestAnimationFrame(() => { const reader = document.getElementById("pilot-story-reader"); reader?.focus({ preventScroll: true }); reader?.scrollIntoView({ block: "start" }); });
+    } catch { setError("This path could not be loaded completely. Reload the room to try again."); }
+  }
+  function showSceneMap() {
+    setView("map");
+    requestAnimationFrame(() => { const map = document.querySelector<HTMLElement>(".pilot-map"); if (map) { map.tabIndex = -1; map.focus({ preventScroll: true }); map.scrollIntoView({ block: "start" }); } });
   }
   function start(idea?: Tables<"pilot_ideas">, invitation?: { parentId: string; prompt: string }, options: { replaceDraft?: boolean } = {}) {
     if (!selected) return;
@@ -1054,11 +1094,12 @@ export function SharedPilot() {
   if (unavailable) return <><AppHeader current="rooms" guide={false} /><main className="pilot-shell"><div className="pilot-intro"><h1>This room is unavailable.</h1><p>The link may be incomplete or the room may be closed.</p><a className="button primary" href="/pilot">Explore shared stories</a></div></main></>;
 
   const storytellerCount = new Set(path.map((item) => item.maker_id ?? item.maker_label)).size;
+  const overviewVisible = roomId === KESSLER_ROOM_ID && view === "overview";
   return (
     <div className="pilot-room-page" data-room-theme={theme}>
       <a className="skip-link" href="#shared-story">Skip to story</a>
       <AppHeader current="rooms" guide={roomId ? <FirstNightGuide roomId={roomId} actorId={actorId} compact tone={theme === "neon" ? "night" : "paper"} onRead={readFirstNightOpening} onMake={makeFirstNightContinuation} onFollow={followFirstNightResult} /> : false} account={false} />
-      <main className="pilot-shell" id="shared-story" data-room-theme={theme} tabIndex={-1}>
+      <main className="pilot-shell" id="shared-story" data-room-theme={theme} data-overview={overviewVisible} tabIndex={-1}>
       <div className="pilot-room-toolbar">
         <a className="fn-context-link" href="/pilot"><ArrowLeft size={16} aria-hidden="true" />All shared rooms</a>
         <label className="pilot-room-choice">
@@ -1071,10 +1112,11 @@ export function SharedPilot() {
               setRoomId(event.target.value);
               setSelectedId("");
               setTipId("");
+              setResume(undefined);
               setComposing(false);
               setNotice("");
               setShareUrl("");
-              setView("read");
+              setView(event.target.value === KESSLER_ROOM_ID ? "overview" : "read");
               window.history.replaceState(
                 null,
                 "",
@@ -1092,31 +1134,37 @@ export function SharedPilot() {
         </label>
         <button
           className="button secondary pilot-map-toggle"
-          onClick={() => setView(view === "map" ? "read" : "map")}
-          disabled={!selected}
+          onClick={() => roomId === KESSLER_ROOM_ID ? overviewVisible ? showSceneMap() : showRoomOverview() : setView(view === "map" ? "read" : "map")}
+          disabled={!selected || filmBusy || busy || releaseBusy || wrenBusy || !!wrenPreviewId || composing || hasActive}
         >
           <MapIcon size={16} aria-hidden="true" />
-          {view === "map" ? "Back to story" : "Map"}
+          {roomId === KESSLER_ROOM_ID ? overviewVisible ? "Full scene map" : "Room overview" : view === "map" ? "Back to story" : "Map"}
         </button>
         <div className="pilot-header-actions">
-          <PilotIdentity profile={profile} disabled={identityDisabled} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={profile ? () => setJoinOpen(true) : focusStorytellerName} />
+          {overviewVisible ? <details className="kessler-overview-account"><summary>{profile?.display_name ?? (account?.user ? "Your account" : "Join or sign in")}</summary><div><PilotIdentity profile={profile} disabled={identityDisabled} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={profile ? () => setJoinOpen(true) : focusStorytellerName} /></div></details> : <PilotIdentity profile={profile} disabled={identityDisabled} signOutDisabled={!!signOutBlock} signOutBlockedReason={signOutBlock} onJoin={profile ? () => setJoinOpen(true) : focusStorytellerName} />}
         </div>
       </div>
-      <div className="pilot-intro">
+      <div className="pilot-intro" hidden={overviewVisible}>
         <h1>{room?.title ?? "Opening the shared story…"}</h1>
         <p>{room?.description ?? "Stories and ideas stay here for the next person."}</p>
         {roomId === KESSLER_ROOM_ID && <p className="pilot-prepared-note">Two prepared branches start the story. Every scene you add keeps your byline, with Wren credited separately when it helps.</p>}
       </div>
+      {overviewVisible && client && loadedRoom === roomId && moments.length > 0 && <KesslerRoomOverview
+        client={client} moments={moments} resume={moments.find(moment => moment.id === resume?.momentId)} blocked={busy || releaseBusy || filmBusy || wrenBusy}
+        onRead={readOverviewPath} onResume={resumeReading}
+        onMap={showSceneMap}
+        onWatch={id => { setRequestedFilmId(id); setFilmOpenRequest(value => value + 1); }}
+      />}
       <div className="pilot-context">
         {roomId === "midnight-signal" && !composing && !hasActive && !wrenBusy && !reviewing && releasePanel}
         {roomId === KESSLER_ROOM_ID
           ? <KesslerRoomGuide overview={kessler.overview} unavailable={kessler.unavailable} blocked={composing || hasActive || wrenBusy || reviewing || filmBusy} onNavigate={destination => {
             setView("read");
-            if (destination === "kessler-films") setFilmOpenRequest(value => value + 1);
+            if (destination === "kessler-films") { setRequestedFilmId(undefined); setFilmOpenRequest(value => value + 1); }
             requestAnimationFrame(() => { const target = document.getElementById(destination); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
           }} />
           : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
-        {roomId === KESSLER_ROOM_ID && client && path.length > 0 && <div hidden={composing || hasActive || wrenBusy || reviewing}><RoomFilmStudio client={client} moments={moments} currentPath={path} openRequest={filmOpenRequest} onBusyChange={setFilmBusy} onRead={(id, trace) => {
+        {roomId === KESSLER_ROOM_ID && client && path.length > 0 && <div hidden={composing || hasActive || wrenBusy || reviewing}><RoomFilmStudio client={client} moments={moments} currentPath={path} openRequest={filmOpenRequest} requestedFilmId={requestedFilmId} compact={overviewVisible} onBusyChange={setFilmBusy} onRead={(id, trace) => {
           select(id, true);
           setView("read");
           requestAnimationFrame(() => { const target = document.getElementById(trace ? "kessler-contributions" : "pilot-story-reader"); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
@@ -1217,7 +1265,7 @@ export function SharedPilot() {
               </p>
             </section>
           )}
-          <div className="pilot-table" hidden={view === "map"}>
+          <div className="pilot-table" hidden={view !== "read"}>
             <PilotRecap
               key={roomId}
               client={client}

@@ -32,7 +32,7 @@ function studio(href = `https://fork-night.invalid/pilot?room=kessler-ward&momen
   const moments = kesslerSeedMoments();
   const env = {
     ...roomFilm, pilotPath, moments, currentPath: pilotPath(moments, KESSLER_ROOM_ID, readerId),
-    window, document: { getElementById: () => null }, job: { current: null }, focusWorkspace() {},
+    window, document: { getElementById: () => null }, job: { current: null }, compact: false, focusWorkspace() {},
     setFilmId: (id: string) => { state.filmId = id; }, setView: (view: string) => { state.view = view; },
     setError: (error: string) => { state.error = error; }, setEdit: (edit: { tipId: string }) => { state.edit = edit; },
     onRead: (id: string, trace?: boolean) => { state.readerId = id; reads.push([id, trace]); },
