@@ -38,10 +38,26 @@ export const MIDNIGHT_SIGNAL_REGISTRATIONS = [
   { sceneId: "0xdbc43591279f113aa27a8b3f2cbe114858bb8086bb766dd6cfaabb1b4b34106d", transactionHash: "0xc9c76cca9ebd256da8bf6a307bb5639aeb3aa309b2f4bd4007ed68c9fa0bca00", block: 70407043 },
 ] as const;
 
+/** Eleven prepared Kessler scenes registered by the founder; receipts verified October 19, 2026 UTC. */
+export const KESSLER_REGISTRATIONS = [
+  { sceneId: "0xff4259d58e631bf760831dd44e6912ba095653a161b0bdb5c32b441979731fd9", transactionHash: "0xda8a88345044588d75a57352836332b7b6436de48bc2c5e1809e538a95afbff0", block: 72255227 },
+  { sceneId: "0x9aee0e6b5cb45f1a47fa3c61c8f73cd7105367cde2ab6218ba787d0b0b9ce918", transactionHash: "0x9c2265037f5ae3fba2e6514a8e8445c3f65d75d8f1542537da22ec2a4d4a383c", block: 72255259 },
+  { sceneId: "0xf43e5e79de75b9136aba0a3ab0e9dc9a2bfbf071830f9ed4d8f9dee3447ebc35", transactionHash: "0x287ae9f657e2076713a5bf558cc87ceda796b8a1d6603faa32bd35864cfab4b0", block: 72255288 },
+  { sceneId: "0x0301600ecaf60e854346874ceba0027203cdc9292cc46348e000fa8fc264805d", transactionHash: "0xaa326836e47e746e61d4f59a5fd3423de1a90627f27486b2d3fb16201c4798e9", block: 72255321 },
+  { sceneId: "0x649fcb0a85f1a032357846e0328d240f69fa0bb8ff7855a6e43fc10836676be2", transactionHash: "0xc0da76792243f23b26a2548e4c359794a99b93c6136f3ed1fc36fecc43239977", block: 72255354 },
+  { sceneId: "0x3a971e261e0fd800c83d001481d82e0784b453ff9214adf3cd5ade013bb80ad3", transactionHash: "0xf33ee7895819332d1c122b5177e1e6f9cc1b77994a88ee9c892b28e17a85ba4e", block: 72255382 },
+  { sceneId: "0xf995a9d6645b52985fddb3c931ff8efbd60ccc5e5c6d2f8316b642cd4bdfbb1b", transactionHash: "0xd94579d19b1f22bf6930f522c6bcbc29dcf1b5754a76603afc564470805abf4b", block: 72255463 },
+  { sceneId: "0x859c2ffb8cb05e1fae68b6ee6a1c31f9aed8fbea9d3b23db77f9fdc900dc0a01", transactionHash: "0x78674fb6cb4cb907d7c322b1fc3a4f3f1e5ad542c69a01051fb002149fd0a2d0", block: 72255503 },
+  { sceneId: "0x9a13e10e9a05704a553a4366c536427a792bf59f460daa5978eaab3100151a87", transactionHash: "0xbfd5d815b0a20b9db26d3f5f6dfb2205001199a28b1688f8bbe182c9541d9284", block: 72255535 },
+  { sceneId: "0x70c1f36cd47037cd10c5859b1fd1add2a97189991538d2caf62f8bb22100234b", transactionHash: "0xeaa381c58f2dd5e1759a98266191c4e43342f18e7cadd8d85f3b49a158c87cbb", block: 72255562 },
+  { sceneId: "0x10d60da20e51cb234be4b083afa4600219404850653bd7b14062e1a3925019e0", transactionHash: "0x4fd8ed69706c2ff3e5175558e6c09da6ff88623bdc339e40b9fd26e32da1cb7c", block: 72255587 },
+] as const;
+
 /** The registration receipt of an archived scene, only on the chain and contract that recorded it. */
 export function registrationTransaction(chainId: number, contract: string, sceneId: string): string | undefined {
   if (chainId !== MIDNIGHT_SIGNAL_RELEASE_PROOF.chainId || contract.toLowerCase() !== MONAD_RELEASE_CONTRACT.toLowerCase()) return undefined;
-  return MIDNIGHT_SIGNAL_REGISTRATIONS.find(entry => entry.sceneId === sceneId.toLowerCase())?.transactionHash;
+  return MIDNIGHT_SIGNAL_REGISTRATIONS.find(entry => entry.sceneId === sceneId.toLowerCase())?.transactionHash
+    ?? KESSLER_REGISTRATIONS.find(entry => entry.sceneId === sceneId.toLowerCase())?.transactionHash;
 }
 
 /** A dated snapshot: the release has taken more test support and claims since, so its live balances differ. */

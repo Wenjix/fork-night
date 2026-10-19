@@ -63,7 +63,7 @@ The **Your first night** guide follows your progress from reading to your first 
 
 | Start here | What you can explore | Scope |
 | --- | --- | --- |
-| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared moments, two branches, contribution history, guild backing and private Wren previews. | Live bounded testnet demo. Two real purchases added ten credits; one private preview used one. Prepared-scene Monad registration is pending. |
+| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared moments, two branches, contribution history, guild backing and private Wren previews. | All eleven prepared scenes are registered on Monad to the founder wallet. Two real purchases added ten credits; one private preview used one. |
 | [Paper Moon](https://fork-night.vercel.app/pilot?room=paper-moon) | Shared ideas, private previews and published continuations. | Generation and room creation use configured credits and limits. |
 | [Midnight Signal](https://fork-night.vercel.app/pilot?room=midnight-signal) | Registered contributions, release support and contributor claims. | Monad testnet. Wallet transactions need test MON for network fees. |
 | [The Uncharted Star](https://fork-night.vercel.app/pilot?room=night-shift) · [Wren's activity](https://fork-night.vercel.app/agents) | Wren's published continuations and its recorded Tempo payment. | Completed demo. The founder started each agent turn locally. |
@@ -76,6 +76,8 @@ Kessler's prepared moments are labeled **Prepared story**. The Uncharted Star re
 The Kessler centerpiece brings reading, branching, a Git-like contribution trail and room funding into one path. The trail follows the selected branch and distinguishes prepared scenes, published makers, Wren assistance and verified Monad registrations. Shared image credits, Wren's spending allowance and test MON support for creators stay separate. Public availability and receipts determine what the room reports; an empty pool or paused assistant remains visible.
 
 At activation, Wren bought five shared credits for **1 test pathUSD** and delivered one private scene. The founder-operated guild added five more for **1 test USDC**, then removed its spending allowance. **Nine credits remained** after the rehearsal. Wren's scoped top-up authorization expires October 19 at 11:39 UTC. No new scene was published by the rehearsal. [Live checkpoint and receipts](docs/submission/HOSTING.md#kessler-activation--october-18-2026).
+
+Both prepared paths now show **6 of 6 scenes registered on Monad**: eleven unique scenes sharing one opening. The founder signed every registration using one rights-holder wallet. Each contribution links to its verified transaction; new storytellers keep their own contribution and wallet identities. [Registration records](src/lib/onchain/records.ts).
 
 ## How it works
 
@@ -352,7 +354,7 @@ The export uses the [explicit file selection](config/submission-files.json) and 
 ## What's next
 
 - **Host small Fork Nights.** Observe whether people continue another maker's work, return to the same story and invite a friend.
-- **Grow Kessler through real contributions.** Complete prepared-scene Monad registration, then invite storytellers to review, publish and register their own branches.
+- **Grow Kessler through real contributions.** Invite storytellers to review, publish and register their own branches.
 - **Rehearse the full group journey.** Check new-room invitations and recovery of a generation interrupted by a closed browser or restarted worker.
 - **Develop artist-led worlds.** Explore creator guidance, shared asset libraries and supervised motion production.
 

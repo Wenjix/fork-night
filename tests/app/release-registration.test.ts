@@ -4,7 +4,7 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { tsImport } from "tsx/esm/api";
 import { ZeroAddress } from "ethers";
-import { MIDNIGHT_SIGNAL_REGISTRATIONS, MONAD_RELEASE_CONTRACT, registrationTransaction } from "../../src/lib/onchain/records.ts";
+import { KESSLER_REGISTRATIONS, MIDNIGHT_SIGNAL_REGISTRATIONS, MONAD_RELEASE_CONTRACT, registrationTransaction } from "../../src/lib/onchain/records.ts";
 import { curator, makerWallet, otherWallet, prepared, snapshot } from "./release-fixtures.ts";
 
 const { ReleaseScenes } = await tsImport("../../src/components/release-scenes.tsx", import.meta.url);
@@ -74,12 +74,17 @@ test("registered scene state links to its MonadScan transaction when the receipt
   assert.match(markup, /0x0000/);
 });
 
-test("the archived release's registration receipts resolve only on the chain and contract that recorded them", () => {
+test("archived Midnight Signal and Kessler receipts resolve only on their recorded chain and contract", () => {
   assert.equal(MIDNIGHT_SIGNAL_REGISTRATIONS.length, 6);
-  for (const { sceneId, transactionHash } of MIDNIGHT_SIGNAL_REGISTRATIONS) {
+  assert.equal(KESSLER_REGISTRATIONS.length, 11);
+  const registrations = [...MIDNIGHT_SIGNAL_REGISTRATIONS, ...KESSLER_REGISTRATIONS];
+  assert.equal(new Set(registrations.map(entry => entry.sceneId)).size, registrations.length);
+  for (const { sceneId, transactionHash } of registrations) {
     assert.match(sceneId, /^0x[a-f0-9]{64}$/);
     assert.match(transactionHash, /^0x[a-f0-9]{64}$/);
     assert.equal(registrationTransaction(10143, MONAD_RELEASE_CONTRACT, sceneId), transactionHash);
+    assert.equal(registrationTransaction(31337, MONAD_RELEASE_CONTRACT, sceneId), undefined);
+    assert.equal(registrationTransaction(10143, "0x0000000000000000000000000000000000000001", sceneId), undefined);
   }
   const [first] = MIDNIGHT_SIGNAL_REGISTRATIONS;
   assert.equal(registrationTransaction(10143, MONAD_RELEASE_CONTRACT.toLowerCase(), first.sceneId.toUpperCase().replace("0X", "0x")), first.transactionHash);
