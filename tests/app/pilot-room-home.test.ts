@@ -49,10 +49,25 @@ test("Continue reading keeps its branch endpoint independently of the new scene 
   assert.equal(url.searchParams.get("moment"), selected);
   assert.equal(url.searchParams.get("tip"), tip);
   assert.equal(new URL(summary.latestHref, url).searchParams.get("moment"), summary.latest!.id);
-  for (const invalidTip of [KESSLER_BEAT_IDS["window-81"], "35000000-0000-4000-8000-000000000999"]) {
-    const fallback = roomHomeSummary({ room, visit: { ...visitSnapshot(story, selected), lastTipId: invalidTip } }, story);
-    assert.equal(new URL(fallback.resumeHref, url).searchParams.get("tip"), selected);
+});
+
+test("saved reading survives unavailable history and omitted scenes, ancestors or branch tips", () => {
+  const visit = visitSnapshot(story, selected, tip);
+  const histories = [[], story.filter(moment => moment.id !== selected), story.filter(moment => moment.parent_id !== null), story.filter(moment => moment.id !== tip)];
+  for (const history of histories) {
+    const summary = roomHomeSummary({ room, visit }, history);
+    const url = new URL(summary.resumeHref, "https://fork-night.invalid");
+    assert.equal(url.searchParams.get("moment"), selected);
+    assert.equal(url.searchParams.get("tip"), tip);
   }
+});
+
+test("legacy visits retain their saved scene while visits without a scene open the room", () => {
+  const legacy = roomHomeSummary({ room, visit: visitSnapshot(story, selected) }, []);
+  const url = new URL(legacy.resumeHref, "https://fork-night.invalid");
+  assert.equal(url.searchParams.get("moment"), selected);
+  assert.equal(url.searchParams.has("tip"), false);
+  assert.equal(roomHomeSummary({ room, visit: visitSnapshot(story, "", tip) }, []).resumeHref, "/pilot?room=kessler-ward");
 });
 
 test("truncated histories and foreign-room scenes never produce misleading exact counts", () => {
@@ -61,8 +76,9 @@ test("truncated histories and foreign-room scenes never produce misleading exact
   const summary = roomHomeSummary({ room, visit }, many);
   assert.equal(summary.hasNew, true);
   assert.equal(summary.newCount, undefined);
-  assert.equal(summary.resumeHref, "/pilot?room=kessler-ward");
+  assert.equal(summary.resumeHref, `/pilot?room=kessler-ward&moment=${selected}&tip=${tip}`);
   const foreign = roomHomeSummary({ room, visit }, story.map(moment => ({ ...moment, room_id: "elsewhere" })));
   assert.equal(foreign.hasNew, false);
   assert.equal(foreign.latest, undefined);
+  assert.equal(foreign.resumeHref, summary.resumeHref);
 });

@@ -1,5 +1,5 @@
-import { pilotPanels, pilotPath, type PilotMoment } from "./pilot.ts";
-import { parsePilotVisit, readingPath, visitKey, type PilotVisit } from "./pilot-social.ts";
+import { pilotPanels, type PilotMoment } from "./pilot.ts";
+import { parsePilotVisit, visitKey, type PilotVisit } from "./pilot-social.ts";
 import type { Tables } from "./supabase/database.types.ts";
 
 export type HomeRoom = { room: Tables<"pilot_rooms">; visit: PilotVisit | null };
@@ -22,15 +22,12 @@ export function roomHomeSummary({ room, visit }: HomeRoom, moments: PilotMoment[
     .sort((a, b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id));
   const unseen = visit ? story.filter(moment => !visit.knownIds.includes(moment.id)) : [];
   const latest = unseen[0] ?? story[0];
-  const selected = story.find(moment => moment.id === visit?.lastMomentId);
   const href = `/pilot?room=${encodeURIComponent(room.id)}`;
   let resumeHref = href;
-  if (selected) {
-    try {
-      let tip = pilotPath(story, room.id, selected.id).at(-1);
-      try { tip = readingPath(story, room.id, visit?.lastTipId ?? selected.id, selected.id).at(-1); } catch { /* Keep the valid saved scene when the old tip is unavailable. */ }
-      if (tip) resumeHref += `&moment=${selected.id}&tip=${tip.id}`;
-    } catch { /* An incomplete saved path opens the room instead of guessing a branch. */ }
+  if (visit?.lastMomentId) {
+    // Preserve saved navigation until the room reader can validate it against the full story.
+    resumeHref += `&moment=${encodeURIComponent(visit.lastMomentId)}`;
+    if (visit.lastTipId) resumeHref += `&tip=${encodeURIComponent(visit.lastTipId)}`;
   }
   return {
     latest, panel: latest ? pilotPanels(latest.panels)[0] : undefined,

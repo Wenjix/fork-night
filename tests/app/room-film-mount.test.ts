@@ -7,6 +7,7 @@ import { register as registerTsx } from "tsx/esm/api";
 import { firstNightRoomHref, FIRST_NIGHT_MOMENT_ID, FIRST_NIGHT_ROOM_ID, parseFirstNightStarter } from "../../src/lib/first-night.ts";
 import { kesslerSeedMoments, KESSLER_BEAT_IDS, KESSLER_DESCRIPTION } from "../../src/lib/kessler-room.ts";
 import { visitKey, visitSnapshot } from "../../src/lib/pilot-social.ts";
+import { roomHomeSummary, type HomeRoom } from "../../src/lib/pilot-room-home.ts";
 import type { PilotAccount } from "../../src/components/pilot-account.tsx";
 
 // Mount the real room and its film studio with account readiness, HTTP and layout
@@ -155,6 +156,22 @@ test("Continue reading retains a middle scene and its full branch after session 
   await mounted.reload();
   assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, 6, "the resumed URL retains its branch on reload");
 });
+
+for (const [kind, tip] of [["valid", KESSLER_BEAT_IDS["dawn-81"]], ["legacy", undefined], ["missing", "25000000-0000-4000-8000-000000000099"], ["unrelated", KESSLER_BEAT_IDS["window-81"]]] as const) {
+  test(`a home resume link without history restores its scene and validates a ${kind} tip in the room reader`, async t => {
+    const room: HomeRoom["room"] = { id: FIRST_NIGHT_ROOM_ID, title: "Kessler Ward", description: KESSLER_DESCRIPTION, is_open: true, is_listed: true, template_id: null, template_version: null, revision: 0, funding_policy: "closed", owner_id: null };
+    const visit = { ...visitSnapshot(kesslerSeedMoments(), KESSLER_BEAT_IDS["floor-forty"]), lastTipId: tip };
+    const href = new URL(roomHomeSummary({ room, visit }, []).resumeHref, dom.window.location.origin);
+    href.searchParams.delete("room");
+    await mountOverview(t, `&${href.searchParams}`);
+    assert.ok(!dom.window.document.getElementById("kessler-overview-title"), "the saved scene opens the reader directly");
+    assert.equal(dom.window.document.querySelector("#pilot-story-reader h2")?.textContent, "Floor forty");
+    assert.equal(dom.window.document.querySelectorAll(".pilot-recap-list > li").length, kind === "valid" ? 6 : 3);
+    const saved = JSON.parse(dom.window.localStorage.getItem(visitKey(room.id))!);
+    assert.equal(saved.lastMomentId, visit.lastMomentId);
+    assert.equal(saved.lastTipId, kind === "valid" ? tip : visit.lastMomentId);
+  });
+}
 
 for (const [kind, tip] of [["legacy", undefined], ["missing", "25000000-0000-4000-8000-000000000099"], ["unrelated", KESSLER_BEAT_IDS["window-81"]]] as const) {
   test(`a ${kind} saved tip resumes the known scene without guessing another branch`, async t => {
