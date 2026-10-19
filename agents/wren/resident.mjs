@@ -12,14 +12,14 @@ import { advanceMission, authorize, newMissionState, policyDigest, RESIDENT_ORIG
 import { inspectMission, missionPorts, readJson, writePrivate } from "./resident-runtime.mjs";
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: {
-  dir: { type: "string" }, session: { type: "string" }, parent: { type: "string" }, brief: { type: "string" }, live: { type: "boolean" },
+  dir: { type: "string" }, session: { type: "string" }, parent: { type: "string" }, brief: { type: "string" }, previous: { type: "string" }, live: { type: "boolean" },
 } });
 const command = positionals[0];
 const ensure = (ok, message) => { if (!ok) throw new Error(message); };
 let ports, lockFile, lockHandle;
 try {
   ensure(["prepare", "status", "run"].includes(command) && values.dir,
-    "Usage: resident.mjs prepare --dir .local/wren-resident --parent UUID --brief TEXT | status --dir DIR | run --dir DIR --session EXISTING_SESSION --live");
+    "Usage: resident.mjs prepare --dir .local/wren-resident --parent UUID --brief TEXT [--previous COMPLETED_MISSION_DIR] | status --dir DIR | run --dir DIR --session EXISTING_SESSION --live");
   const directory = resolve(values.dir);
   ensure(directory.split(/[\\/]/).includes(".local"), "Keep the mission, its wallet and approvals inside an ignored .local directory.");
   const policyFile = join(directory, "policy.json"), stateFile = join(directory, "state.json");
@@ -27,8 +27,21 @@ try {
     ensure(!existsSync(directory), "This mission directory already exists. Inspect or resume it; do not replace its state.");
     const config = releaseConfig();
     ensure(config?.chainId === 10143 && values.parent && values.brief, "Provide the parent, creative brief and Monad testnet configuration.");
-    const wallet = Wallet.createRandom();
-    const policy = validatePolicy({ version: 1, id: randomUUID(), roomId: RESIDENT_ROOM, origin: RESIDENT_ORIGIN,
+    let wallet, continuation = {};
+    if (values.previous) {
+      const previous = resolve(values.previous);
+      ensure(previous.split(/[\\/]/).includes(".local") && previous !== directory, "Keep the completed mission intact in its own .local directory.");
+      const priorPolicy = validatePolicy(await readJson(join(previous, "policy.json"))), priorState = await readJson(join(previous, "state.json"));
+      validateState(priorPolicy, priorState);
+      ensure(priorState.completedAt && priorState.turns.length === 3 && priorState.turns.every(t => t.registration?.block) && priorState.turns.at(-1).momentId === values.parent,
+        "Continue the last scene of a completed, registered mission.");
+      wallet = new Wallet((await readJson(join(previous, "wallet.json"))).privateKey);
+      ensure(wallet.address === priorPolicy.wallet, "The completed mission's wallet changed.");
+      continuation = { version: 2, previousMissionId: priorPolicy.id, previousPolicyDigest: policyDigest(priorPolicy), initialNonce: (priorPolicy.initialNonce ?? 0) + 3,
+        priorOperations: [...(priorPolicy.priorOperations ?? []), ...priorState.turns.map(t => ({ id: t.operationId, requestId: t.draftId, momentId: t.momentId }))],
+        draftRequestIds: Array.from({ length: 3 }, () => randomUUID()), planningRequestIds: Array.from({ length: 2 }, () => randomUUID()) };
+    } else wallet = Wallet.createRandom();
+    const policy = validatePolicy({ version: 1, ...continuation, id: randomUUID(), roomId: RESIDENT_ROOM, origin: RESIDENT_ORIGIN,
       parentId: values.parent, makerId: WREN.profileId, byline: WREN.displayName, wallet: wallet.address,
       maxScenes: 3, maxCredits: 3, durationSeconds: 3600, brief: values.brief,
       chainId: 10143, contract: config.address, curator: config.curator, termsHash: TERMS_HASH, maxGasWei: parseEther("0.1").toString() });

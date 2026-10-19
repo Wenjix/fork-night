@@ -16,8 +16,8 @@ function policy() {
 }
 const approval = p => ({ policyDigest: policyDigest(p), publish: true, termsHash: TERMS_HASH, authorizedAt: new Date(now - 1000).toISOString(), expiresAt: new Date(now + 3599000).toISOString() });
 
-function harness() {
-  const p = policy(), consent = approval(p), plans = new Map(), drafts = new Map(), operations = new Map(), published = new Map(), registered = new Set();
+function harness(p = policy()) {
+  const consent = approval(p), plans = new Map(), drafts = new Map(), operations = new Map(), published = new Map(), registered = new Set();
   let state = newMissionState(p), disk = structuredClone(state), stopped = false, clock = now, allowed = false;
   const calls = { planned: 0, generated: 0, reviews: 0, published: 0, requests: 0 };
   const ports = {
@@ -60,6 +60,65 @@ function harness() {
     get state() { return state; }, restart() { state = structuredClone(disk); }, stop() { stopped = true; }, expire() { clock += 3600000; }, allow() { allowed = true; },
     async finish() { for (let i = 0; i < 10; i++) { const result = await run(); if (result.status !== "pending") return result; } throw Error("No result"); } };
 }
+
+function progressionHarness() {
+  const p = policy();
+  Object.assign(p, { version: 2, previousMissionId: randomUUID(), previousPolicyDigest: "a".repeat(64), initialNonce: 3,
+    priorOperations: Array.from({ length: 3 }, (_, i) => ({ id: randomUUID(), requestId: randomUUID(), momentId: i === 2 ? p.parentId : randomUUID() })),
+    draftRequestIds: Array.from({ length: 3 }, () => randomUUID()), planningRequestIds: Array.from({ length: 2 }, () => randomUUID()) });
+  const h = harness(p);
+  const arc = { openingState: "Mika has the battery on floor forty.", scenes: [
+    { title: "Lift to Eighty-One", caption: "Mika plugs the battery into the service lift and starts its climb.", change: "The lift starts.", resultingState: "Mika is traveling upward." },
+    { title: "A Dark Landing", caption: "The lift opens on eighty-one; Mika props the doors apart with her bag.", change: "Mika reaches her destination.", resultingState: "Mika has reached floor eighty-one, but the lift is losing power." },
+    { title: "The Neighbor's Door", caption: "Mika pulls open Mrs. Ito's door and finds the medicine cooler dark.", change: "The rescue's next obstacle is revealed.", resultingState: "Mika must choose how to power the cooler." },
+  ] };
+  const review = { advances: true, causal: true, continuity: true, drawable: true, safe: true, note: "The completed handoff causes three distinct actions." };
+  const saved = new Map();
+  h.ports.plan = async () => { throw Error("The old rephrasing helper must not run"); };
+  h.ports.planArc = async () => { if (!saved.has("plan")) { h.calls.planned++; saved.set("plan", structuredClone(arc)); } return saved.get("plan"); };
+  h.ports.reviewArc = async () => { if (!saved.has("review")) { h.calls.planned++; saved.set("review", structuredClone(review)); } return saved.get("review"); };
+  return { h, arc, review };
+}
+
+test("a continuation plans and critiques the whole arc before spending its exact three draft grants", async () => {
+  const { h, arc } = progressionHarness(); h.allow();
+  const generate = h.ports.generate;
+  h.ports.generate = async id => { assert.equal(h.calls.planned, 2); assert.equal(h.state.progression.review.ok, true); return generate(id); };
+  assert.equal((await h.finish()).status, "complete");
+  assert.deepEqual(h.calls, { planned: 2, generated: 3, reviews: 3, published: 3, requests: 0 });
+  assert.deepEqual(h.state.turns.map(t => t.draftId), h.p.draftRequestIds);
+  assert.deepEqual(h.state.turns.map(t => t.plan), arc.scenes);
+  h.restart(); assert.equal((await h.run()).status, "complete");
+  assert.equal(h.calls.planned, 2); assert.equal(h.calls.generated, 3);
+});
+
+test("a repetitive arc fails before any image, credit or draft is used", async () => {
+  const { h, review } = progressionHarness(); review.advances = false;
+  assert.equal((await h.run()).status, "halted"); h.restart();
+  assert.equal((await h.run()).status, "halted");
+  assert.equal(h.calls.planned, 2); assert.equal(h.calls.generated, 0); assert.equal(h.drafts.size, 0);
+});
+
+for (const method of ["planArc", "reviewArc"]) test(`a lost ${method} reply recovers the saved provider result before images`, async () => {
+  const { h } = progressionHarness(), original = h.ports[method]; let lost = false;
+  h.ports[method] = async () => { const result = await original(); if (!lost) { lost = true; throw Error("lost reply"); } return result; };
+  await assert.rejects(h.run(), /lost reply/); assert.equal(h.calls.generated, 0); h.restart(); h.allow();
+  assert.equal((await h.finish()).status, "complete"); assert.equal(h.calls.planned, 2); assert.equal(h.calls.generated, 3);
+});
+
+test("a continuation cannot change its review, reviewed prompt or exact draft IDs on resume", async () => {
+  for (const tamper of [h => { h.state.progression.review.advances = false; }, h => { h.state.turns[0].plan.change = "Offer the same battery again"; },
+    h => { h.state.turns[0].draftId = randomUUID(); }]) {
+    const { h } = progressionHarness(); await h.run(); tamper(h);
+    await assert.rejects(h.run()); assert.equal(h.calls.generated, 1); assert.equal(h.calls.published, 0);
+  }
+});
+
+test("continuations require distinct request IDs, completed ancestry and an explicit starting nonce", () => {
+  const { h } = progressionHarness(); assert.equal(validatePolicy(h.p), h.p);
+  for (const patch of [{ initialNonce: 0 }, { initialNonce: 4 }, { parentId: randomUUID() }, { draftRequestIds: [h.p.draftRequestIds[0], h.p.draftRequestIds[0], randomUUID()] },
+    { planningRequestIds: [h.p.priorOperations[0].requestId, randomUUID()] }, { previousPolicyDigest: "unverified" }]) assert.throws(() => validatePolicy({ ...h.p, ...patch }));
+});
 
 test("one mission makes three linked Wren scenes, pauses for admission, then registers without new generation", async () => {
   const h = harness();

@@ -29,8 +29,8 @@ export function validateSignedRegistration(policy, turn, state, data) {
   let committed = 0n;
   for (const [index, item] of all.entries()) {
     const signed = Transaction.from(item.registration.raw);
-    ensure(signed.nonce === index && signed.type === 0 && signed.gasPrice > 0n && signed.gasLimit > 0n && signed.gasLimit <= 300000n,
-      "Use this mission's fresh wallet with exactly one nonce per scene.");
+    ensure(signed.nonce === (policy.initialNonce ?? 0) + index && signed.type === 0 && signed.gasPrice > 0n && signed.gasLimit > 0n && signed.gasLimit <= 300000n,
+      "Use this mission's approved starting nonce with exactly one nonce per scene.");
     committed += signed.gasLimit * signed.gasPrice;
   }
   ensure(committed <= BigInt(policy.maxGasWei), "The cumulative registration gas commitment exceeds the mission cap.");
@@ -56,7 +56,7 @@ export function residentRegistrar({ policy, client, wallet, readMoments }) {
         client.contract.registerMoment.estimateGas(...args, { from: policy.wallet }), provider.getFeeData(),
         provider.getTransactionCount(policy.wallet, "latest"), provider.getTransactionCount(policy.wallet, "pending"), provider.getBalance(policy.wallet),
       ]);
-      ensure(nonce === turn.number - 1 && pending === nonce, "The mission wallet has another or unresolved transaction.");
+      ensure(nonce === (policy.initialNonce ?? 0) + turn.number - 1 && pending === nonce, "The mission wallet has another or unresolved transaction.");
       const gasLimit = (estimate * 120n + 99n) / 100n, gasPrice = fees.gasPrice;
       ensure(gasLimit <= 300000n && gasPrice && gasPrice > 0n, "The registration estimate exceeds the permitted gas limit.");
       ensure(balance >= gasLimit * gasPrice, "Wren's Monad wallet needs test MON for registration gas.");

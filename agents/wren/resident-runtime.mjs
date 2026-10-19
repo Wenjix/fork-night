@@ -120,18 +120,24 @@ export async function missionPorts({ policy, approval, directory, sessionFile })
         const snapshot = await client.load(prepared);
         ensure(prepared.scenes.length <= 10 && snapshot.scenes.every(s => s.registered && s.matches), "The original registered ancestry changed or exceeds the path limit.");
         for (const turn of state.turns) if (turn.momentId) checkMoment(policy, turn, all.find(m => m.id === turn.momentId));
-        const own = checked(await db.from("pilot_operations").select("id,request_id,status").eq("maker_id", policy.makerId).eq("room_id", policy.roomId), "Read Wren's existing attempts");
-        ensure(own.every(op => state.turns.some(t => t.draftId === op.request_id)), "Wren has another Kessler operation outside this mission. Check it before starting work.");
+        const own = checked(await db.from("pilot_operations").select("id,request_id,status,published_moment_id").eq("maker_id", policy.makerId).eq("room_id", policy.roomId), "Read Wren's existing attempts");
+        const history = policy.priorOperations ?? [];
+        ensure(history.every(saved => own.some(op => op.id === saved.id && op.request_id === saved.requestId && op.status === "published" && op.published_moment_id === saved.momentId)), "The completed mission's operation history changed.");
+        ensure(own.every(op => history.some(saved => saved.id === op.id) || state.turns.some(t => t.draftId === op.request_id)), "Wren has another Kessler operation outside this mission. Check it before starting work.");
         await approved();
       },
       capacity: async remaining => {
         const pool = await credits();
         ensure(pool.enabled && pool.available >= remaining, "The room needs more available credits. This mission cannot buy a top-up.");
       },
+      planArc: async () => (await app("/api/pilot/agent-plan", { requestId: policy.planningRequestIds[0], roomId: policy.roomId,
+        parentId: policy.parentId, brief: policy.brief, phase: "plan" })).plan,
+      reviewArc: async () => (await app("/api/pilot/agent-plan", { requestId: policy.planningRequestIds[1], planRequestId: policy.planningRequestIds[0],
+        roomId: policy.roomId, parentId: policy.parentId, brief: policy.brief, phase: "review" })).review,
       plan: async turn => (await app("/api/pilot/assist", { requestId: turn.planId, roomId: policy.roomId, parentId: turn.parentId,
         mode: "shape", captions: [], thought: `${policy.brief}\nThis is scene ${turn.number} of a three-scene contribution by Wren. The final scene in the supplied story has already happened. Invent one NEW visible action immediately after it; do not restate or redraw its action. Wren decides what happens next. Use exactly one illustrated caption, preserve continuity, keep it family friendly, and leave room for a human to continue.` })).draft,
       draft: async turn => checked(await db.rpc("pilot_save_continuation", { p_request_id: turn.draftId, p_room_id: policy.roomId,
-        p_parent_id: turn.parentId, p_title: turn.plan.title, p_prompt: `Wren's next scene in Kessler Ward. Preserve the established characters and visual continuity. ${policy.brief}`,
+        p_parent_id: turn.parentId, p_title: turn.plan.title, p_prompt: `Wren's next scene in Kessler Ward. Preserve the established characters and visual continuity. ${policy.brief}${policy.version === 2 ? ` The previous action has ended. Illustrate this new event: ${turn.plan.caption} What changes: ${turn.plan.change}. Do not redraw the battery handoff.` : ""}`,
         p_captions: [turn.plan.caption] }), "Save Wren's draft"),
       operation: async id => checked(await db.from("pilot_operations").select("*").eq("id", id).single(), "Read Wren's operation"),
       generate: async id => { await app("/api/pilot/generate", { operationId: id }); },
@@ -146,18 +152,18 @@ export async function missionPorts({ policy, approval, directory, sessionFile })
           method: "POST", redirect: "error", signal: AbortSignal.timeout(45000),
           headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({ model: "gpt-4.1-mini-2025-04-14", store: false, max_completion_tokens: 800, temperature: 0,
-            messages: [{ role: "system", content: RESIDENT_REVIEW_INSTRUCTIONS },
+            messages: [{ role: "system", content: RESIDENT_REVIEW_INSTRUCTIONS + (policy.version === 2 ? " The story is progressing: motivated changes of location, floor, time and pose are valid. Do not require the old setting or every reference prop to remain visible. Also assess advancesAction: the candidate depicts a new action rather than repeating the parent's battery handoff." : "") },
               { role: "user", content: [{ type: "text", text: JSON.stringify({ parentCaption: parent.panels[0].caption, candidateCaption: turn.plan.caption }) },
                 ...[reference.bytes, preview.bytes].map(bytes => ({ type: "image_url", image_url: { url: `data:image/webp;base64,${bytes.toString("base64")}`, detail: "high" } }))] }],
             response_format: { type: "json_schema", json_schema: { name: "resident_review", strict: true, schema: {
-              type: "object", additionalProperties: false, required: ["matchesCaption", "continuity", "safe", "noOverlays", "note"],
-              properties: { matchesCaption: { type: "boolean" }, continuity: { type: "boolean" }, safe: { type: "boolean" }, noOverlays: { type: "boolean" }, note: { type: "string" } },
+              type: "object", additionalProperties: false, required: ["matchesCaption", "continuity", "safe", "noOverlays", "note", ...(policy.version === 2 ? ["advancesAction"] : [])],
+              properties: { matchesCaption: { type: "boolean" }, continuity: { type: "boolean" }, safe: { type: "boolean" }, noOverlays: { type: "boolean" }, note: { type: "string" }, ...(policy.version === 2 ? { advancesAction: { type: "boolean" } } : {}) },
             } } } }),
         });
         const result = await response.json();
         ensure(response.ok && result.choices?.[0]?.finish_reason === "stop" && !result.choices[0].message.refusal, "The vision review did not finish. It will not be purchased again.");
         const verdict = JSON.parse(result.choices[0].message.content);
-        const ok = ["matchesCaption", "continuity", "safe", "noOverlays"].every(k => verdict[k] === true);
+        const ok = ["matchesCaption", "continuity", "safe", "noOverlays", ...(policy.version === 2 ? ["advancesAction"] : [])].every(k => verdict[k] === true);
         return { ok, verdict, model: result.model, usage: result.usage, providerRequestId: response.headers.get("x-request-id") };
       },
       publish: async id => checked(await db.rpc("pilot_publish", { p_operation_id: id }), "Publish the reviewed scene"),

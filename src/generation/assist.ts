@@ -13,7 +13,7 @@ export const assistReply = (body: unknown, status = 200) =>
     status,
     headers: { "Cache-Control": "no-store", Vary: "Authorization" },
   });
-class AssistError extends Error {
+export class AssistError extends Error {
   status: number;
   constructor(message: string, status = 400) {
     super(message);

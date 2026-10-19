@@ -86,3 +86,27 @@ test("a stop at the signing boundary leaves no transaction", async t => {
   await assert.rejects(f.register(f.state.turns[0], f.state, f.save, () => { if (++gates === 2) throw Error("mission expired"); }), /expired/);
   assert.equal(f.saves, 0); assert.equal(await f.provider.getTransactionCount(f.wallet.address), 0);
 });
+
+test("a second bounded mission continues nonces 3–5 on the already admitted wallet", async t => {
+  const f = await fixture(t); await f.approve();
+  for (const turn of f.state.turns) {
+    assert.equal(await f.register(turn, f.state, f.save, () => {}), false); await f.mine();
+    assert.equal(await f.register(turn, f.state, f.save, () => {}), true);
+  }
+  const original = JSON.stringify(f.state), next = { turns: [] };
+  for (let i = 0; i < 3; i++) {
+    const moment = { ...f.moments.at(-1), id: randomUUID(), parent_id: f.moments.at(-1).id, title: `Next event ${i + 1}` };
+    f.moments.push(moment);
+    next.turns.push({ number: i + 1, parentId: moment.parent_id, momentId: moment.id, plan: { title: moment.title, caption: moment.panels[0].caption }, previewHash: "a".repeat(64), review: { ok: true } });
+  }
+  const register = residentRegistrar({ policy: { ...f.policy, initialNonce: 3 }, client: f.client, wallet: f.wallet, readMoments: async () => f.moments });
+  for (const turn of next.turns) {
+    assert.equal(await register(turn, next, f.save, () => {}), false); await f.mine();
+    assert.equal(await register(turn, next, f.save, () => {}), true);
+  }
+  assert.equal(await f.provider.getTransactionCount(f.wallet.address), 6);
+  assert.equal(JSON.stringify(f.state), original, "the previous mission and receipts stay intact");
+  const snapshot = await f.client.load(prepareRelease(f.moments, f.policy.roomId, f.moments.at(-1).id, f.policy.curator));
+  assert.equal(snapshot.scenes.filter(s => s.matches).length, 7);
+  assert.ok(snapshot.scenes.slice(1).every(s => s.maker === f.wallet.address));
+});
