@@ -35,7 +35,7 @@
     "experiment:openai:prepare": "node scripts/prepare-openai.ts",
     "experiment:openai": "node scripts/run-openai.ts",
     "contracts:compile": "node scripts/compile-contracts.mjs",
-    "contracts:test": "node --test tests/contracts/releases.test.mjs && node --test tests/contracts/client.test.ts tests/contracts/rehearsal-check.test.mjs",
+    "contracts:test": "node --test tests/contracts/releases.test.mjs && node --test tests/contracts/client.test.ts tests/contracts/rehearsal-check.test.mjs tests/contracts/wren-resident.test.mjs",
     "contracts:deploy": "node --env-file-if-exists=.env.local scripts/deploy-releases.mjs",
     "contracts:check": "node --env-file-if-exists=.env.local scripts/check-release-rehearsal.mjs",
     "pilot:readiness": "node --env-file-if-exists=.env.local scripts/check-pilot-readiness.ts",

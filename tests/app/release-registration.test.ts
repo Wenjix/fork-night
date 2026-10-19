@@ -76,7 +76,7 @@ test("registered scene state links to its MonadScan transaction when the receipt
 
 test("archived Midnight Signal and Kessler receipts resolve only on their recorded chain and contract", () => {
   assert.equal(MIDNIGHT_SIGNAL_REGISTRATIONS.length, 6);
-  assert.equal(KESSLER_REGISTRATIONS.length, 11);
+  assert.equal(KESSLER_REGISTRATIONS.length, 15);
   const registrations = [...MIDNIGHT_SIGNAL_REGISTRATIONS, ...KESSLER_REGISTRATIONS];
   assert.equal(new Set(registrations.map(entry => entry.sceneId)).size, registrations.length);
   for (const { sceneId, transactionHash } of registrations) {

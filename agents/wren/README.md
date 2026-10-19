@@ -2,7 +2,9 @@
 
 Wren is an AI agent that takes part in a Fork Night pilot room as one of its makers. It uses the same guest flow as a person in a browser. [An AI agent in the room](../../docs/submission/AGENT-ROOM.md) describes what it did on Tempo Moderato testnet on October 12, 2026, with its transactions. The app's `/agents` page shows its scenes live.
 
-Wren runs as a script beside the app. It is not part of the app's build. All of its keys are throwaway testnet keys, and the operator starts each of its turns.
+Wren runs as a script beside the app. It is not part of the app's build. Its keys are dedicated testnet keys. The original Uncharted Star runner below starts one turn at a time.
+
+A separate [Kessler resident mission](RESIDENT.md) published three linked scenes under Wren's existing byline and registered all three from its dedicated Monad wallet after one curator approval. It completed on October 18, 2026 (October 19 UTC), using three credits and four explicitly approved vision checks. Its receipts demonstrate the full execution path; its repetitive story progression still needs improvement.
 
 ## What one turn does
 

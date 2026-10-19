@@ -38,7 +38,7 @@ export const MIDNIGHT_SIGNAL_REGISTRATIONS = [
   { sceneId: "0xdbc43591279f113aa27a8b3f2cbe114858bb8086bb766dd6cfaabb1b4b34106d", transactionHash: "0xc9c76cca9ebd256da8bf6a307bb5639aeb3aa309b2f4bd4007ed68c9fa0bca00", block: 70407043 },
 ] as const;
 
-/** Eleven prepared Kessler scenes registered by the founder; receipts verified October 19, 2026 UTC. */
+/** Prepared Kessler scenes, Burkes's continuation and Wren's three scenes; verified October 19, 2026 UTC. */
 export const KESSLER_REGISTRATIONS = [
   { sceneId: "0xff4259d58e631bf760831dd44e6912ba095653a161b0bdb5c32b441979731fd9", transactionHash: "0xda8a88345044588d75a57352836332b7b6436de48bc2c5e1809e538a95afbff0", block: 72255227 },
   { sceneId: "0x9aee0e6b5cb45f1a47fa3c61c8f73cd7105367cde2ab6218ba787d0b0b9ce918", transactionHash: "0x9c2265037f5ae3fba2e6514a8e8445c3f65d75d8f1542537da22ec2a4d4a383c", block: 72255259 },
@@ -51,6 +51,10 @@ export const KESSLER_REGISTRATIONS = [
   { sceneId: "0x9a13e10e9a05704a553a4366c536427a792bf59f460daa5978eaab3100151a87", transactionHash: "0xbfd5d815b0a20b9db26d3f5f6dfb2205001199a28b1688f8bbe182c9541d9284", block: 72255535 },
   { sceneId: "0x70c1f36cd47037cd10c5859b1fd1add2a97189991538d2caf62f8bb22100234b", transactionHash: "0xeaa381c58f2dd5e1759a98266191c4e43342f18e7cadd8d85f3b49a158c87cbb", block: 72255562 },
   { sceneId: "0x10d60da20e51cb234be4b083afa4600219404850653bd7b14062e1a3925019e0", transactionHash: "0x4fd8ed69706c2ff3e5175558e6c09da6ff88623bdc339e40b9fd26e32da1cb7c", block: 72255587 },
+  { sceneId: "0x22680a32a3a1e211df2091c298e5b0678dc061db0a4c9c43e8449daa1ddd00ea", transactionHash: "0x47276d3456d289e1338579aaf0f7a9aa5d959a241612f9dacc3d65267b39ce25", block: 72258517 },
+  { sceneId: "0x4b5b00ed87f5e9c2a9ffbe6eef57d97c5011fb15adcc8f3f89f951ace1ed0d9c", transactionHash: "0x70a564a00693c8aefc06b59766c4e2b8384ce172d3c727be059a31ed5781329c", block: 72266786 },
+  { sceneId: "0xd3aae76e53f3c89b0b18973aaae5362beaf4e812e741a109c39cd26066d61d5a", transactionHash: "0x6f135c481ab09792729cd053c7e15178a55e607d4855375ffa7cdb3e7417eeda", block: 72266845 },
+  { sceneId: "0x76e2b1617de714ddbf567e629c1185c81b1ab78390a83e7f0877d4b0369d7f2f", transactionHash: "0x4c1c3eb7ceb76a8b5d7466580967dc4dadfd820c1a5a6b5b036a4a702df69a19", block: 72266903 },
 ] as const;
 
 /** The registration receipt of an archived scene, only on the chain and contract that recorded it. */

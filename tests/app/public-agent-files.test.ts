@@ -11,7 +11,8 @@ import { promisify } from "node:util";
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8");
 const allowlist = JSON.parse(read("config/submission-files.json")) as { files: string[] };
-const WREN_FILES = ["README.md", "package.json", "pnpm-lock.yaml", "config.example.json", "wren.mjs", "pay.mjs", "rules.mjs", "test-offline.mjs", "test-next.mjs"]
+const WREN_FILES = ["README.md", "RESIDENT.md", "package.json", "pnpm-lock.yaml", "config.example.json", "wren.mjs", "pay.mjs", "rules.mjs", "test-offline.mjs", "test-next.mjs",
+  "resident.mjs", "resident-mission.mjs", "resident-runtime.mjs", "resident-monad.mjs"]
   .map((name) => `agents/wren/${name}`);
 const FUNDING_REF = /\/api\/(?:mpp|x402)\/fund\/(?!<funding-ref>|\[fundingRef\]|<[A-Za-z]|\$\{)[A-Za-z0-9_-]{8,}/;
 
