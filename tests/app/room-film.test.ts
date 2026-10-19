@@ -2,7 +2,26 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { kesslerSeedMoments, KESSLER_BEAT_IDS, KESSLER_ROOM_ID } from "../../src/lib/kessler-room.ts";
 import { pilotPath } from "../../src/lib/pilot.ts";
-import { KESSLER_FILMS, matchingRoomFilm, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots } from "../../src/lib/room-film.ts";
+import { KESSLER_FILMS, filmSceneCount, matchingRoomFilm, roomFilmHref, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots } from "../../src/lib/room-film.ts";
+
+test("switching films replaces both the film and source branch in a shareable URL", () => {
+  const previous = "https://fork-night.vercel.app/pilot?room=kessler-ward&film=rooftops&moment=old-tip#kessler-films";
+  for (const film of KESSLER_FILMS) {
+    const next = new URL(roomFilmHref(previous, film));
+    assert.equal(next.searchParams.get("film"), film.id);
+    assert.equal(next.searchParams.get("moment"), film.tipId);
+    assert.equal(next.searchParams.get("room"), KESSLER_ROOM_ID);
+    assert.equal(next.hash, "");
+  }
+});
+
+test("a film counts only selected source scenes and counts a two-panel scene once", () => {
+  const shots = roomFilmShots(pilotPath(kesslerSeedMoments(), KESSLER_ROOM_ID, KESSLER_BEAT_IDS["dawn-81"]));
+  assert.equal(shots[0].sourceId, shots[1].sourceId);
+  assert.equal(filmSceneCount(selectedFilmShots(shots, [shots[0].id, shots[1].id, shots[3].id])), 2);
+  assert.equal(filmSceneCount([]), 0);
+  assert.equal(filmSceneCount(KESSLER_FILMS[0].shots), 6);
+});
 
 test("a six-scene path with a two-panel opening budgets panels independently", () => {
   const path = pilotPath(kesslerSeedMoments(), KESSLER_ROOM_ID, KESSLER_BEAT_IDS["dawn-81"]);

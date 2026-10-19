@@ -15,6 +15,17 @@ export type RoomFilm = {
 };
 export const KESSLER_FILMS: readonly RoomFilm[] = catalog;
 
+export function roomFilmHref(href: string, film: RoomFilm): string {
+  const url = new URL(href);
+  url.search = new URLSearchParams({ room: "kessler-ward", moment: film.tipId, film: film.id }).toString();
+  url.hash = "";
+  return url.href;
+}
+
+export function filmSceneCount(shots: RoomFilmShot[]): number {
+  return new Set(shots.map(shot => shot.sourceId)).size;
+}
+
 function samePanel(a: PilotPanel, b: PilotPanel) {
   return a.caption === b.caption && a.imageUrl === b.imageUrl && a.imagePath === b.imagePath && a.sha256 === b.sha256;
 }

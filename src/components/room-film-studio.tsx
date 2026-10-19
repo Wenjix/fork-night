@@ -5,9 +5,9 @@ import { ArrowLeft, ArrowRight, Check, Clapperboard, Download, Film, GitBranch, 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { pilotPath, type PilotMoment } from "@/lib/pilot";
-import { isLocalRasterUrl } from "@/lib/art";
+import { storyboardImage } from "@/lib/room-film-image";
 import { renderStoryFilm } from "@/lib/story-film";
-import { FILM_SHOT_SECONDS, KESSLER_FILMS, MAX_FILM_SHOTS, matchingRoomFilm, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots, type RoomFilm, type RoomFilmShot } from "@/lib/room-film";
+import { FILM_SHOT_SECONDS, KESSLER_FILMS, MAX_FILM_SHOTS, filmSceneCount, matchingRoomFilm, roomFilmHref, roomFilmShots, selectedFilmShots, storyboardPlan, suggestedFilmShots, type RoomFilm, type RoomFilmShot } from "@/lib/room-film";
 import { PilotImage } from "./pilot-panels";
 import { BrandBadge, BrandStrip } from "./brand-badge";
 
@@ -20,26 +20,6 @@ function ShotImage({ shot, client }: { shot: RoomFilmShot; client: Client }) {
   return shot.image
     ? <img src={shot.image} alt={shot.panel.caption} width={512} height={512} loading="lazy" />
     : <PilotImage client={client} panel={shot.panel} allowRetry={false} />;
-}
-
-async function storyboardImage(client: Client, shot: RoomFilmShot, signal: AbortSignal) {
-  if (shot.image) return shot.image;
-  if (shot.panel.imageUrl) return shot.panel.imageUrl;
-  const result = await client.storage.from("pilot-media").download(shot.panel.imagePath!);
-  if (result.error) throw new Error("One source image couldn’t load. Try creating the storyboard again.");
-  signal.throwIfAborted();
-  const bytes = await result.data.arrayBuffer();
-  const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)), byte => byte.toString(16).padStart(2, "0")).join("");
-  if (hash !== shot.panel.sha256) throw new Error("One source image could not be verified. Reload the room before trying again.");
-  const image = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("The source image couldn’t be read. Try again."));
-    reader.readAsDataURL(new Blob([bytes], { type: "image/webp" }));
-  });
-  if (!isLocalRasterUrl(image)) throw new Error("One image is too large for the browser storyboard. Choose another panel.");
-  signal.throwIfAborted();
-  return image;
 }
 
 function FilmPlayer({ film, onRead }: { film: RoomFilm; onRead: (id: string, trace?: boolean) => void }) {
@@ -55,11 +35,9 @@ function FilmPlayer({ film, onRead }: { film: RoomFilm; onRead: (id: string, tra
     catch { setError("Playback didn’t start. Try Play again or download the film below."); }
   }
   async function share() {
-    const url = new URL(window.location.href);
-    url.search = new URLSearchParams({ room: "kessler-ward", moment: film.tipId, film: film.id }).toString();
-    url.hash = "";
-    try { await navigator.clipboard.writeText(url.href); setCopied(true); }
-    catch { setShareUrl(url.href); }
+    const href = roomFilmHref(window.location.href, film);
+    try { await navigator.clipboard.writeText(href); setCopied(true); }
+    catch { setShareUrl(href); }
   }
   return <div className="room-film-screening">
     <div className="room-film-player">
@@ -90,9 +68,10 @@ function FilmPlayer({ film, onRead }: { film: RoomFilm; onRead: (id: string, tra
   </div>;
 }
 
-export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRead }: {
+export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRead, onBusyChange }: {
   client: Client; moments: PilotMoment[]; currentPath: PilotMoment[]; openRequest: number;
   onRead: (id: string, trace?: boolean) => void;
+  onBusyChange: (busy: boolean) => void;
 }) {
   const [view, setView] = useState<View>("closed");
   const [filmId, setFilmId] = useState(KESSLER_FILMS[0].id);
@@ -112,18 +91,30 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
     return ends;
   }, [moments, currentPath]);
   const selected = edit?.selected.length ? selectedFilmShots(edit.shots, edit.selected) : [];
+  const sourceSceneCount = filmSceneCount(selected);
   const matching = matchingRoomFilm(selected);
   const busy = progress !== null;
   const readyCount = KESSLER_FILMS.filter(item => item.video).length;
   function focusWorkspace() {
     requestAnimationFrame(() => { heading.current?.focus({ preventScroll: true }); heading.current?.scrollIntoView({ block: "start", behavior: "instant" }); });
   }
-  function watch(id: string) { setFilmId(id); setView("watch"); setError(""); focusWorkspace(); }
+  function watch(id: string) {
+    if (job.current) return;
+    const next = KESSLER_FILMS.find(item => item.id === id);
+    if (!next) return;
+    window.history.replaceState(window.history.state, "", roomFilmHref(window.location.href, next));
+    setFilmId(id); setView("watch"); setError(""); focusWorkspace();
+  }
   function choose(tipId = currentPath.at(-1)?.id) {
-    if (!tipId) return;
+    if (!tipId || job.current) return;
     try {
       const path = pilotPath(moments, "kessler-ward", tipId);
       const shots = roomFilmShots(path);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("film");
+      url.searchParams.set("moment", tipId);
+      url.hash = "";
+      window.history.replaceState(window.history.state, "", url);
       setEdit({ tipId, title: path.at(-1)!.title, sceneCount: path.length, shots, selected: suggestedFilmShots(shots, tipId) });
       setView("choose"); setError(""); focusWorkspace();
     } catch { setError("This branch is incomplete. Reload the room to choose its saved scenes."); }
@@ -142,18 +133,18 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
     window.history.replaceState(null, "", url);
     onRead(id, trace);
   }
-  useEffect(() => { alive.current = true; return () => { alive.current = false; job.current?.abort(); }; }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; job.current?.abort(); onBusyChange(false); }; }, [onBusyChange]);
   useEffect(() => () => { if (result) URL.revokeObjectURL(result.url); }, [result]);
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("film");
     if (id && KESSLER_FILMS.some(item => item.id === id)) watch(id);
   }, []);
-  useEffect(() => { if (openRequest) { setView("watch"); focusWorkspace(); } }, [openRequest]);
+  useEffect(() => { if (openRequest) watch(filmId); }, [openRequest]);
 
   async function createStoryboard() {
     if (!edit || !selected.length || job.current) return;
     const controller = new AbortController(); job.current = controller;
-    setError(""); setProgress(0);
+    setError(""); setProgress(0); onBusyChange(true);
     try {
       const images = await Promise.all(selected.map(shot => storyboardImage(client, shot, controller.signal)));
       controller.signal.throwIfAborted();
@@ -163,7 +154,7 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
       setView("storyboard"); focusWorkspace();
     } catch (cause) {
       if (alive.current && !controller.signal.aborted) setError(cause instanceof Error ? cause.message : "The storyboard couldn’t finish. Try again.");
-    } finally { job.current = null; if (alive.current) setProgress(null); }
+    } finally { job.current = null; if (alive.current) { setProgress(null); onBusyChange(false); } }
   }
   const step = view === "choose" ? 1 : view === "review" ? 2 : 3;
   return <section id="kessler-films" className="room-films" aria-labelledby="room-films-title">
@@ -192,7 +183,7 @@ export function RoomFilmStudio({ client, moments, currentPath, openRequest, onRe
       </>}
       {view === "review" && edit && <div className="room-film-review">
         <ol className="room-film-shot-list">{selected.map((shot,index) => <li key={shot.id}><div className="room-film-shot-image"><ShotImage shot={shot} client={client} /></div><div><span className="room-film-timing">Shot {index + 1} · {index * FILM_SHOT_SECONDS}–{(index + 1) * FILM_SHOT_SECONDS}s</span><h3>{shot.title}</h3><p>{matching?.shots[index].direction ?? shot.panel.caption}</p><small>{shot.maker}</small></div></li>)}</ol>
-        <aside className="room-film-review-summary" aria-label="Film summary"><h3>{edit.title}</h3><dl><div><dt>Length</dt><dd>{selected.length * FILM_SHOT_SECONDS} seconds</dd></div><div><dt>Source</dt><dd>{selected.length} panels from {edit.sceneCount} scenes</dd></div><div><dt>Format</dt><dd>{matching?.video ? "Wan 3.0 motion film" : "Storyboard video"}</dd></div><div><dt>Cost now</dt><dd>{matching?.video ? "Already made · free to watch" : "Free · 0 room credits"}</dd></div></dl>
+        <aside className="room-film-review-summary" aria-label="Film summary"><h3>{edit.title}</h3><dl><div><dt>Length</dt><dd>{selected.length * FILM_SHOT_SECONDS} seconds</dd></div><div><dt>Source</dt><dd>{selected.length} {selected.length === 1 ? "panel" : "panels"} from {sourceSceneCount} {sourceSceneCount === 1 ? "scene" : "scenes"}</dd></div><div><dt>Format</dt><dd>{matching?.video ? "Wan 3.0 motion film" : "Storyboard video"}</dd></div><div><dt>Cost now</dt><dd>{matching?.video ? "Already made · free to watch" : "Free · 0 room credits"}</dd></div></dl>
           <p>{matching?.video ? "This exact selection already has a finished film. Watch it now, or make a storyboard of the source images." : "Create a video of your selected images and captions in this browser. New Wan motion generation isn’t available from the room yet."}</p>
           {busy ? <div className="room-film-progress"><progress max={1} value={progress} aria-label="Creating storyboard video" /><p role="status">Creating your storyboard… {Math.round(progress * 100)}%</p><button type="button" className="button secondary" onClick={() => job.current?.abort()}>Cancel</button></div> : <>
             {matching?.video && <button type="button" className="button primary" onClick={() => watch(matching.id)}><Play size={17} aria-hidden="true" />Watch finished film</button>}

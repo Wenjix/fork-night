@@ -90,6 +90,7 @@ function KesslerTurnCard() {
 export function SharedPilot() {
   const account = usePilotAccount();
   const [filmOpenRequest, setFilmOpenRequest] = useState(0);
+  const [filmBusy, setFilmBusy] = useState(false);
   const [client, setClient] = useState<Client>();
   const [unavailable, setUnavailable] = useState(false);
   const [snapshot, setSnapshot] = useState<RoomSnapshot>();
@@ -1109,13 +1110,13 @@ export function SharedPilot() {
       <div className="pilot-context">
         {roomId === "midnight-signal" && !composing && !hasActive && !wrenBusy && !reviewing && releasePanel}
         {roomId === KESSLER_ROOM_ID
-          ? <KesslerRoomGuide overview={kessler.overview} unavailable={kessler.unavailable} blocked={composing || hasActive || wrenBusy || reviewing} onNavigate={destination => {
+          ? <KesslerRoomGuide overview={kessler.overview} unavailable={kessler.unavailable} blocked={composing || hasActive || wrenBusy || reviewing || filmBusy} onNavigate={destination => {
             setView("read");
             if (destination === "kessler-films") setFilmOpenRequest(value => value + 1);
             requestAnimationFrame(() => { const target = document.getElementById(destination); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
           }} />
           : <PilotRoomFunding roomId={roomId} loadedRoom={loadedRoom} creditsAvailable={credits?.available} />}
-        {roomId === KESSLER_ROOM_ID && client && path.length > 0 && <div hidden={composing || hasActive || wrenBusy || reviewing}><RoomFilmStudio client={client} moments={moments} currentPath={path} openRequest={filmOpenRequest} onRead={(id, trace) => {
+        {roomId === KESSLER_ROOM_ID && client && path.length > 0 && <div hidden={composing || hasActive || wrenBusy || reviewing}><RoomFilmStudio client={client} moments={moments} currentPath={path} openRequest={filmOpenRequest} onBusyChange={setFilmBusy} onRead={(id, trace) => {
           select(id, true);
           setView("read");
           requestAnimationFrame(() => { const target = document.getElementById(trace ? "kessler-contributions" : "pilot-story-reader"); target?.scrollIntoView({ block: "start" }); target?.focus({ preventScroll: true }); });
