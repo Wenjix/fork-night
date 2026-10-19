@@ -1,3 +1,35 @@
+.pilot-directory-page {
+  --paper: var(--night);
+  --surface: var(--night-panel);
+  --ink: var(--night-ink);
+  --muted: var(--night-muted);
+  --line: var(--night-line);
+  --edge: var(--night-control-line);
+  --accent: var(--night-link);
+  --accent-strong: var(--night-ink);
+  --accent-soft: var(--night-raised);
+  --accent-fill: var(--night-violet);
+  --on-accent: var(--night-ink);
+  --focus-ring: var(--night-yellow);
+  --selection: var(--night-line);
+  --success: var(--agent);
+  --danger: #ff9c9c;
+  --google-bg: #131314;
+  --google-ink: #e3e3e3;
+  --google-line: #8e918f;
+  --google-hover: #252526;
+  min-height: 100svh;
+  background: var(--paper);
+  color: var(--ink);
+  color-scheme: dark;
+}
+:is(html, body):has(.pilot-directory-page) { background: var(--night); color-scheme: dark; scrollbar-color: var(--night-control-line) var(--night); }
+.pilot-directory-page .pilot-entrance-account { padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.pilot-directory-page .fn-first-hosting p { color: var(--muted); }
+.pilot-directory-page .text-button { color: var(--accent); }
+.pilot-directory-page .text-button:hover { color: var(--accent-strong); }
+.pilot-directory-page .pilot-room-card:focus-visible { border-color: var(--focus-ring); }
+
 .pilot-entrance { max-width: min(1120px, calc(100% - 32px)); margin-inline: auto; }
 .pilot-entrance-directory { max-width: 1600px; padding: 0 var(--gutter) var(--space-7); }
 .pilot-entrance h2, .pilot-room-card h3 { font-family: var(--font-display), sans-serif; }

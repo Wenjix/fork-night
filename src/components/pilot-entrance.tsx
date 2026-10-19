@@ -160,9 +160,9 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
       <div className="pilot-room-card-copy"><h3>{room.title}</h3><p>{room.description}</p><span>Read this story <ArrowRight size={16} aria-hidden="true" /></span></div>
     </a>;
   })}</div>;
-  return <div className="pilot-page" ref={page}>
+  return <div className={`pilot-page${creating ? "" : " pilot-directory-page"}`} ref={page}>
     <a className="skip-link" href="#shared-stories">Skip to shared stories</a>
-    <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} />} account={false} />
+    <AppHeader current="rooms" guide={<FirstNightGuide compact={creating} tone={creating ? "paper" : "night"} />} account={false} />
     <main className={`pilot-shell pilot-entrance${creating ? "" : " pilot-entrance-directory"}`} id="shared-stories" tabIndex={-1}>
     <div className="pilot-entrance-account"><span>Shared rooms · public stories, private previews</span><div className="pilot-header-actions">{account?.signingOut ? <p className="pilot-signout-status" role="status">Signing out of this browser…</p> : <PilotIdentity profile={profile} disabled={!!pending || busy || !!account?.loading} signOutBlockedReason={signOutBlock} onJoin={() => { navigate("/pilot?create=1"); requestAnimationFrame(() => nameField.current?.focus()); }} joinLabel="Choose a storyteller name" />}</div></div>
     {/* Hidden while the sign-out runs: an earlier "could not be verified, refresh" no longer applies, since the sign-out goes ahead regardless. */}
@@ -188,9 +188,9 @@ export function PilotEntrance({ creating, navigate }: { creating: boolean; navig
     </>}
     {error && <div className="pilot-notice" role="alert"><p>{error}</p><button type="button" className="text-button" onClick={() => { setError(""); setCheck(value => value + 1); }}>Check connection</button></div>}
     {account?.notice && <div className="pilot-notice" role="alert"><p>{account.notice}</p><button type="button" className="text-button" onClick={account.dismissNotice}>Dismiss</button></div>}
-    {!!joined.length && <section className="pilot-directory-section" aria-label="Your joined rooms"><SectionPlate icon={Users} title="Your joined stories" description="Pick up a thread with the same storyteller account." tone="lavender" />{cards(joined)}</section>}
+    {!!joined.length && <section className="pilot-directory-section" aria-label="Your joined rooms"><SectionPlate icon={Users} title="Your joined stories" description="Pick up a thread with the same storyteller account." tone={creating ? "lavender" : "night"} />{cards(joined)}</section>}
     <section className="pilot-directory-section" id="shared-directory" aria-label="Open shared stories" aria-busy={!policy && !error}>
-      <SectionPlate icon={BookOpen} title="Stories to pick up" description="Read first. Join when you have an idea for the next moment." />
+      <SectionPlate icon={BookOpen} title="Stories to pick up" description="Read first. Join when you have an idea for the next moment." tone={creating ? "paper" : "night"} />
       {rooms.length ? cards(rooms) : <div className="pilot-directory-empty" role="status">
         {!policy && !error ? <><BookOpen size={24} aria-hidden="true" /><p>Opening the shared stories…</p></> : error ? <p>The room list is unavailable. Use Check connection above to try again.</p> : <><h3>No stories in the directory yet.</h3><p>If someone invited you, open their room link. Share-link rooms do not appear in this directory.</p><a className="text-button" href="/pilot?create=1">Start your own room <ArrowRight size={16} aria-hidden="true" /></a></>}
       </div>}
