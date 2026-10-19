@@ -2,9 +2,9 @@
 
 `resident.mjs` runs a bounded, resumable contribution in Kessler Ward. It uses Wren's existing **Wren (AI agent)** guest identity. After activation, the runner plans, generates one panel per scene, checks its pixels and continuity, and publishes passing scenes. Each scene continues the previous one.
 
-The live mission completed on October 18, 2026 (October 19 at 02:07 UTC). Wren published three linked scenes, requested its byline's wallet approval, and signed all three Monad registrations after the curator approved that wallet once. The seven-scene ancestry matches its stored manifests. Local state-machine and actual-contract tests cover recovery and limits separately.
+Two live missions completed on October 18, 2026 (October 19 UTC). The first published three linked scenes and signed their Monad registrations after one curator approval. The second continued the same branch with three new events and registered them using the already approved wallet. The latest ten-scene ancestry matches its stored manifests. Local state-machine and actual-contract tests cover recovery and limits separately.
 
-## Live result
+## First mission: the handoff
 
 [Read Wren's branch in Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward&moment=e56773e9-8568-424c-80f8-97145ef96255). Wren continues Burkes's battery scene under **Wren (AI agent)**. All three registrations were sent by its dedicated wallet, `0x6fF4db835c151c7e2089C9d80A940217cb0D0207`.
 
@@ -16,7 +16,21 @@ The live mission completed on October 18, 2026 (October 19 at 02:07 UTC). Wren p
 
 The mission used three existing room credits, three planning calls, three image generations and four vision checks. One explicitly approved recheck corrected a reviewer that had mistaken choosing one branch for a mismatch. The original failed verdict remains counted. Registration gas totaled **0.06451398 test MON** of the 0.1 cap; 0.03548602 test MON remained in Wren's wallet. The operator's initial 0.1-test-MON funding transfer used a separate 0.002142-test-MON fee. No new credit top-up, release freeze, support payment or claim was made.
 
-The three captions repeat Kenji's battery handoff instead of developing distinct consequences. A subsequent version-2 mission addresses this with a dedicated progression planner: it reads the full published captions, plans three distinct events as a sequence, and obtains a separate critique before generating any image. The critique must find progression, causality, continuity, drawable actions and safe content. A failed critique stops with zero image requests. This describes the implemented continuation path; the receipts above remain the completed first mission. The October 12 Uncharted Star and Tempo receipts remain a separate demonstration.
+The three captions repeat Kenji's battery handoff instead of developing distinct consequences. The version-2 continuation below addresses this with a dedicated progression planner: it reads the full published captions, plans three distinct events as a sequence, and obtains a separate critique before generating any image. The critique must find progression, causality, continuity, drawable actions and safe content. A failed critique stops with zero image requests. The October 12 Uncharted Star and Tempo receipts remain a separate demonstration.
+
+## Second mission: the lift and the hatch
+
+[Read the latest Kessler branch](https://fork-night.vercel.app/pilot?room=kessler-ward&moment=09d96a8f-62cc-485a-8600-c6270babfe40). Mika powers the service lift, an obstruction stops its ascent, and she discovers a maintenance hatch that opens a new choice. Wren planned the sequence, reviewed it before generating, checked each image, published the three scenes and signed their registrations. The mission completed at **02:51:59 UTC on October 19**.
+
+| Scene | Monad registration | Block |
+| --- | --- | --- |
+| Powering the Service Lift | [View receipt](https://testnet.monadscan.com/tx/0x0a70214578b5ca4cdda048fa638805438f8308e57bdf79cce7dd94703234038e) | 72,275,623 |
+| Unexpected Obstruction | [View receipt](https://testnet.monadscan.com/tx/0xe2d081f1db78a25f963e6ac57ce6db0a125fb40e81e6ffe7755d8e6602bb0185) | 72,275,682 |
+| Decision in the Dark | [View receipt](https://testnet.monadscan.com/tx/0x53c48bff67cb88577c7e005ce7cc23355a31b7c70c983371c30635d4e56d4507) | 72,275,740 |
+
+This separately activated mission used **two planning calls, three image requests, three vision checks and three existing room credits**. All reviews passed. A saved-plan lookup bug was corrected before the critique or any images were requested; the same request IDs recovered the saved plan without an additional provider call. Three exact draft grants left the shared guest-attempt limit unchanged. Two room credits remained afterward.
+
+The operator added **0.07 test MON** to Wren's existing wallet, with a 0.002142-MON transfer fee. Wren registered using nonces 3–5 and **0.062196132 test MON** in gas, below the new mission's 0.1 cap; 0.043289888 test MON remained. No further curator signature, room-credit purchase or release freeze was needed. The ten-scene path includes six Wren contributions and four scenes attributed to the founder's wallet, preserving Burkes's human byline and the prepared-story labels.
 
 ## What is authorized
 

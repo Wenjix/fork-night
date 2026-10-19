@@ -4,7 +4,7 @@ Wren is an AI agent that takes part in a Fork Night pilot room as one of its mak
 
 Wren runs as a script beside the app. It is not part of the app's build. Its keys are dedicated testnet keys. The original Uncharted Star runner below starts one turn at a time.
 
-A separate [Kessler resident mission](RESIDENT.md) published three linked scenes under Wren's existing byline and registered all three from its dedicated Monad wallet after one curator approval. It completed on October 18, 2026 (October 19 UTC), using three credits and four explicitly approved vision checks. Its receipts demonstrate the full execution path; its repetitive story progression still needs improvement.
+Two bounded [Kessler resident missions](RESIDENT.md) published six linked scenes under Wren's existing byline and registered them from its dedicated Monad wallet after one curator approval. The first repeated a battery handoff. The second used a complete three-scene plan and separate critique to move Mika into the service lift, encounter an obstruction and discover a maintenance hatch. Both completed on October 18, 2026 (October 19 UTC). The latest branch has ten registered ancestors, with each mission's expenses and permissions recorded separately.
 
 ## What one turn does
 

@@ -63,7 +63,7 @@ The **Your first night** guide follows your progress from reading to your first 
 
 | Start here | What you can explore | Scope |
 | --- | --- | --- |
-| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Eleven prepared moments, two branches, contribution history, guild backing and private Wren previews. | All eleven prepared scenes are registered on Monad to the founder wallet. Two real purchases added ten credits; one private preview used one. |
+| [Kessler Ward](https://fork-night.vercel.app/pilot?room=kessler-ward) | Prepared branches, human continuations, six public Wren scenes, contribution history and guild backing. | Wren's latest path has ten registered scenes, including six it registered from its own wallet. Two credits remain from the ten purchased at activation. |
 | [Paper Moon](https://fork-night.vercel.app/pilot?room=paper-moon) | Shared ideas, private previews and published continuations. | Generation and room creation use configured credits and limits. |
 | [Midnight Signal](https://fork-night.vercel.app/pilot?room=midnight-signal) | Registered contributions, release support and contributor claims. | Monad testnet. Wallet transactions need test MON for network fees. |
 | [The Uncharted Star](https://fork-night.vercel.app/pilot?room=night-shift) · [Wren's activity](https://fork-night.vercel.app/agents) | Wren's published continuations and its recorded Tempo payment. | Completed demo. The founder started each agent turn locally. |
@@ -157,6 +157,8 @@ In the recorded demo, Wren read the story, left ideas and published three contin
 Wren used a limited Tempo access key to buy more room capacity when it ran out of attempts. Its earlier published turns used GPT-4.1 mini. The recorded Kimi test planned a turn without posting.
 
 The hosted Kessler workflow prepares private Wren drafts for the requesting maker to review and publish. Its October 18 rehearsal completed one private scene and one real Tempo top-up. The access key is limited to the configured recipient, 2 test pathUSD per day including fees, and a 24-hour expiry; the app permits one 1-token top-up per day. Existing inference limits remain in force. [Activation evidence](docs/submission/HOSTING.md#kessler-activation--october-18-2026).
+
+In two separately activated [resident missions](agents/wren/RESIDENT.md), Wren also published six public Kessler scenes and registered them from its own Monad wallet. The second mission planned and critiqued three events before generating: Mika powers the lift, hits an obstruction and discovers a maintenance hatch. All three image reviews passed. [Read the ten-scene path and its contribution trail](https://fork-night.vercel.app/pilot?room=kessler-ward&moment=09d96a8f-62cc-485a-8600-c6270babfe40).
 
 [Wren's contribution and payment proof](docs/submission/AGENT-ROOM.md) · [Agent source](agents/wren/README.md) · [Tempo walkthrough](https://fork-night.vercel.app/tempo)
 
