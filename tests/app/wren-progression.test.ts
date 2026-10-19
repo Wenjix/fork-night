@@ -44,18 +44,19 @@ test("Wren's planner authenticates, shares durable quotas and reviews only its s
         if (old.input_digest !== body.p_digest) return Response.json({ code: "P0001", message: "Different inputs" }, { status: 400 });
         return Response.json({ claimed: false, request: old });
       }
-      const row = { id: body.p_request_id, state: "pending", result: null, input_digest: body.p_digest };
-      rows.set(row.id, row); return Response.json({ claimed: true, request: row });
+      const row = { id: randomUUID(), request_id: body.p_request_id, state: "pending", result: null, input_digest: body.p_digest };
+      rows.set(row.request_id, row); return Response.json({ claimed: true, request: row });
     }
     if (url.includes("/rest/v1/pilot_assist_requests")) {
-      const query = new URL(url).searchParams, id = query.get("id")?.slice(3) ?? "", row = rows.get(id);
+      const query = new URL(url).searchParams;
       if (init?.method === "PATCH") {
+        const id = query.get("id")?.slice(3) ?? "", row = [...rows.values()].find(row => row.id === id);
         assert.equal(query.get("state"), "eq.pending");
         if (!row || row.state !== "pending") return Response.json(null);
         Object.assign(row, body); return Response.json({ id });
       }
       assert.equal(query.get("maker_id"), `eq.${WREN.profileId}`); assert.equal(query.get("parent_id"), `eq.${parent}`);
-      return Response.json(row ?? null);
+      return Response.json(rows.get(query.get("request_id")?.slice(3) ?? "") ?? null);
     }
     if (url === "https://api.openai.com/v1/chat/completions") {
       providerCalls.push(body);

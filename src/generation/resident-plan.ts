@@ -32,7 +32,7 @@ export async function handleResidentPlan(request: Request) {
   const admin = pilotAdmin();
   let plan;
   if (body.phase === "review") {
-    const prior = await admin.from("pilot_assist_requests").select("result,state,input_digest").eq("id", body.planRequestId).eq("maker_id", actor)
+    const prior = await admin.from("pilot_assist_requests").select("result,state,input_digest").eq("request_id", body.planRequestId).eq("maker_id", actor)
       .eq("room_id", body.roomId).eq("parent_id", body.parentId).eq("kind", "shape").maybeSingle();
     if (prior.error || prior.data?.state !== "complete") throw new AssistError("Finish the saved plan before reviewing it.", 409);
     const expected = digest({ version: 1, phase: "plan", brief: body.brief, planRequestId: null });
