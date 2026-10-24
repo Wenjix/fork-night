@@ -13,6 +13,10 @@
 .guild-funding-drawer {
   min-width: 0;
 }
+.guild-funding-top-up {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+}
 .guild-funding-drawer-summary {
   flex-wrap: wrap;
   row-gap: var(--space-1);

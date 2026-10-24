@@ -85,8 +85,8 @@ export const featuredRooms = [
   {
     id: "paper-moon",
     title: guild?.roomTitle ?? "Paper Moon",
-    focus: "Solana · Squads v4 guild funding",
-    stack: [{ brand: "solana" }, { brand: "squads", role: "guild funding" }],
+    focus: "Solana · Squads v4 guild funding · Base top-ups",
+    stack: [{ brand: "solana" }, { brand: "squads", role: "guild funding" }, { brand: "base", role: "top-ups" }],
     status: "Recorded Oct 12",
     description: guild
       ? `${guild.governance.threshold} of ${guild.governance.stewardWallets} steward wallets approved funding. A separate payment added ${guild.appCredit.added} room credits.`
@@ -101,10 +101,11 @@ export const featuredRooms = [
 
 export const proofRoomIds = new Set(["midnight-signal", "paper-moon", WREN.roomId]);
 
-/** What the rooms are built with. Each links to the page that shows it working: Privy and Monad on the Night Watch, Tempo on Wren's page, Solana on the Paper Moon guild's treasury. */
+/** Each brand links to its demo: Privy and Monad on the Night Watch, Tempo on Wren's page, Base and Solana in Paper Moon's treasury. */
 export const builtWith = [
   { brand: "monad", href: "/night-watch-privy" },
   { brand: "tempo", href: "/tempo" },
+  { brand: "base", href: featuredStoryLinks.paperMoonGuild },
   { brand: "solana", href: featuredStoryLinks.paperMoonGuild },
   { brand: "privy", href: "/night-watch-privy" },
   { brand: "kimi", href: "/kimi" },

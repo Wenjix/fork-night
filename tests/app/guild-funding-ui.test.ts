@@ -31,13 +31,18 @@ test("a room loading or switching cannot show another room's recorded treasury",
   assert.equal(renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "unassigned", loadedRoom: "unassigned" })), "");
 });
 
-test("Squads stays first and the branded Solana and Base funding rows remain visible together", () => {
+test("the recorded Base top-up stays visible outside the collapsed Solana treasury", () => {
   const html = renderToStaticMarkup(createElement(PilotRoomFunding, { roomId: "paper-moon", loadedRoom: "paper-moon", creditsAvailable: 30 }));
   assert.match(html, /<section class="guild-funding-other" aria-label="Other recorded funding">/);
   assert.doesNotMatch(html, /<details class="guild-funding-other"/);
   assert.match(html, /2YHSYXPTzJUMmaoV2MHKHxzW5Lwx44zvhgaKnrQWq9F5vAHcdA6fhvBVjifVmP7B9fzWktG4k9eqLDJztTQ1BfSJ/);
   assert.match(html, /0xd5e58832014d09ae1bad68daec8ad9377287fd9e349b0d59fab38766a1fd4d2d/);
   assert.match(html, /Base.*Sepolia/);
+  const [drawer, visibleTopUp] = html.split('</details><section class="guild-funding-top-up" aria-label="Separate recorded Base top-up">');
+  assert.ok(visibleTopUp);
+  assert.doesNotMatch(drawer, /View Base receipt/);
+  assert.match(visibleTopUp, /Recorded: 1 test USDC for 5 room credits/);
+  assert.match(visibleTopUp, /View Base receipt/);
   assert.ok(html.indexOf("Squads v4") < html.indexOf("View Solana receipt"));
   assert.ok(html.indexOf("View Solana receipt") < html.indexOf("View Base receipt"));
   assert.equal((html.match(/src="\/brands\/networks\/solana.svg"/g) ?? []).length, 2);

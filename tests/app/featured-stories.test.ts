@@ -47,7 +47,7 @@ test("each room names its stack with brand badges, and a chain badge carries its
   assert.match(midnight, /aria-label="Monad releases · Privy wallets"/);
   assert.deepEqual(badgeNames(row("The Uncharted Star")), ["Tempo", "MPP", "Tempo receipt"]);
   assert.match(row("The Uncharted Star"), /<span class="fn-net">Moderato testnet<\/span>/);
-  assert.deepEqual(badgeNames(row("Paper Moon")), ["Solana", "Squads v4", "Solana receipt"]);
+  assert.deepEqual(badgeNames(row("Paper Moon")), ["Solana", "Squads v4", "Base", "Solana receipt"]);
   assert.match(row("Paper Moon"), /<span class="fn-net">Devnet<\/span>/);
   assert.deepEqual(badgeNames(row("Kessler Ward")), []);
   const featurePlates = render().split('<nav class="fn-kessler-features"')[1]?.split("</nav>")[0];

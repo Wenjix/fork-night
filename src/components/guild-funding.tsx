@@ -170,6 +170,8 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
   const creditsText = typeof creditsAvailable === "number"
     ? `${addedText} · ${creditsAvailable} room ${plural(creditsAvailable)} left`
     : addedText;
+  const funding = getRoomNetworkShowcase(record.roomId);
+  const baseTopUp = funding.find((demo) => demo.network === "base");
   return (
     <aside className="guild-funding-summary fn-network-card" aria-label="Recorded guild funding">
       <details className="guild-funding-drawer">
@@ -196,11 +198,16 @@ export function GuildFundingSummary({ record, creditsAvailable }: { record: Reco
           <section className="guild-funding-other" aria-label="Other recorded funding">
             <h3>Other recorded funding</h3>
             <ul className="fn-network-list">
-              {getRoomNetworkShowcase(record.roomId).map((demo) => <NetworkRow key={demo.network} demo={demo} newTab />)}
+              {funding.filter((demo) => demo.network !== "base").map((demo) => <NetworkRow key={demo.network} demo={demo} newTab />)}
             </ul>
           </section>
         </div>
       </details>
+      {baseTopUp && <section className="guild-funding-top-up" aria-label="Separate recorded Base top-up">
+        <ul className="fn-network-list">
+          <NetworkRow demo={baseTopUp} size="sm" newTab />
+        </ul>
+      </section>}
       {open && <GuildFundingHistory record={record} onClose={close} returnFocus={() => trigger.current} />}
     </aside>
   );
